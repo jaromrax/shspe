@@ -4,6 +4,10 @@ shspe
 root macro to SHow SPEctra
 
 **shspe compilation**
+
+you may install the *~/.rootrc* and *~/.rootlogon* with
+	init_scripts/install_initscripts 
+and then 
 ```
 make 
 make install
