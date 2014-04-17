@@ -48,7 +48,7 @@ fi
  
 if [ "$y" = "y" ]; then
  echo ... making backup
- tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon
+ tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon 2>/debv/null
  ls -ltr $HOME/.rootrclogon_backup.tgz
  echo ...
  cp rootrc  $HOME/.rootrc
