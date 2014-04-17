@@ -22,7 +22,7 @@ echo This installs .rootrc and .rootlogon scripts
 echo ...
 A=""
 B=""
-y="n"
+y="y"
 
 if [ -e $HOME/.rootrc ]; then
 A="$HOME/.rootrc"
@@ -51,7 +51,8 @@ if [ "$y" = "y" ]; then
  tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon
  ls -ltr $HOME/.rootrclogon_backup.tgz
  echo ...
- cp rootrc rootlogon $HOME/
+ cp rootrc  $HOME/.rootrc
+ cp rootlogon $HOME/.rootlogon
  ls -ltrh $HOME/.rootrc $HOME/.rootlogon
  echo SCRIPTS COPPIED
 else
