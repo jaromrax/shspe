@@ -3,7 +3,14 @@ shspe
 
 root macro to SHow SPEctra
 
+** shspe compilation **
+```
+make 
+make install
+```
 
+
+** root compilation **  example for 64bit 
 Append to   .bashrc :
 ```
 export ROOTSYS=$HOME/root

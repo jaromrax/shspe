@@ -14,7 +14,7 @@ gStyle->SetLabelOffset(0.015,"x"); // offset from axis, orig.=0.005
 gStyle->SetLabelOffset(0.015,"y");
 
 gROOT->ProcessLine("cout<<endl<<\" ==== shspe() loading =========================================\"<<endl;");
-gSystem->Load("kibbler_gui_C.so");
+gSystem->Load("shspe_C.so");
 gROOT->ProcessLine("cout<<endl<<\" ==============================================================\"<<endl;");
 
 //====================================== automatic library loading 
