@@ -1,0 +1,24 @@
+#---------- just load, not run
+Rint.Load:               ~/.rootalias
+#---------- run
+Rint.Logon:              ~/.rootlogon
+Rint.Logout:             ~/.rootlogout
+# the trick to have history in each directory #####
+Rint.History:            .root_hist
+
+#---- to track memory by  gObjectTable->Print();
+#Root.MemStat:       1
+#Root.ObjectStat:    1
+
+#-------------  macro path here --------
+# Path used by dynamic loader to find shared libraries and macros
+Unix.*.Root.MacroPath: .:~/root_macros:~/00_central:~/macros:$ROOTSYS/macros:$ROOTSYS/tutorials:RELEASE:PARENT
+Unix.*.Root.DynamicPath: .:~/root_macros:~/00_central:$(ROOTSYS)/lib:RELEASE/shlib/$(BFARCH)
+
+Canvas.ShowEventStatus   true
+Unix.*.Editor: emacs
+
+#Hist.Binning.2D.x: 256
+#Hist.Binning.2D.y: 256
+Hist.Binning.2D.x: 512
+Hist.Binning.2D.y: 512

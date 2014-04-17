@@ -1,0 +1,33 @@
+{
+gROOT->ProcessLine("cout<<\"......... running root logon file.rootlogon...........\"<<endl");
+
+gStyle->SetPalette(1);         // nicer color map than default
+gStyle->SetOptStat(1111111);    // Show overflow and underflow as well
+gStyle->SetStatStyle(1001);
+gStyle->SetOptFit(1011);
+gStyle->SetStatFormat("11.8g");
+
+gStyle->SetLabelSize(0.03,"x");  //  original size is very big..
+gStyle->SetLabelSize(0.03,"y");  //
+
+gStyle->SetLabelOffset(0.015,"x"); // offset from axis, orig.=0.005
+gStyle->SetLabelOffset(0.015,"y");
+
+gROOT->ProcessLine("cout<<endl<<\" ==== shspe() loading =========================================\"<<endl;");
+gSystem->Load("kibbler_gui_C.so");
+gROOT->ProcessLine("cout<<endl<<\" ==============================================================\"<<endl;");
+
+//====================================== automatic library loading 
+FILE *fff=fopen("load_libs.C", "r" );
+if (fff!=NULL){
+ fclose(fff);
+ fff=NULL;
+ gROOT->ProcessLine("cout<<\" ....AUTOMATIC LOAD   .x load_libs.C\"<<endl<<endl; ");
+ gROOT->ProcessLine(".x load_libs.C ");	   
+ gROOT->ProcessLine("cout<<\" ....finished         .x load_libs.C\"<<endl<<endl; ");
+}else{
+ gROOT->ProcessLine("cout<<\" ok....no load_libs.C  found to execute\"<<endl<<endl; ");	
+}
+
+gROOT->ProcessLine("cout<<\"......... ending  root logon file.rootlogon...........\"<<endl");
+}

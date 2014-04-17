@@ -1,0 +1,38 @@
+#!/bin/bash
+
+echo This installs .rootrc and .rootlogon scripts
+echo ...
+A=0
+B=0
+
+if [ -e $HOME/.rootrc ]; then
+A="$HOME/.rootrc"
+fi
+
+if [ -e $HOME/.rootlogon ]; then
+B="$HOME/.rootlogon"
+fi
+
+if [[ "$A"!=""  &&  "$B"!="" ]]; then
+ echo Warning: the scripts ~/.rootrc and ~/.rootlogon already EXIST
+else
+
+if [[ "$A"!="" || "$B"!="" ]]; then
+ echo Warning: the script $A $B already EXISTS
+fi
+fi
+
+ echo Do you want to overwrite? \(y/n\)
+ read y 
+ 
+if [ $y="y" ]; then
+ echo ... making backup
+ tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon
+ ls -ltr $HOME/.rootrclogon_backup.tgz
+ echo ...
+ cp rootrc rootlogon $HOME/
+ ls -ltrh $HOME/.rootrc $HOME/.rootlogon
+ echo SCRIPTS COPPIED
+fi
+
+
