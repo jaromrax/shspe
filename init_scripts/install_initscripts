@@ -20,8 +20,8 @@ fi
 
 echo This installs .rootrc and .rootlogon scripts
 echo ...
-A=0
-B=0
+A=""
+B=""
 
 if [ -e $HOME/.rootrc ]; then
 A="$HOME/.rootrc"
@@ -31,11 +31,11 @@ if [ -e $HOME/.rootlogon ]; then
 B="$HOME/.rootlogon"
 fi
 
-if [[ "$A"!=""  &&  "$B"!="" ]]; then
+if [[  -e $HOME/.rootrc && -e $HOME/.rootlogon ]]; then
  echo Warning: the scripts ~/.rootrc and ~/.rootlogon already EXIST
 else
 
-if [[ "$A"!="" || "$B"!="" ]]; then
+if [[  -e $HOME/.rootrc || -e $HOME/.rootlogon ]]; then
  echo Warning: the script $A $B already EXISTS
 fi
 fi
