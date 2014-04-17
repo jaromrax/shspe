@@ -22,6 +22,7 @@ echo This installs .rootrc and .rootlogon scripts
 echo ...
 A=""
 B=""
+y="n"
 
 if [ -e $HOME/.rootrc ]; then
 A="$HOME/.rootrc"
@@ -33,15 +34,17 @@ fi
 
 if [[  -e $HOME/.rootrc && -e $HOME/.rootlogon ]]; then
  echo Warning: the scripts ~/.rootrc and ~/.rootlogon already EXIST
+ echo -n Do you want to overwrite? \(y/n\)
+ read  y 
 else
 
 if [[  -e $HOME/.rootrc || -e $HOME/.rootlogon ]]; then
  echo Warning: the script $A $B already EXISTS
+ echo -n Do you want to overwrite? \(y/n\)
+ read  y 
 fi
 fi
 
- echo -n Do you want to overwrite? \(y/n\)
- read  y 
  
 if [ "$y" = "y" ]; then
  echo ... making backup
