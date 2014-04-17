@@ -1,5 +1,23 @@
 #!/bin/bash
 
+MACDIR=$HOME/root_macros
+
+if [ -e $MACDIR ]; then
+ echo ok, MACRO DIR $MACDIR exists
+else
+    MACDIR=$HOME/00_central
+    if [ -e $MACDIR ]; then
+	echo ok,  MACRO DIR $MACDIR exists
+    else
+	echo NEITHER $HOME/root_macros NOR $HOME/00_central FOUND 
+	echo create first MACRO DIRECTORY ...
+	exit 1
+    fi
+fi
+
+
+
+
 echo This installs .rootrc and .rootlogon scripts
 echo ...
 A=0
@@ -22,10 +40,10 @@ if [[ "$A"!="" || "$B"!="" ]]; then
 fi
 fi
 
- echo Do you want to overwrite? \(y/n\)
- read y 
+ echo -n Do you want to overwrite? \(y/n\)
+ read  y 
  
-if [ $y="y" ]; then
+if [ "$y" = "y" ]; then
  echo ... making backup
  tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon
  ls -ltr $HOME/.rootrclogon_backup.tgz
@@ -33,6 +51,8 @@ if [ $y="y" ]; then
  cp rootrc rootlogon $HOME/
  ls -ltrh $HOME/.rootrc $HOME/.rootlogon
  echo SCRIPTS COPPIED
+else
+ echo ok....quitting
 fi
 
 
