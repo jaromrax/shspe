@@ -3,15 +3,15 @@ shspe
 
 root macro to SHow SPEctra
 
-** shspe compilation **
+**shspe compilation**
 ```
 make 
 make install
 ```
 
 
-** root compilation **  example for 64bit 
-Append to   .bashrc :
+**root compilation**  (example for 64bit)
+Append to   .bashrc :  
 ```
 export ROOTSYS=$HOME/root
 export PATH=$ROOTSYS/bin:~/00_central:$PATH
