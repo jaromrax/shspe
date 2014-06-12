@@ -183,7 +183,7 @@ void savecanvas(const char *filenam, int slot=0){
     TPad*one=(TPad*)cmy->GetPad(1);
     one->cd();
     for (int j=0;j<cmy->GetListOfPrimitives()->GetEntries();j++){
- 	if (  strstr(cmy->GetListOfPrimitives()->At(j)->ClassName(), "TH" )>0 ){
+ 	if (  strstr(cmy->GetListOfPrimitives()->At(j)->ClassName(), "TH" )!=NULL ){
 	       TH1*ooo=(TH1*) cmy->GetListOfPrimitives()->At(j)->Clone();
 	  ooo->Draw();
 	}//TH
@@ -2237,7 +2237,7 @@ void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){
       char *pch;
       if ( (strlen(sr)!=0)  ){
          printf("sent text is  ../%s/.. we expect range like 500-1200\n",  sr  );
-       if (  strstr(sr,"-")>0  ){
+       if (  strstr(sr,"-")!=NULL  ){
 	 //         printf("set text to ""  ../%s/\n",  sr  );
 	 fEntry->SetText("");
 	 //         printf("atoi: ""  ../%s/\n",  sr  );
@@ -3166,10 +3166,12 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 myReadFile.open("REMOTE_DATA_DIR");
 	 char output[300];
 	 if (myReadFile.is_open()) {
-	   while (!myReadFile.eof()) {    myReadFile >> output;    cout<<output; }
+	   while (!myReadFile.eof()) {    
+	     myReadFile >> output;    cout<<output; 
+	   }
 	 }else{
 	   sprintf(output,"/tmp/shspe");//SOLVES THE CRASH ****openfile*** problem(there is anotherREMOTE_DATA_DIR)
-	   sprintf(output,"");//
+	   output[0]='\0';//
 	 }
 	 myReadFile.close();
 
