@@ -39,21 +39,34 @@ There are more functions loaded with shspe:
 
 **gr_  group**
 
+functions to play with graphs
 ```
 grhelp()
 ```
 
 **joingraphs**
 
+join several graphs to one multigraph
 
 **MPad  group**
+
+MPadGetByName()
+MPadCreate()
+MPadPrintIn()
+
+for use with TCounter
+
 
 
 **TCounter  group**
 
+not interesting now
+
+
 
 **cuts  group**
 
+uses **cuts.root** file for storing the cuts
 ```
 cutload()
 cutsave()
