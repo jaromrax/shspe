@@ -30,3 +30,34 @@ make
 
 make install
 ```
+
+===
+
+There are more functions loaded with shspe:
+
+
+
+**gr_  group**
+
+```
+grhelp()
+```
+
+**joingraphs**
+
+
+**MPad  group**
+
+
+**TCounter  group**
+
+
+**cuts  group**
+
+```
+cutload()
+cutsave()
+cutls()
+cutrm()
+cutcp()
+```
