@@ -106,9 +106,10 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title ); h->Draw();}
 	  if (trida.CompareTo("TH1D")==0){TH1D *h=(TH1D*)gDirectory->FindObject(title ); h->Draw();}
 	  if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
+
 	  if (trida.CompareTo("TCutG")==0){
 	    //TCutG *h=(TCutG*)gDirectory->FindObject(title ); 
-	    TCutG *h=(TCutG*)gROOT->GetListOfSpecials()->FindObject(title ); 
+	    TCutG *hc=(TCutG*)gROOT->GetListOfSpecials()->FindObject(title ); 
 	    //GET CURRENT TH2 HERE
 	    // when u do simple tree->Draw("a:b")
 	    //      titles are conserved
@@ -124,28 +125,48 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	    
 	    strcpy(xtith,h2->GetXaxis()->GetTitle());
 	    strcpy(ytith,h2->GetYaxis()->GetTitle());
-	    if ( (strlen(xtith)==0) || (strlen(ytith)==0) ){
+	    //	    printf("    titles x,y : /%s/,/%s/\n",  xtith, ytith );
+
+	    if ( (strlen(xtith)<=0) || (strlen(ytith)<=0) ){
+	      //	      printf("    no titles x,y : %s%s\n",  "", "" );
 	      //derive axes from the title:
 	      char ww[300];
 	      strcpy(ww,h2->GetTitle() );
+	      //	      printf("    ww head title : %s ... i check cutpart\n", ww );
+	      //here i remove condition appedix
 	      char *w1; w1=strstr( ww," ");
-	      w1[0]='\0'; //dangerous!?! no check
+	      //	      printf("    w1 head title wspace : %s ... \n", w1 );
+
+	      if ( w1!=NULL ){
+		printf("    w1 > 3 - trim at 0 : %s ... \n", ww );
+		w1[0]='\0'; //dangerous!?! no check
+	      }// cleaned...
+	      //	      printf("    ww head title wspace : %s ... \n", ww );
+	      //	      printf("    head title after cut removal : %s\n", ww );
 	      char *wx; wx=strstr( ww,":");
 	      char wx2[100]; strcpy( wx2,&wx[1] );
 	      // x-part of the title goes here
+	      //	      printf("    head title  x part : %s\n", wx2 );
 	      strcpy( xtith, wx2 );
 	      //original title cut makes  y
-	      wx[0]='\0'; strcpy(ytith,ww);
+	      wx[0]='\0'; 
+	      //	      printf("    head title  y part : %s\n", ww );
+	      strcpy(ytith,ww);
 	    }// null titles
 
-	    if ( strcmp(h->GetVarX(),xtith)!=0){
-	      printf("x-axis doesnot match %s x %s\n",xtith,h->GetVarX());
+	    hc->SetLineColor(1); hc->SetLineStyle(1);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
+	    if ( strcmp(hc->GetVarX(),xtith)!=0){
+	      printf("!!! x-axis doesnot match %s x %s\n",xtith,hc->GetVarX());
+	      hc->SetLineColor(2); hc->SetLineStyle(2);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
 	    }
-	    if ( strcmp(h->GetVarY(),ytith)!=0){
-	      printf("y-axis doesnot match %s x %s\n",ytith,h->GetVarY());
+	    if ( strcmp(hc->GetVarY(),ytith)!=0){
+	      printf("!!! y-axis doesnot match %s x %s\n",ytith,hc->GetVarY());
+	      hc->SetLineColor(2); hc->SetLineStyle(2);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
 	    }
-	    h->Draw("LP");//works with TCutG
+	    hc->Draw("LP");//works with TCutG
 	  }
+
+
 	  if (trida.CompareTo("TMultiGraph")==0){
 	    TMultiGraph *h=(TMultiGraph*)gDirectory->FindObject(title ); gPad->Clear();h->Draw("plaw");
 	    //	    printf("   .... TMultiGraph PLAW  (clear gpad before)%s\n","");
