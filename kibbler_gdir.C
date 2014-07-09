@@ -1,43 +1,150 @@
 #include "TSystem.h"
 
 
+//=================================== VERY DIRTY==COPY OF GRENG
+// but it knows to replace the specials;!!
+int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
+{
+ double x[64000],y[64000],dy[64000],dx[64000],  bu;
+ int i,j;
+ FILE * pFile;
+ int MAXLINES=64000;
+ // char mystring[1500];// one line
+ TString oneline, title=name, token;
+
+ //  printf("gr_engineX: going to open filename=%s\n", name );
+
+  pFile=fopen( name ,"r" ); 
+  if (pFile==NULL) {
+    printf("cannot open %s,STOPping\n", name ); 
+    return 0;
+  } // error
+  //  printf("file opened\n%s","");
+  //.......................readout HERE.......i
+  i=0;
+  int lastlen;// remove spaces
+  while ((i<MAXLINES)&&( feof(pFile)==0) ){
+    //    printf("  reading line %d...\n", i );
+    if ( oneline.Gets (pFile, kTRUE) ){//chop true ... continue if not eof
+      //      printf("     string==%s\n",  oneline.Data() ); 
+
+    //purify .................. start
+    do {
+      lastlen=oneline.Length();
+      if (oneline.Index(" ")==0){oneline=oneline(1,oneline.Length()-1);}
+      lastlen=oneline.Length();
+      if (oneline.Index(" ")==lastlen){oneline=oneline(0,oneline.Length()-1);}
+       oneline.ReplaceAll("\t"," ");
+       oneline.ReplaceAll("  "," ");
+       oneline.ReplaceAll("  "," ");
+       //       printf(" ---    string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
+    }while( lastlen!=oneline.Length());
+    //    printf("     string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
+    //purify .................. stop
+    //printf("S=%s\n", oneline.Data() );
+   //........ parse oneline
+    if (  (oneline.Index("#")==0) || 
+	  (oneline.Index("@")==0) ||
+	  (oneline.Index("END")==0) 
+ ){ // starts with # - COMMENT HERE
+      //       printf( "COMM:%s\n", oneline.Data() );
+      if (title.Length()==0){ title=oneline( 1,oneline.Length()-1  );}
+     //     title=oneline( oneline.Length(),oneline.Length()-1  );
+  }else{// DATA HERE
+      TObjArray *tar; 
+     if (oneline.Length()>1){
+       if (oneline.Index("#")>0){oneline.Remove(oneline.Index("#") );}// #
+       if (oneline.Index("@")>0){oneline.Remove(oneline.Index("@") );}// #
+       if (oneline.Index("END")>0){oneline.Remove(oneline.Index("END") );}// #
+       //       oneline.ReplaceAll(oneline.Index("\t"),1," ");
+       oneline.ReplaceAll("\t"," ");
+      x[i]=0; y[i] =0;dx[i]=0;dy[i]=0; j=0;  //  go through the columns 
+      // printf( "NotCM:%s\n", oneline.Data() );
+
+      /*
+       * r?? contains a column to use for x,dx,y,dy:
+       */
+      tar= oneline.Tokenize(" ");
+      //      printf("entries==%d\n", tar->GetEntries() );
+      while( (j<=rx && rx>=0) || (j<=ry && ry>=0) || (j<=rdy && rdy>=0)|| (j<=rdx && rdx>=0)){  
+	if (j<tar->GetEntries()){
+         token= ((TObjString*)(tar->At(j)))->GetString();
+	 //	 printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
+	 bu= token.Atof(); 
+	 //	 if (i<5){ 	 printf("  token <%s> = %f\n", token.Data(), bu ); }
+         if (rx==j)  { x[i] =bu;}
+         if (ry==j)  { y[i] =bu;}
+         if (rdx==j) { dx[i] =bu;}
+         if (rdy==j) { dy[i] =bu;} 
+	}//j<entries
+         j++;
+      }//small while 
+
+     //tar->Delete();  // abandon tar 
+      i++;// skip to a next datum if point
+     }// if oneline  lenght>1 go thru all
+     //back the loop
+   }//DATA HERE end
+    //     printf("%s","data line ended\n");
+
+
+    }//if oneline.Gets false
+   
+   //........ parse oneline
+  }//while
+  //.......................readout HERE end....i
+  //.......................close, create the TGraphErrors
+  fclose( pFile);
+  // TITLE HERE----------------
+  //  title=name; DONE earlier
+  title.ReplaceAll(".","_"); 
+  title.ReplaceAll(" ","_"); 
+  printf("%d elements read. title= /%s/\n", i-1, title.Data() );
+
+ if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
+   TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
+   printf("  ... same name already exists in specials tidis=%d\n",
+	  oldg->GetXaxis()->GetTimeDisplay());
+   //   printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
+   int timdis=oldg->GetXaxis()->GetTimeDisplay();
+   char timc[100]; strcpy(timc,oldg->GetXaxis()->GetTimeFormat() );
+	for (int jj=0;jj<i;jj++){
+	  oldg->SetPoint(jj,x[jj],y[jj]);
+	  oldg->SetPointError(jj,dx[jj],dy[jj]);
+	}//for all jj
+	//	printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
+	oldg->GetXaxis()->SetTimeDisplay( timdis);
+	oldg->GetXaxis()->SetTimeFormat(timc);
+    return (int64_t)oldg;
+
+ }else{//if not exists in groot specials :
+   TGraphErrors *g=new TGraphErrors(i,x,y,dx,dy);
+   g->SetMarkerStyle(22);
+   g->SetTitle( title.Data()  );
+   g->SetName( title.Data()  ); 
+   gROOT->GetListOfSpecials()->Add( g );
+   printf("added to GetListOfSpecials:   %s \n",  g->GetName()  );
+ return (int64_t)g;
+ }//if exists already in gROOT Specials
+
+// g->Print();// DONT PRINT TABLES
+
+
+
+ //-----------------------------------------------------
+}// end of the new 201004 version of gr_engine
+//=================================== VERY DIRTY==COPY OF GRENG
+
+
+
+
+
+
+
 void shspe_ls(){ 
   
   TString sr=".";
   if (gFile!=NULL){ sr=gFile->GetName() ;}
-  //histofile=new TFile( sr.Data() );
-  /*
-     printf("\n\n|######### LIST OF root FILES ####################################|\n%s" ,  "" ); 
-    	 printf("|=================================================================|\n%s" , ""  ); 
-	 //	 printf("|                         |%s" , ""  ); 
-	 gROOT->ProcessLine(".! pwd");
-    	 printf("|=================================================================|\n%s" , ""  ); 
-	 printf("|-------------------->                                            |\n%s" , ""  ); 
-	 gROOT->ProcessLine(".! ls -lh *.root 2>/dev/null | cut -d\" \" -f 5-1111");
-	 printf("|-------------------->                                            |\n%s" , ""  ); 
-	 //  	 printf("|-- possible canvases   (20_DivLoadCanvas) -----------------------|\n%s" , ""  ); 
-	 //  	 printf("|-------------------->                                            |\n%s" , ""  ); 
-	 //	 gROOT->ProcessLine(".! ls -lh shspe*c.root *canv*.root 2>/dev/null | cut -d\" \" -f 5-1111");
-	 // 	 printf("|-------------------->                                            |\n%s" , ""  ); 
-  	 printf("|--                     (ASCII spectra - one channel - *.asc) ----|\n%s" , ""  ); 
-  	 printf("|-------------------->                                            |\n%s" , ""  ); 
-	 gROOT->ProcessLine(".! ls -lh *.dat *.asc 2>/dev/null | cut -d\" \" -f 5-1111");
-  	 printf("|--                     (ASCII spectra - two channels- *.asc2)----|\n%s" , ""  ); 
-  	 printf("|-------------------->                                            |\n%s" , ""  ); 
-	 gROOT->ProcessLine(".! ls -lh *.dat *.asc 2>/dev/null | cut -d\" \" -f 5-1111");
- 	 printf("|-------------------->                                            |\n%s" , ""  ); 
-  	 printf("|--                     (TGraph x,y     *.gr2, *.gr3) ------------|\n%s" , ""  ); 
-	 gROOT->ProcessLine(".! ls -lh *.gr2 2>/dev/null | cut -d\" \" -f 5-1111");
-	 gROOT->ProcessLine(".! ls -lh *.gr3 2>/dev/null | cut -d\" \" -f 5-1111");
- 	 printf("|-------------------->                                            |\n%s" , ""  ); 
-  	 printf("|=================================================================|\n%s" , ""  ); 
-	 // printf("|-----------------------------------------------------------------|\n%s" , sr.Data()  ); 
-	 //	 printf("|------------------------|                                        |\n" , sr.Data()  ); 
-	 //	 printf("########## Now enter the filename in the field. %s ################\n" , sr.Data()  ); 
-	 //	 printf("=========================|                                        |\n" , sr.Data()  ); 
-	 printf( "|My current gDirectory is %-40s|\n", gDirectory->GetName()  );
-	 //intf("|-----------------------------------------------------------------|\n%s" , sr.Data()  ); 
-         printf("|#################################################################|\n%s\n" , sr.Data()  ); */
 }
 
 
@@ -97,6 +204,7 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
       //      printf("  the class is == %s\n", trida.Data() );
          if ( strstr(trida.Data(),"TH")!=0){
 	      TH1 *h=(TH1*)gDirectory->FindObject(title );
+	      printf("========== %s =====\n",  h->GetTitle()  );
 	      printf("entries  = %9.1f\n",  h->GetEntries()  );
 	      printf("mean     = %9.1f\n",  h->GetMean()   );
 	      printf("RMS      = %9.1f\n",  h->GetRMS()   );
@@ -108,8 +216,8 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	  if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
 
 	  if (trida.CompareTo("TCutG")==0){
-	    //TCutG *h=(TCutG*)gDirectory->FindObject(title ); 
-	    TCutG *hc=(TCutG*)gROOT->GetListOfSpecials()->FindObject(title ); 
+	    TCutG *hc=(TCutG*)obj;//gDirectory->FindObject(title ); 
+	    //	    TCutG *hc=(TCutG*)gROOT->GetListOfSpecials()->FindObject(title ); 
 	    //GET CURRENT TH2 HERE
 	    // when u do simple tree->Draw("a:b")
 	    //      titles are conserved
@@ -167,17 +275,25 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	  }
 
 
+
+
+
 	  if (trida.CompareTo("TMultiGraph")==0){
-	    TMultiGraph *h=(TMultiGraph*)gDirectory->FindObject(title ); gPad->Clear();h->Draw("plaw");
+	    TMultiGraph *h=(TMultiGraph*)obj;
+	    //gDirectory->FindObject(title ); 
+	    gPad->Clear();h->Draw("plaw");
 	    //	    printf("   .... TMultiGraph PLAW  (clear gpad before)%s\n","");
 	  }
 	  if (trida.CompareTo("TGraph")==0){
-	    TGraph *h=(TGraph*)gDirectory->FindObject(title ); 
+	    TGraph *h=(TGraph*)obj;
+	    //gDirectory->FindObject(title ); 
 	    h->SetTitle( obj->GetName()  ); // We put the title == graph name
 	    h->Draw("plaw");
 	  }
+
 	  if (trida.CompareTo("TGraphErrors")==0){
-	    TGraphErrors *h=(TGraphErrors*)gDirectory->FindObject(title ); 
+	    TGraphErrors *h=(TGraphErrors*)obj;
+	    //gDirectory->FindObject(title ); 
 	    h->SetTitle( obj->GetName()  );
 	    h->Draw("plaw");
 	  }
@@ -262,54 +378,83 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 
 void fOpenFile(TString *fentry, TGListBox *fListBox2){
 
-    shspe_ls();
+  shspe_ls();  // fills only the global string "sr"
 
   int id_selected=fListBox2->GetSelected();
   printf("...<open file> pressed... (%s) selected==#%d/%d\n", 
-	 fentry->Data(), id_selected ,fListBox2->GetNumberOfEntries());
+    fentry->Data(), id_selected ,fListBox2->GetNumberOfEntries());
   // handle what is in the gDirectory first
   int filename_present=0;
   if ( fentry->CompareTo("")!=0 && fentry->CompareTo(" ")!=0  ) filename_present=1;
 
-  if ( (filename_present==0)&&(id_selected>1)){
+  if ( (filename_present==0)&&(id_selected>1)){// not OpenFile
     // will be obsolete......???????
     printf("display from list2%s\n", "" );
+    // this already displays the TH objects ==============
     fDisplayFromList2( id_selected , fListBox2->GetSelectedEntry()->GetTitle()  );
     return;
-  }// id selected>0
+  }// id selected>0 .......................no openfile ends here
+
 
 
   // filename present, proceed with closing an old file
   if ((gFile!=NULL)&&(filename_present==1)){// this closes file, even when we want to read it?
     printf("(fOpenFile:) Closing opened file (%s)\n", gFile->GetName() ); 
     //gFile->Close(); // BIG PROBLEMS TO CLOSE
-    printf("(fOpenFile:) file Closed  (%s)\n", "virtually"); 
+    printf("(fOpenFile:) file Closed (%s)\n", "not really"); 
   }// close current file
-
-
 
   /*
    *  read all the strange  files............... or enter _root_ at the end
    */
+  //========================================================
+  //  OPEN FILE  ROOT   MYSQL  SQLITE
+  //========================================================
   if (filename_present==1){  // ROOT
-    printf( "Openning file named:#%s#\n" , fentry->Data()  );
-    if (fentry->Index(".root")<0){ fentry->Append(".root");}
-    TFile *histofile=new TFile( fentry->Data() );
-    if (histofile != NULL){  // opening ROOT file and the FILE EXISTS
-      printf("file seems opened %s\n","");
-    } 
+    printf( "Opening file named:   #%s#\n" , fentry->Data()  );
+    // I CAN OPEN ROOT FILES:
+    // if (fentry->Index(".root")<0){ fentry->Append(".root");} 
+    if (fentry->Index(".root")>0){
+      TFile *histofile=new TFile( fentry->Data() );
+      if (histofile != NULL){  // opening ROOT file  FILE EXISTS
+	printf("file seems opened %s\n","");
+      } 
+    }// is .root file
+    if (fentry->Index(".mysql")>0){
+	char commandrm[200];
+	char grname[200];
+	sprintf(grname,"%s.dat",  fentry->Data() );
+	sprintf(commandrm,"sqmylite -r %s 0 >%s", 
+		fentry->Data(), grname);
+	system(commandrm);
+
+	TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 gDirectory->Add( res );
+	printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
+	
+    }// is .mysql file
+    if (fentry->Index(".sqlite")>0){
+	char commandrm[200];
+	char grname[200];
+	sprintf(grname,"%s.dat",  fentry->Data() );
+	sprintf(commandrm,"sqmylite -r %s 0 >%s", 
+		fentry->Data(), grname);
+	system(commandrm);
+	TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 gDirectory->Add( res );
+	printf("fileSQLite seems opened CMD:/%s/\n", commandrm);
+    }// is .sqlite file
     filename_present=0;
   }//filename was present
 
 
-  /*
+  /**************************************************
    *   clear all entries and start from scratch......
-   * 
    */
 int max;
- printf("clear all %d entries at flistbox2 \n", fListBox2->GetNumberOfEntries() );
-    printf("???flb2  (%d entries). Removing entries from 1 to %d\n", 
-	   fListBox2->GetNumberOfEntries(), fListBox2->GetNumberOfEntries() );
+// printf("clear all %d entries at flistbox2 \n", fListBox2->GetNumberOfEntries() );
+//   printf("???flb2  (%d entries). Removing entries from 1 to %d\n", 
+// fListBox2->GetNumberOfEntries(), fListBox2->GetNumberOfEntries() );
     // fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()-1  ); /// -WHAT???  zkusime -1
     // if  1,  ge-1  : 2 zustaly ale ne openfile
     // if  1   ge    : neni ani openfile
@@ -318,12 +463,9 @@ int max;
   fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()  ); /// *open*  ONLY remains
 //int nfileentr=0;// clear fileentr !! 
 //TString fileentr[3000];
-
-
 /***************************************************************************************************
  *   legalize primitives from gpad (htemp)
  *   ???  I assume that all graphs should be at    specials
- *
  */
   TList *prim=gPad->GetListOfPrimitives();
   for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
@@ -343,13 +485,11 @@ int max;
     }//TH class
 
     /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY ********************
-
     // ======================= TGraph ====================
     if ( sn.Index("TGraph")==0 ){
        TGraph *hih=(TGraph*)prim->At(ii);
        TString sn_hih=hih->GetName(); 
        if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
-
        sn_hih.Append("_g");
        hih->SetName(sn_hih);
        //

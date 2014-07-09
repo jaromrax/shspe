@@ -1377,14 +1377,14 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
         TGraphErrors* m=(TGraphErrors*)primbar->At(ii);
         tp=(TH1*)m->GetHistogram();
 	if ( strstr(onlyclass,"TH")!=0){ sn="TH2"; }
-	printf("     ...tgrapherrors - histo ==%ld\n", (int64_t)tp );
+	//printf("     ...tgrapherrors - histo ==%ld\n", (int64_t)tp );
       }//TMultiGraph
       else{
       if ( (sn.Index("TGraph")==0)&&(sn.Index(exclude)!=0)  ) {
         TGraph* m=(TGraph*)primbar->At(ii);
         tp=(TH1*)m->GetHistogram();
 	if ( strstr(onlyclass,"TH")!=0){ sn="TH2"; }
-	printf("     ...tgraph - histo ==%ld\n", (int64_t)tp );
+	//printf("     ...tgraph - histo ==%ld\n", (int64_t)tp );
       }//TMultiGraph
       }//else - tgraph
 
@@ -1409,7 +1409,7 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
  }// for   ii (prim  
  //delete primbar;
  //printf("         %d things were added to the list RecoverTH1fromGPAD. Return.\n",count );
-}
+}//RecoverTH1fromGPAD
 
 
 
@@ -1468,7 +1468,50 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
    TString ss=XY;
    double x1=0.,x2=0.,dx, ox1=0.,ox2=0., factorl=factor;
    int f1,l1,  nowbin, predbin=0., finbin;
+
+
    if (ss.CompareTo("X")==0){
+     //      TString sc=h->ClassName();
+      TString sn=h->GetName();
+      //      printf("movexy: h(name)= %s (class)=%s\n", 
+      //	     sn.Data(), sc.Data() );
+
+      int direc;
+      if (factorl>0){ direc=1;}
+      if (factorl<0){ direc=-1;}
+      if (  (sn.Index("_mysql_dat")>0) ){
+	printf("MYSQL FOUND\n%s","");
+	sn.ReplaceAll("_mysql_dat",".mysql");
+ 	char commandrm[200];
+ 	char grname[200];
+	
+	sprintf(grname,"%s.dat",  sn.Data() );
+	sprintf(commandrm,"sqmylite -r %s %d  >%s", 
+		sn.Data(), direc, grname);
+	system(commandrm);
+
+	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 return;
+      }//(sn.Index("_mysql_dat")>0
+      if (  (sn.Index("_sqlite_dat")>0) ){
+	printf("SQLITE FOUND\n%s","");
+	sn.ReplaceAll("_sqlite_dat",".mysql");
+ 	char commandrm[200];
+ 	char grname[200];
+	
+	sprintf(grname,"%s.dat",  sn.Data() );
+	sprintf(commandrm,"sqmylite -r %s %d >%s", 
+		sn.Data(), direc ,grname);
+	system(commandrm);
+
+	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 return;
+      }//(sn.Index("_sqlite_dat")>0
+
+
+
+
+
      x1=h->GetXaxis()->GetBinCenter( h->GetXaxis()->GetFirst() );
      x2=h->GetXaxis()->GetBinCenter( h->GetXaxis()->GetLast() );
      ox1=x1;ox2=x2;
@@ -2872,10 +2915,14 @@ void  MyMainFrame::ClickResponse( Int_t id)   // THIS IS CONNECTED TO TLIST2
 	     // otherwise, it was initialised correctly. let's print it on the console:
 	     //printf ("%s\n", pent->d_name);
 	     TString s=pent->d_name;
-	     if (TPRegexp("\\.root$").Match(s.Data())!=0){
-	     fListBoxOF->AddEntry(pent->d_name, next++ );
-	     //	     TString *s=new TString(pent->d_name);
-	     //	     fSelectedOF->Add( (TObject*)s );
+	     if (TPRegexp("\\.root").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry(pent->d_name, next++ );
+	     }
+	     if (TPRegexp("\\.mysql").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry(pent->d_name, next++ );
+	     }
+	     if (TPRegexp("\\.sqlite").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry(pent->d_name, next++ );
 	     }
 	   }
 	 
@@ -3026,25 +3073,28 @@ void MyMainFrame::HandleEvents(Int_t id)
      //     sleep(1);
 
  ifstream myReadFile;
- // at startup........this appears
- printf("going to open REMOTE_DATA_DIR%s\n", ""); // NOT HERE???????
+
+
+ // at startup........this appears================ REMOTE DATADIR
+ printf("going to open REMOTE_DATA_DIR %s\n", "file"); // NOT HERE???????
  myReadFile.open("REMOTE_DATA_DIR");
- printf("done to open REMOTE_DATA_DIR%s\n", "");
+ printf("done  to open REMOTE_DATA_DIR %s\n", "file ");
  char output[300];
  if (myReadFile.is_open()) {
   while (!myReadFile.eof()) {    myReadFile >> output;    cout<<output; }
  }
- myReadFile.close();
+ myReadFile.close();//============================ REMOTE DATADIR
 
 
       if (fn->BeginsWith("~")){
 	fn->ReplaceAll("~","/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/");
       }
-     printf("File OPENINIG  <%s>\n",  fn->Data()    );
-      fOpenFile(  fn   , fListBox2   );  // 2nd fopenfile----------<<<<<<<<< click in id=122 listboxOF
+      
+      printf("File OPENINIG  <%s>\n",  fn->Data()    );
+      fOpenFile(  fn   , fListBox2   );  // 2nd fopenfile<< click in id=122 listboxOF
   //   sleep(1);
-      printf("File OPENED  <%s>\n",  fn->Data()    );
-    }//1 OPEN
+      printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
+    }//1 OPEN  // OFaction==1
 
 
     //    // LETS CHANGE ANYTME   ***listboxOF clicked****
@@ -3053,10 +3103,10 @@ void MyMainFrame::HandleEvents(Int_t id)
       GPAD->SetTitle( GPADTITLE.Data()  );
 
 
-    if (OFaction==2){// SAVE NEW FILE //------------------------------------------------
+
+
+    if (OFaction==2){// SAVE NEW FILE //----------------------------
        TDirectory *curr=(TDirectory*)gDirectory;// to return back 
-       //       fSAVEFromList2( fListBox2->GetSelected() ,
-       //		       fListBox2->GetSelectedEntry()->GetTitle() , savename.Data() );
 
        // MUSI tam byt    fentry.  Jinak to blbne s ***openfile***
        printf( "...before fSAVEFromList2 call: <%s>\n",  fEntry->GetText()  );
@@ -3068,31 +3118,28 @@ void MyMainFrame::HandleEvents(Int_t id)
        printf("saved %s\n",""); curr->cd();
     }//2 SAVE NEW
 
-    if (OFaction==3){// SAVE TO EXISTING  //------------------------------------------------
+
+    if (OFaction==3){// SAVE TO EXISTING  //-----------------
     }//3
 
 
-
-     printf("decision ok %d, now Close OF:\n", OFaction );
-
+    //    printf("decision ok %d, now Close OF:\n", OFaction );
 
 
-    // IT CRASHES  SOMEWHERE  HERE====================================
-    printf("???flbOF (%d entries). Removing entries from 1 to %d\n", 
-	   fListBoxOF->GetNumberOfEntries(), fListBoxOF->GetNumberOfEntries() );
+    // IT CRASHES  SOMEWHERE  HERE==================================
+    //    printf("???flbOF (%d entries). Removing entries from 1 to %d\n", 
+    //	   fListBoxOF->GetNumberOfEntries(), fListBoxOF->GetNumberOfEntries() );
+
 
     fListBoxOF->RemoveEntries( 0, fListBoxOF->GetNumberOfEntries() ); // remove all entries
     //    printf("???Removing entries from fSelectedOF %s\n",  "");
     //    fSelectedOF->RemoveAll();
     //    printf("???Removed All() from fSelectedOF %s\n",  "");
     //    fSelected2->RemoveAll(); //  ????? TRY THIS  NO EFFECT AT ALL.....
-
     //    Layout();// this and sleep and seem more stable...
-
-    printf("???resize to 140x%d  flistbox2\n", listbox2_vsize );
-    fListBox2->Resize(140,listbox2_vsize);  // was flistbox and worked...
-
-    printf("???resize to 5x%d flistboxOF\n", listbox2_vsize );
+    // printf("???resize to 140x%d  flistbox2\n", listbox2_vsize );
+    fListBox2->Resize(140,listbox2_vsize);  // was flistbox and work
+    //printf("???resize to 5x%d flistboxOF\n", listbox2_vsize );
     fListBoxOF->Resize(5 , listbox2_vsize );  // BY DEFAULT  MAKE SMALL
 
     //   sleep(1);
@@ -3231,55 +3278,54 @@ void MyMainFrame::HandleEvents(Int_t id)
 
 
 
-      /************************************************************************** 
+      /***************************************************
        *  CONTENTS OF DIRECTORY            HERE
        *
        */
-       //newfentry.....       if (newfentry->CompareTo("")==0){   //  make  list of  files..........
-	 //	 char* path=".";
 	 char path[500]=".";
-	 //NOT NOW<LATER sprintf(path, "%s",  "/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/" );
-	 // first off, we need to create a pointer to a directory
-	 DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
-	 pdir = opendir (path); // "." will refer to the current directory
+	 DIR *pdir = NULL; // remember, it's good practice to NULL!
+	 pdir = opendir (path); // "." will refer current directory
 	 struct dirent *pent = NULL;
 	 if (pdir == NULL) // if pdir wasn't initialised correctly
 	   { // print an error message and exit the program
-	     printf ("\nERROR! pdir could not be initialised correctly");
+	     printf ("\nERROR! pdir could not be init. correctly");
 	     return; // exit the function
 	   } // end if 
 	 /*
 	  *   insert all .root files into this
 	  */
 	 int next=0;
-	 fListBoxOF->AddEntry( "***cancel***", next++ );
-	 fListBoxOF->AddEntry( "*SaveToNewFile*", next++ ); // SORRY - until doubleclicked solves....
-	 fListBoxOF->AddEntry( "*Memory DiIIIr*", next++ ); //   #HERE 
-	 //	 TString *s=new TString("***cancel***");
-	 //	 fSelectedOF->Add( (TObject*)s );
-	 while (  (pent = readdir (pdir))   ) // while there is still something in the directory to list
+	 // *** necessary to keep SORTing
+	 fListBoxOF->AddEntry( "***cancel ***", next++ );
+	 fListBoxOF->AddEntry( "*SaveToNewFile *", next++ ); // SORRY - until doubleclicked solves....
+	 fListBoxOF->AddEntry( "*Memory *", next++ ); //   #HERE 
+	 while (  (pent = readdir (pdir))   ) // while in dir
 	   {
-	     if (pent == NULL) // if pent has not been initialised correctly
-	       { // print an error message, and exit the program
-		 printf ("\nERROR! pent could not be initialised correctly");
+	     if (pent == NULL) // if pent hasnotbeeninit. correctly
+	       { 
+		 printf ("\nERROR! pent could not init. correctly");
 		 return; // exit the function
 	       }
-	     // otherwise, it was initialised correctly. let's print it on the console:
-	     //printf ("%s\n", pent->d_name);
 	     TString s=pent->d_name;
 	     char totname[500];
 	     sprintf(totname,"%s",  pent->d_name ); 
+	     //HERE IS WHAT TO ADD TO LIST2 ????????
+	     //  the funcion fopenfile opens the files
 	     if (TPRegexp("\\.root$").Match(s.Data())!=0){
-	       //	     fListBoxOF->AddEntry(pent->d_name, next++ );
-	     fListBoxOF->AddEntry( totname, next++ );
-	     //	     TString *s=new TString(pent->d_name);
-	     //	     fSelectedOF->Add( (TObject*)s );
+	       fListBoxOF->AddEntry( totname, next++ );
+	     }
+	     if (TPRegexp("\\.mysql$").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry( totname, next++ );
+	     }
+	     if (TPRegexp("\\.sqlite$").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry( totname, next++ );
 	     }
 	   }//while pent
 	 
 	 // finally, let's close the directory
 	 closedir (pdir);
 	 //-----------------------stage 2 start---------------
+	 //THIS PART I SEE WHEN I DO OPENFILE: ::::
 	 ifstream myReadFile;
 	 printf("going to open file  REMOTE_DATA_DIR to append additional files from remote repo%s\n", "");
 	 myReadFile.open("REMOTE_DATA_DIR");
@@ -3294,43 +3340,46 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 }
 	 myReadFile.close();
 
-	 //------------------file path is clear now--------------------
-	 //	 sprintf(path, "%s",  "/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/" );
+	 //------------------file path is clear now-----------------
 	 if ( strlen(output)>0){
-	 sprintf(path, "%s",  output );
-	 pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
-	 pdir = opendir (path); // "." will refer to the current directory
-	 pent = NULL;
-	 if (pdir == NULL) // if pdir wasn't initialised correctly
-	   {     printf ("\nERROR! pdir could not be initialised correctly");  return;  } 
-	 while (  (pent = readdir (pdir))   ) // while there is still something in the directory to list
-	   {
-	     if (pent == NULL) 
-	       { 
-		 printf ("\nERROR! pent could not be initialised correctly");
-		 return; // exit the function
+	   sprintf(path, "%s",  output );
+	   pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
+	   pdir = opendir (path); // "." will refer to the current directory
+	   pent = NULL;
+	   if (pdir == NULL) // if pdir wasn't initialised correctly
+	     {     printf ("\nERROR! pdir could not be initialised correctly");  return;  } 
+	   while (  (pent = readdir (pdir))   ) // while there is still something in the directory to list
+	     {
+	       if (pent == NULL) 
+		 { 
+		   printf ("\nERROR! pent not init.correctly");
+		   return; // exit the function
+		 }
+	       
+	       TString s=pent->d_name;
+	       char totname[500];
+	       sprintf(totname,"%s%s", "~" , pent->d_name ); 
+	       printf("%03d : %s\n" , next, totname );
+	       if (TPRegexp("\\.root$").Match(s.Data())!=0){
+		 fListBoxOF->AddEntry( totname, next++ );
 	       }
-
-	     TString s=pent->d_name;
-	     char totname[500];
-	     sprintf(totname,"%s%s", "~" , pent->d_name ); 
-	     printf("%03d : %s\n" , next, totname );
-	     if (TPRegexp("\\.root$").Match(s.Data())!=0){
-	     fListBoxOF->AddEntry( totname, next++ );
-	     }
-	   }//while pent
-	 closedir (pdir);
-	 //------------------------stage 2  end ---------------------------	 
+	       if (TPRegexp("\\.sqlite$").Match(s.Data())!=0){
+		 fListBoxOF->AddEntry( totname, next++ );
+	       }
+	       if (TPRegexp("\\.mysql$").Match(s.Data())!=0){
+		 fListBoxOF->AddEntry( totname, next++ );
+	       }
+	     }//while pent
+	   closedir (pdir);
+	   //------------------------stage 2  end -------------------
 	 }//   strlen(output)>0   Solves the crash and avoids to /tmp
-
-
-
-
-
+	 //this part was the case of REMOTE_DATA_DIR
+	 
+	 //	 printf("! after remote\n%s","");
 
 	 fListBoxOF->SortByName();
 	 /*
-	  *  RESIZE THE DIRECTORY BOCX TO MAXIMUM,  flistbox2 to minimum
+	  *  RESIZE THE DIRECTORY BOCX TO MAXIMUM, flistbox2 to min
 	  */
 	 printf("RESIZING fListBoxOF%s\n","");
 	 fListBox2->Resize(1,listbox2_vsize);  // was flistbox and worked...
@@ -3343,6 +3392,7 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 //       printf("NO FILE like  <%s> WAS FOUND\n", fentry->Data() );
      }// getselected == 1 .................
 
+     //     printf("! after getselected==1\n%s","");
 
      /*
       *
@@ -3410,7 +3460,7 @@ void MyMainFrame::HandleEvents(Int_t id)
    }
   
 
-   //   printf("exited handle events %s\n","");
+     printf("exited handle events %s\n","");
 }// HandleEvents = process ======================================================
 
 
@@ -3584,7 +3634,7 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
  // char mystring[1500];// one line
  TString oneline, title=name, token;
 
-  printf("going to open filename=%s\n", name );
+  printf("gr_engine: going to open filename=%s\n", name );
 
   pFile=fopen( name ,"r" ); 
   if (pFile==NULL) {
@@ -3958,12 +4008,12 @@ double p1=fit->GetParameter(1); // take 1st degree coef.
  strcat(txta,") \n  r=");
 
 
- Double_t p[9],dp[9];
+ Double_t p[9];
  //Double_t p[9] ;
  npar=fit->GetNpar();
  for (i=0;i<npar;i++){
    p[i] =fit->GetParameter(i);
-   dp[i]=fit->GetParError(i);
+   //   dp[i]=fit->GetParError(i);
 //   cout<<p[i]<<" .... "<<i+1<<"/"<<npar<<"    "<<chi<<endl;
    sprintf(val,"(%e)",p[i]);    strcat(txt,val); strcat(txta,val);
    for (int j=0;j<i;j++){
