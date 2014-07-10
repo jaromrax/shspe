@@ -1177,7 +1177,7 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  //------------------------------------------------------
  // lets   first  openfile......
  TString *fentry=new TString( fEntry->GetText() );  // normaly ""
- fOpenFile(fentry,fListBox2);    // 1st fopenfile ---<<<<<<<<< read current directory
+ fOpenFile(fentry,fListBox2,  atoi(fEntrySIG->GetText()) );    // 1st fopenfile ---<<<<<<<<< read current directory
  TString GPADTITLE= GPAD->GetTitle();
  GPADTITLE.Append("##"); 
  GPADTITLE.Append( gDirectory->GetName()  ); 
@@ -1486,8 +1486,8 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
  	char grname[200];
 	
 	sprintf(grname,"%s.dat",  sn.Data() );
-	sprintf(commandrm,"sqmylite -r %s %d  >%s", 
-		sn.Data(), direc, grname);
+	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
+		sn.Data(), direc, atoi(fEntrySIG->GetText()),grname);
 	system(commandrm);
 
 	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
@@ -3091,7 +3091,7 @@ void MyMainFrame::HandleEvents(Int_t id)
       }
       
       printf("File OPENINIG  <%s>\n",  fn->Data()    );
-      fOpenFile(  fn   , fListBox2   );  // 2nd fopenfile<< click in id=122 listboxOF
+      fOpenFile(  fn   , fListBox2  , atoi(fEntrySIG->GetText() ) );  // 2nd fopenfile<< click in id=122 listboxOF
   //   sleep(1);
       printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
     }//1 OPEN  // OFaction==1
@@ -3267,7 +3267,8 @@ void MyMainFrame::HandleEvents(Int_t id)
        */
        TString *newfentry=fentry;newfentry->Clear();
        
-       fOpenFile(newfentry,fListBox2);   // 3rd fopenfile----------------<<<<<<<<< FROM ***openfile*** fentry
+       fOpenFile(newfentry,fListBox2, atoi(fEntrySIG->GetText()));
+    // 3rd fopenfile----------------<<<<<<<<< FROM ***openfile*** fentry
 
 
 

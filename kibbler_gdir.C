@@ -101,6 +101,7 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
   title.ReplaceAll(" ","_"); 
   printf("%d elements read. title= /%s/\n", i-1, title.Data() );
 
+  //IF ALREADY THE GRAPH EXISTS============+>
  if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
    TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
    printf("  ... same name already exists in specials tidis=%d\n",
@@ -109,9 +110,15 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
    int timdis=oldg->GetXaxis()->GetTimeDisplay();
    char timc[100]; strcpy(timc,oldg->GetXaxis()->GetTimeFormat() );
 	for (int jj=0;jj<i;jj++){
+	  //I believe that set 'new' point doesnot crash...
 	  oldg->SetPoint(jj,x[jj],y[jj]);
 	  oldg->SetPointError(jj,dx[jj],dy[jj]);
 	}//for all jj
+	//however if jj<graph points, it looks nasty
+	while(i<oldg->GetN() ){
+	  //printf("remove point %d < %d\n", i, oldg->GetN() );
+	  oldg->RemovePoint(oldg->GetN()-1);//last?
+	}
 	//	printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
 	oldg->GetXaxis()->SetTimeDisplay( timdis);
 	oldg->GetXaxis()->SetTimeFormat(timc);
@@ -375,8 +382,8 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
  *    fOPENFILE ------------------------------------------------------------------------------
  *           reacts on click on  ***openfile***
  */
-
-void fOpenFile(TString *fentry, TGListBox *fListBox2){
+//                  npints is the result of fentrySIG - to say # graph points
+void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 
   shspe_ls();  // fills only the global string "sr"
 
@@ -419,13 +426,24 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2){
       if (histofile != NULL){  // opening ROOT file  FILE EXISTS
 	printf("file seems opened %s\n","");
       } 
-    }// is .root file
+    }// is .root file    
+
+    /*   //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
+    int npoints;
+      TString *fentry=new TString( fEntrySIG->GetText() );
+      if ( fentry->CompareTo("")!=0 ){ 
+	 if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
+	   npoints=atoi( fentry->Data() );
+	 }// not a number
+       }//fentry  exists---------------possibility to change defaultsigma
+    */
     if (fentry->Index(".mysql")>0){
 	char commandrm[200];
-	char grname[200];
+	char grname[200];  
+	printf("n points = %d / %d\n", npoints, fentry->Data()  );
 	sprintf(grname,"%s.dat",  fentry->Data() );
-	sprintf(commandrm,"sqmylite -r %s 0 >%s", 
-		fentry->Data(), grname);
+	sprintf(commandrm,"sqmylite -r %s 0 %d >%s", 
+		fentry->Data(), npoints, grname);
 	system(commandrm);
 
 	TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
