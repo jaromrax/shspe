@@ -1,6 +1,8 @@
 #include "TSystem.h"
 
 
+
+
 //=================================== VERY DIRTY==COPY OF GRENG
 // but it knows to replace the specials;!!
 int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
@@ -99,15 +101,17 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
   //  title=name; DONE earlier
   title.ReplaceAll(".","_"); 
   title.ReplaceAll(" ","_"); 
+  if (ry>1){title.Append( char(96+ry) ); } // multigraphs from mysql:columns
   printf("%d elements read. title= /%s/\n", i-1, title.Data() );
 
   //IF ALREADY THE GRAPH EXISTS============+>
  if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
    TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
    printf("  ... same name already exists in specials tidis=%d\n",
-	  oldg->GetXaxis()->GetTimeDisplay());
+	  oldg->GetXaxis()->GetTimeDisplay() );
    //   printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
    int timdis=oldg->GetXaxis()->GetTimeDisplay();
+   int lcol=oldg->GetLineColor();
    char timc[100]; strcpy(timc,oldg->GetXaxis()->GetTimeFormat() );
 	for (int jj=0;jj<i;jj++){
 	  //I believe that set 'new' point doesnot crash...
@@ -122,6 +126,9 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
 	//	printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
 	oldg->GetXaxis()->SetTimeDisplay( timdis);
 	oldg->GetXaxis()->SetTimeFormat(timc);
+	//if this is already exists:
+	oldg->SetLineColor( lcol) ;
+
     return (int64_t)oldg;
 
  }else{//if not exists in groot specials :
@@ -172,6 +179,118 @@ void  RecoverTH1fromGPAD2(int &count,int64_t addr[]){
     }
  }
 }//RECOVER TH from gPad
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *  USEFUL FOR JOINING TGRAPHS INTO MULTIGRAPH........................
+ *
+ */
+//========================================================================
+void joingraphsX(const char* myname, const char* g1 , int autocolors=1 ){
+
+TMultiGraph *mg;
+ TString myname2=myname;
+ myname2.ReplaceAll(".","_"); 
+ myname2.ReplaceAll(" ","_"); 
+ myname2.ReplaceAll("_mysql_dat","_MG"); 
+ if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
+       ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
+   mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
+   if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
+   printf("TMultiGraph %s found...\n",myname2.Data() );
+ }else{
+   printf("TMultiGraph %s created\n",myname2.Data() );
+  mg=new TMultiGraph();
+  mg->SetNameTitle(myname2.Data(),myname2.Data());
+  gROOT->GetListOfSpecials()->Add( mg );
+ }
+ TGraphErrors *o;
+ o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
+ if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
+if (o==NULL){
+  printf("graph %ld NOT found...\n", (int64_t)g1 );
+ }else{
+
+  int ent=0;
+  if ( mg->GetListOfGraphs()!=NULL){
+    ent=mg->GetListOfGraphs()->GetEntries();
+  }
+  //  ent=1;
+  printf("multigraph entries =%d\n", ent);
+
+
+  //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
+  TGraphErrors *grexi=NULL;
+  TList *glog= mg->GetListOfGraphs();
+  if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
+
+  printf("TEST1 Graph name %s grexi==%d ---------------\n", 
+	 o->GetName() , grexi );
+  if (grexi!=NULL){
+    int col=grexi->GetLineColor();
+     printf("Graph name %s exists=%d, color=%d doing nothing\n",
+	    o->GetName() , grexi, col );
+     //     printf("");
+    //    mg->RecursiveRemove(grexi);
+    //    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+    //    o->SetLineColor(col);
+    //    o->SetMarkerColor(col);
+  }else{
+    printf("TEST2 Graph name %s not yet in MG=%d\n", 
+	 o->GetName() , grexi );
+    if (autocolors==1){ // for new
+      printf("setting autocolor %d\n",  ent);
+      o->SetLineColor(ent+1);
+      o->SetMarkerColor(ent+1);
+    }else{
+      printf("NO autocolor (graphs=%d)\n",  ent);
+    }
+    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+  }//=========else NEW
+  double ttmax=0.,ttmin=0.;
+  for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+    printf("%d. %s,  total=%d\n", i, 
+	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
+    TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
+    int n = ge->GetN();
+    double* x = ge->GetX();
+    int locmin = TMath::LocMin(n,x);
+    double tmin = x[locmin];
+    int locmax = TMath::LocMax(n,x);
+    double tmax = x[locmax];
+    if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
+    printf("%f  -  %f\n", tmin, tmax);
+    if (ttmax<tmax){ttmax=tmax;}
+    if (ttmin>tmin){ttmin=tmin;}
+    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
+ }// for all graphs
+  
+  if (mg->GetXaxis()!=NULL){mg->GetXaxis()->SetLimits(  ttmin,ttmax );}
+    //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
+    //  }else{
+    //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
+    //  }
+ }//graph found?
+
+ //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
+ //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
+
+}////========== void joingraphs(const char* myname, const char* g1 ){ ================
+
+
+
+
+
+
+
+
+
 
 
 
@@ -440,17 +559,34 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
     if (fentry->Index(".mysql")>0){
 	char commandrm[200];
 	char grname[200];  
+	char grname2[200];  
 	printf("n points = %d / %d\n", npoints, fentry->Data()  );
 	sprintf(grname,"%s.dat",  fentry->Data() );
 	sprintf(commandrm,"sqmylite -r %s 0 %d >%s", 
 		fentry->Data(), npoints, grname);
-	system(commandrm);
+	system(commandrm); // the graph generated now
+	sprintf(grname2,"%s.dat.cols",  fentry->Data() );
+	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
+		grname, grname2 );
+	system(commandrm); // # columns
+	//	FILE *fco=new fopen( grname2 ,"r");
 
-	TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
-	 gDirectory->Add( res );
-	printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
-	
+	 ifstream myReadFile;
+	 int outputCol=2;
+	 myReadFile.open(grname2);
+	 if (myReadFile.is_open()) {myReadFile >> outputCol;}
+	 myReadFile.close();
+	 outputCol--;
+	 for (int i=0;i<outputCol;i++){
+	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
+	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
+	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+	   gDirectory->Add( res );
+	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
+	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
+	 }// for all columns ------ of mysql output
     }// is .mysql file
+
     if (fentry->Index(".sqlite")>0){
 	char commandrm[200];
 	char grname[200];
@@ -664,14 +800,14 @@ printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", 
  max=gROOT->GetListOfSpecials()->GetEntries();
  printf("List of specials - entries == %d\n",max);
  for (int iii=0 ; iii<max ; iii++ ){
-   printf("making iii==%d <  max==%d\n", iii,  max );
+   //   printf("making iii==%d <  max==%d\n", iii,  max );
   TString sa1=gROOT->GetListOfSpecials()->At(iii)->GetName();
-  printf("NAME      === %s\n", sa1.Data()  );
+   printf("NAME      === %s\n", sa1.Data()  );
   //??  o=gDirectory->FindObject( sa1.Data() );// nesmysl,uz to preci mam.
   //  o=gROOT->GetListOfSpecials()->FindObject( sa1.Data() ); // nesmysl,uz to preci mam.
   o=(TObject*)gROOT->GetListOfSpecials()->At(iii);
   TString sa2=o->ClassName();
-  printf("CLASSNAME === %s\n", sa2.Data()  );
+  //  printf("CLASSNAME === %s\n", sa2.Data()  );
 
   // Now I have a class
     if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
@@ -683,12 +819,12 @@ printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", 
            fListBox2->AddEntry(  sa1.Data() , activentry );  // from 2 ++	 //
            activentry++;  
      }else{
-           printf("....entry %15s already exists in the list\n",sa1.Data() );
+       //           printf("....entry %15s already exists in the list\n",sa1.Data() );
      }
 	//	fileentr[nfileentr]= sa1.Data();  
        //nfileentr++;	
     }//check classes..........
-    printf("next iii=%d\n", iii);
+    //    printf("next iii=%d\n", iii);
  }//iii ----------  all specials -------
 
 
