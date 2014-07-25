@@ -230,26 +230,24 @@ if (o==NULL){
   TList *glog= mg->GetListOfGraphs();
   if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
 
-  printf("TEST1 Graph name %s grexi==%d ---------------\n", 
-	 o->GetName() , grexi );
+  printf("TEST1 Graph name %s  ---------------\n", 
+	 o->GetName() );
   if (grexi!=NULL){
     int col=grexi->GetLineColor();
-     printf("Graph name %s exists=%d, color=%d doing nothing\n",
-	    o->GetName() , grexi, col );
+    //     printf("Graph name %s , color=%d doing nothing\n", o->GetName() ,  col );
      //     printf("");
     //    mg->RecursiveRemove(grexi);
     //    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
     //    o->SetLineColor(col);
     //    o->SetMarkerColor(col);
   }else{
-    printf("TEST2 Graph name %s not yet in MG=%d\n", 
-	 o->GetName() , grexi );
+    //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
     if (autocolors==1){ // for new
-      printf("setting autocolor %d\n",  ent);
+      //      printf("setting autocolor %d\n",  ent);
       o->SetLineColor(ent+1);
       o->SetMarkerColor(ent+1);
     }else{
-      printf("NO autocolor (graphs=%d)\n",  ent);
+      //      printf("NO autocolor (graphs=%d)\n",  ent);
     }
     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
   }//=========else NEW
@@ -265,10 +263,10 @@ if (o==NULL){
     int locmax = TMath::LocMax(n,x);
     double tmax = x[locmax];
     if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
-    printf("%f  -  %f\n", tmin, tmax);
+    //    printf("%f  -  %f\n", tmin, tmax);
     if (ttmax<tmax){ttmax=tmax;}
     if (ttmin>tmin){ttmin=tmin;}
-    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
+    //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
  }// for all graphs
   
   if (mg->GetXaxis()!=NULL){mg->GetXaxis()->SetLimits(  ttmin,ttmax );}
@@ -349,8 +347,8 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	    //      titles are conserved
 	    char xtith[200];
 	    char ytith[200];
-	    char xtitc[200];
-	    char ytitc[200];
+	    //  char xtitc[200];
+	    //  char ytitc[200];
 	    TH1 *h2; // current bidim
 	    int count=1;
 	    int64_t addr[MAXPRIMITIVES];addr[0]=0;
@@ -560,7 +558,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	char commandrm[200];
 	char grname[200];  
 	char grname2[200];  
-	printf("n points = %d / %d\n", npoints, fentry->Data()  );
+	printf("n points = %d / %s\n", npoints, fentry->Data()  );
 	sprintf(grname,"%s.dat",  fentry->Data() );
 	sprintf(commandrm,"sqmylite -r %s 0 %d >%s", 
 		fentry->Data(), npoints, grname);

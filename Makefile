@@ -10,7 +10,7 @@ mpath2 := $(shell echo  $(mpath) | sed  's/:/ /g')
 
 
 all:  shspe.C 
-	root -n -b -q  compile.C  ; echo ECHO 
+	root -n -b -q  compile.C  
 
 clean:
 	rm shspe_C.so
