@@ -1426,13 +1426,93 @@ void  MyMainFrame::RefreshAll(){
     //   printf( "refr:%2d  %s\n", ii,  sn.Data()  );
 
     if ( sn.Index("TPad")==0 ){  // there is TPad :< there 
-      
-      //     printf(" Refresh - found active gPad that is inside the GPAD %s\n\n" , "");
+      TPad *tpod=(TPad*)prim->At(ii);
+      printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
+      for (int j=0;j<tpod->GetListOfPrimitives()->LastIndex();j++){
+	printf("--in tpad: %s\n",
+	      tpod->GetListOfPrimitives()->At(j)->ClassName()
+	      );
+	if ( strcmp("TMultiGraph",tpod->GetListOfPrimitives()->At(j)->ClassName()) ==0){
+	  printf("found tmultigraph in  sub tpad%s\n", "" );
+      TString sn2=tpod->GetListOfPrimitives()->At(j)->GetName();
+      sn2.ReplaceAll("_MG",".mysql");
+ 	char commandrm[200];
+ 	char grname[200];
+	char grname2[200];  
+	
+	sprintf(grname,"%s.dat",  sn2.Data() );
+	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
+		sn2.Data(), 0, atoi(fEntrySIG->GetText()),grname);
+	system(commandrm);
+	printf("%s\n", commandrm);
+	sprintf(grname2,"%s.dat.cols",  sn2.Data() );
+	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
+		grname, grname2 );
+	system(commandrm); // # columns
+	printf("%s\n", commandrm);
+
+	 ifstream myReadFile;
+	 int outputCol=2;
+	 myReadFile.open(grname2);
+	 if (myReadFile.is_open()) {myReadFile >> outputCol;}
+	 myReadFile.close();
+	 outputCol--;
+	 for (int i=0;i<outputCol;i++){
+	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
+	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
+	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+	   gDirectory->Add( res );
+	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
+	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
+	 }// for all columns ------ of mysql output
+	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 //	 return;
+
+	}//it was tmultigraph under tpad
+	
+      }//for all subobjects---looking for tmultigraph
       ((TCanvas*)prim->At(ii))->Modified();
       ((TCanvas*)prim->At(ii))->Update();
     }//if TPad
+
+    // if ( sn.Index("TMultiGraph")==0 ){  // there is single multigraph
+    //   printf("multigraph found in refreshall \n%s","");
+    //   TString sn2=prim->At(ii)->GetName();
+    //   sn2.ReplaceAll("_MG",".mysql");
+    // 	char commandrm[200];
+    // 	char grname[200];
+    // 	char grname2[200];  
+	
+    // 	sprintf(grname,"%s.dat",  sn.Data() );
+    // 	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
+    // 		sn.Data(), 0, atoi(fEntrySIG->GetText()),grname);
+    // 	system(commandrm);
+    // 	printf("%s\n", commandrm);
+    // 	sprintf(grname2,"%s.dat.cols",  sn.Data() );
+    // 	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
+    // 		grname, grname2 );
+    // 	system(commandrm); // # columns
+    // 	printf("%s\n", commandrm);
+
+    // 	 ifstream myReadFile;
+    // 	 int outputCol=2;
+    // 	 myReadFile.open(grname2);
+    // 	 if (myReadFile.is_open()) {myReadFile >> outputCol;}
+    // 	 myReadFile.close();
+    // 	 outputCol--;
+    // 	 for (int i=0;i<outputCol;i++){
+    // 	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
+    // 	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
+    // 	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+    // 	   gDirectory->Add( res );
+    // 	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
+    // 	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
+    // 	 }// for all columns ------ of mysql output
+    // 	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+    // 	 return;
+    // }//MULTIGRAPH THERE
  }// for   ii (prim
- 
+ //============one extra thing is mysql multigraph========
 }// REFRESH   ALL =========================
 
 
@@ -1483,6 +1563,11 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	printf("MYSQL FOUND\n%s","");
 	sn.ReplaceAll("_mysql_datb",".mysql");
 	sn.ReplaceAll("_mysql_datc",".mysql");
+	sn.ReplaceAll("_mysql_datd",".mysql");
+	sn.ReplaceAll("_mysql_date",".mysql");
+	sn.ReplaceAll("_mysql_datf",".mysql");
+	sn.ReplaceAll("_mysql_datg",".mysql");
+	sn.ReplaceAll("_mysql_dath",".mysql");
 	sn.ReplaceAll("_mysql_dat",".mysql");
  	char commandrm[200];
  	char grname[200];
