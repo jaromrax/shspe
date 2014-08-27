@@ -267,9 +267,14 @@ if (o==NULL){
     if (ttmax<tmax){ttmax=tmax;}
     if (ttmin>tmin){ttmin=tmin;}
     //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
- }// for all graphs
+  }// for all graphs
   
-  if (mg->GetXaxis()!=NULL){mg->GetXaxis()->SetLimits(  ttmin,ttmax );}
+  if (mg->GetXaxis()!=NULL){ // if not drawn, no possibility to change-refresh!
+    mg->GetXaxis()->SetLimits(  ttmin,ttmax );
+    mg->GetXaxis()->SetTimeDisplay(1);
+    mg->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+  }
+  
     //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
     //  }else{
     //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
