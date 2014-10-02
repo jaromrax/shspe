@@ -3,6 +3,17 @@ shspe
 
 root macro to SHow SPEctra
 
+**download from git**
+
+this is a standard procedure, (make and) go to some directory and then:
+```
+ git init
+ git remote add origin https://github.com/jaromrax/shspe
+ git pull origin master
+```
+
+you have the sources there
+
 **shspe compilation**
 
 you may install the *~/.rootrc* and *~/.rootlogon* with
