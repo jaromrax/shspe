@@ -18,15 +18,15 @@ gSystem->Load("shspe_C.so");
 gROOT->ProcessLine("cout<<endl<<\" ==============================================================\"<<endl;");
 
 //====================================== automatic library loading 
-FILE *fff=fopen("load_libs.C", "r" );
+FILE *fff=fopen("autoload_libs.C", "r" );
 if (fff!=NULL){
  fclose(fff);
  fff=NULL;
- gROOT->ProcessLine("cout<<\" ....AUTOMATIC LOAD   .x load_libs.C\"<<endl<<endl; ");
- gROOT->ProcessLine(".x load_libs.C ");	   
- gROOT->ProcessLine("cout<<\" ....finished         .x load_libs.C\"<<endl<<endl; ");
+ gROOT->ProcessLine("cout<<\" ....AUTOMATIC LOAD   .x autoload_libs.C\"<<endl<<endl; ");
+ gROOT->ProcessLine(".x autoload_libs.C ");	   
+ gROOT->ProcessLine("cout<<\" ....finished         .x autoload_libs.C\"<<endl<<endl; ");
 }else{
- gROOT->ProcessLine("cout<<\" ok....no load_libs.C  found to execute\"<<endl<<endl; ");	
+ gROOT->ProcessLine("cout<<\" ok....no autoload_libs.C  found to execute\"<<endl<<endl; ");	
 }
 
 gROOT->ProcessLine("cout<<\"......... ending  root logon file.rootlogon...........\"<<endl");
