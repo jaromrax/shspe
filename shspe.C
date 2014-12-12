@@ -220,12 +220,12 @@ void savecanvas(const char *filenam, int slot=0){
   sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );
   sprintf( appcha,".%s", "ps" );    s_p.Append(  appcha  );
   sprintf( appcha,".%s", "root" );  s_r.Append(  appcha  );
-  sprintf( appcha,".%s", "png" );   s_png.Append(appcha );
+  sprintf( appcha,".%s", "jpg" );   s_png.Append(appcha );
   }else{
   sprintf( appcha,"_%d.%s", slot, "eps" );   s_e.Append(  appcha );
   sprintf( appcha,"_%d.%s", slot, "ps" );    s_p.Append(  appcha  );
   sprintf( appcha,"_%d.%s", slot, "root" );  s_r.Append(  appcha  );
-  sprintf( appcha,"_%d.%s", slot, "png" );   s_png.Append(appcha );
+  sprintf( appcha,"_%d.%s", slot, "jpg" );  s_png.Append(appcha );
   }
  
   if (gROOT->GetListOfCanvases()->At(0) ==NULL){printf("%d canvases\n",0);return;}
