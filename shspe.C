@@ -707,7 +707,8 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	 )
 	 ){  // LEFT CLICK - SUM DATA
        TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-       printf("ADDING TO MARKS, now GetN() will = %d \n", g->GetN()+1 );
+       printf("ADDING TO MARKS, now GetN() will = %d \n",
+          g->GetN()+1 );
        //       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
        //       Double_t yp  = gPad->PadtoY(gPad->AbsPixeltoY(y));
        //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma
@@ -735,6 +736,21 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
        //       g->Sort(&TGraph::CompareRadius); // Sort will be extra
        //  g->Sort();
 
+       //=================listpoints
+       for (int i=0; i<g->GetN(); i++){
+	 printf("%2d   %7.3f  %7.3f\n",
+		i,
+		g->GetX()[i],
+		g->GetY()[i]
+		);
+       }
+       if (g->GetN()==2){
+	  printf("&& (sum>%7.3f) && (sum<%7.3f)    %7.3f  %7.3f \n",
+		 g->GetX()[0],g->GetX()[1],
+		 g->GetY()[0],g->GetY()[1]
+		);
+       }
+       //=====================list
        RefreshAll();
 
      }//11---------LEFT CLICK 
@@ -1427,11 +1443,11 @@ void  MyMainFrame::RefreshAll(){
 
     if ( sn.Index("TPad")==0 ){  // there is TPad :< there 
       TPad *tpod=(TPad*)prim->At(ii);
-      printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
+      //printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
       for (int j=0;j<tpod->GetListOfPrimitives()->LastIndex();j++){
-	printf("--in tpad: %s\n",
+	/*	printf("--in tpad: %s\n",
 	      tpod->GetListOfPrimitives()->At(j)->ClassName()
-	      );
+	      );*/
 	if ( strcmp("TMultiGraph",tpod->GetListOfPrimitives()->At(j)->ClassName()) ==0){
 	  printf("found tmultigraph in  sub tpad%s\n", "" );
       TString sn2=tpod->GetListOfPrimitives()->At(j)->GetName();
