@@ -392,15 +392,28 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	    }// null titles
 
 	    hc->SetLineColor(1); hc->SetLineStyle(1);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
+	    TCutG *hcbis=(TCutG*)hc->Clone("cuttmp");
+
 	    if ( strcmp(hc->GetVarX(),xtith)!=0){
 	      printf("!!! x-axis doesnot match %s x %s\n",xtith,hc->GetVarX());
 	      hc->SetLineColor(2); hc->SetLineStyle(2);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
+	      TString *xtitS=new TString(xtith);
+	      xtitS->ReplaceAll( hc->GetVarX(), "x" );
+	      xtitS->ReplaceAll( hc->GetVarY(), "y" );
+	      TFormula *newX=new TFormula( "transx", xtitS->Data() );
+	      for (int ii=0;ii<hc->GetN();ii++){
+		// xtith contains the transformation V022+V006
+		double x=hc->GetX()[ii];
+		double y=hc->GetY()[ii];
+		hcbis->GetX()[ii]=	newX->Eval(x,y);
+	      }
 	    }
 	    if ( strcmp(hc->GetVarY(),ytith)!=0){
 	      printf("!!! y-axis doesnot match %s x %s\n",ytith,hc->GetVarY());
 	      hc->SetLineColor(2); hc->SetLineStyle(2);hc->SetMarkerStyle(7);hc->SetLineWidth(2);
 	    }
 	    hc->Draw("LP");//works with TCutG
+	    if (hcbis!=NULL)hcbis->Draw("LP");
 	  }
 
 
