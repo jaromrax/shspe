@@ -1,20 +1,16 @@
-#
-# toto je makefile. bude obohacen o ROOTSYS path a macro
-#  DynamicPath contains the place  this Makefile puts  our *so libraries!
-#
-rs   := $(shell echo $$ROOTSYS)
-date := $(shell date +%Y%m%d_%H%M%S)
-mpath := $(shell cat ~/.rootrc | grep -v -e "^\#" | grep Unix | grep DynamicPath | awk '{print $$2}')
-mpath2 := $(shell echo  $(mpath) | sed  's/:/ /g')
 
+rs:=$(shell echo $$ROOTSYS)
+date:=$(shell date +%Y%m%d_%H%M%S)
+mpath := $(shell cat ~/.rootrc | grep -v -e "^\#" | grep Unix | grep DynamicPath | awk '{print $$2}')
+mpath2:=$(shell echo  $(mpath) | sed  's/:/ /g')
 
 
 all:  shspe.C 
-	$(rs)/bin/root -n -b -q  compile.C  
+	$(rs)/bin/root -n -b -q  compile.C  >/dev/null
+
 
 clean:
 	rm shspe_C.so
-
 
 
 install: shspe_C.so 

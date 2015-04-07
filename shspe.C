@@ -1563,8 +1563,8 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
  {
    TString ss=XY;
    double x1=0.,x2=0.,dx, ox1=0.,ox2=0., factorl=factor;
-   int  nowbin, f1, l1, finbin, predbin=0.;
-
+   int    predbin=0.;
+   //   nowbin,f1,l1, finbin,
 
    if (ss.CompareTo("X")==0){
      //      TString sc=h->ClassName();
@@ -1633,6 +1633,7 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	system(commandrm);
 
 	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	r->GetN();
 	 return;
       }//(sn.Index("_sqlite_dat")>0
 
@@ -1643,14 +1644,14 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
      x1=h->GetXaxis()->GetBinCenter( h->GetXaxis()->GetFirst() );
      x2=h->GetXaxis()->GetBinCenter( h->GetXaxis()->GetLast() );
      ox1=x1;ox2=x2;
-     nowbin=h->GetXaxis()->FindBin( x2 ) - h->GetXaxis()->FindBin( x1 );
+     //     nowbin=h->GetXaxis()->FindBin( x2 ) - h->GetXaxis()->FindBin( x1 );
      //debug          
      //  printf("\nOrig   :   %f  %f        fac=%f   mvzm=%f /%s\n", x1,x2,  factorl, mvzm, h->GetName() );
 	    //	    if ((nowbin<4) && (x2-x1>ox2-ox1) ){factorl=factorl*2;}
      dx=(x2-x1)*factorl;   x1=x1+dx; x2=x2+ mvzm*dx;
      if (x2>h->GetXaxis()->GetXmax() ){ x2=h->GetXaxis()->GetXmax(); }
      if (x1<h->GetXaxis()->GetXmin() ){ x1=h->GetXaxis()->GetXmin(); }
-     f1=h->GetXaxis()->GetFirst(); l1=h->GetXaxis()->GetLast();
+     //     f1=h->GetXaxis()->GetFirst(); l1=h->GetXaxis()->GetLast();
      predbin=h->GetXaxis()->FindBin( x2 ) - h->GetXaxis()->FindBin( x1 );
  }
    if (ss.CompareTo("Y")==0){
@@ -1658,14 +1659,14 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
      x1=h->GetYaxis()->GetBinCenter( h->GetYaxis()->GetFirst() );
      x2=h->GetYaxis()->GetBinCenter( h->GetYaxis()->GetLast() );
       ox1=x1;ox2=x2;
-    nowbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
+      //    nowbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
     //debug
     //            printf("\n movexy...Orig: %f  %f       fac=%f   mvzm=%f\n", x1,x2,  factorl, mvzm);
 	    //	    if ((nowbin<4) && (x2-x1>ox2-ox1) ){factorl=factorl*2;}
      dx=(x2-x1)*factorl;   x1=x1+dx; x2=x2+mvzm*dx;
        if (x2>h->GetYaxis()->GetXmax() ){ x2=h->GetYaxis()->GetXmax(); }
      if (x1<h->GetYaxis()->GetXmin() ){ x1=h->GetYaxis()->GetXmin(); }
-     f1=h->GetYaxis()->GetFirst(); l1=h->GetYaxis()->GetLast();
+     //     f1=h->GetYaxis()->GetFirst(); l1=h->GetYaxis()->GetLast();
      predbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
    }
 
@@ -1676,7 +1677,7 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
    //if ( (factorl>0.) && (mvzm<0.) && (l1-f1<15)  ){}else{
    if (predbin<05 &&  (x2-x1 < ox2-ox1) ){}else{ // MUST BE move by 15%
      h->SetAxisRange(x1,x2, XY);
-     finbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
+     //     finbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
      /* if (  (finbin<5) && (finbin<nowbin) ){//BACK
        h->SetAxisRange(ox1,ox2, XY);
        }*/
@@ -2156,11 +2157,12 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       desc.Append( histo->GetName() );
       //       printf(" canvas - new description == %s\n", desc.Data()  );
       desc.Append( "    range:" );
-      double x[5],y[5]; //unused , dx, dy;
+      double x[5];
+      //      double y[5]; //unused , dx, dy;
       x[0]=((TFrame*)gPad->GetFrame())->GetX1();
       x[1]=((TFrame*)gPad->GetFrame())->GetX2();
-      y[0]=((TFrame*)gPad->GetFrame())->GetY1();
-      y[1]=((TFrame*)gPad->GetFrame())->GetY2();
+      //      y[0]=((TFrame*)gPad->GetFrame())->GetY1();
+      //      y[1]=((TFrame*)gPad->GetFrame())->GetY2();
       desc+=x[0];
       desc.Append( "->" );
       desc+=x[1];
@@ -2302,28 +2304,35 @@ void MyMainFrame::fSELClone2Rint(int id,TString *fentry){
       //fListBox2->GetSelected();
 
 TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
- char ch[100];
- sprintf( ch, "%s_cp", o->GetName() );
- o->Clone( ch );
+ char chtr[500]; 
+ char ch[500]; 
+ sprintf( chtr, "%s" ,  gDirectory->GetName() ); // trim
+ chtr[6]='\0';
+ printf("Trimstring = /%s/\n",chtr);
+ sprintf( ch, "%s_%s", o->GetName() ,  chtr );
+ printf("Finstring = /%s/\n",ch);
+ TObject *o2=o->Clone( ch );
+ printf("Cloned %d\n",o2);
+ //I do direct clone ...  TObject *o2=gDirectory->FindObject( ch );
 
- TObject *o2=gDirectory->FindObject( ch );
-
- sprintf( ch, "%s _{(from %s)}", o2->GetTitle(), gFile->GetName()  );
+ // not nice ...sprintf( ch, "%s_{(from %s)}", o2->GetTitle(), gFile->GetName()  );
 
  if (  strstr( o2->ClassName(),"TH1") || strstr( o2->ClassName(),"TH2")  ){
    TH1 *hhh=(TH1*)o2;
-   hhh->SetTitle( ch );
+   // not nice..  hhh->SetTitle( ch );  //no
+   gROOT->GetDirectory("Rint:/")->Add( hhh );
+ }else{
+   // can fall?
+ gROOT->GetDirectory("Rint:/")->Add( o2 );
  }
 
 
- gROOT->GetDirectory("Rint:/")->Add( o2 );
-
-  printf("...clone the %s to Rint:/   ... memory: name:%s /title:%s\n", 
+ /*  printf("...clone the %s to Rint:/   ... memory: name:%s /title:%s\n", 
 	 fListBox2->GetSelectedEntry()->GetTitle(),
 	 o2->GetName(),
 	 o2->GetTitle()
 	 );
-
+ */
 }//----------------------------------Clone2Rint
 
   
