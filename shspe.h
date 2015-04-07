@@ -192,7 +192,8 @@ int
   SELSaveCanvas= 28,
   SELbar5=       29,
   SELClearAll=   30,
-  SELUnzoomAll=  31;
+  SELDivCanv=  31;
+//  SELUnzoomAll=  31;
 //  SELZoomAll=29;
 
 //=======================================class for controls
@@ -336,7 +337,8 @@ public:
   void fSELLogy(int id,TString *fentry);
   void fSELLogz(int id,TString *fentry);
   void fSELUnzoom(int id,TString *fentry);
-  void fSELUnzoomAll(int id,TString *fentry);
+  void fSELDivCanv(int id,TString *fentry);
+  //  void fSELUnzoomAll(int id,TString *fentry);
 
   void fSELFindPks(int id,TString *fentry);
   void fSELDelPks(int id,TString *fentry);

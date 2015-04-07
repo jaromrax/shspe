@@ -830,25 +830,30 @@ void  MyMainFrame::FillMainMenu(){
    if (PAGE==2){
    sprintf(tmp, "%i_***Next/Page***", SELNextPage);fListBox->AddEntry(tmp, 1);
    // sprintf(tmp, "%i----------",SELbar3 );       fListBox->AddEntry(tmp,     2);
-   sprintf(tmp, "%i_Grid", SELGrid);               fListBox->AddEntry(tmp,   SELGrid      -SELGrid+2);
    sprintf(tmp, "%i_DateTime,Calib", SELDateTime); fListBox->AddEntry(tmp,   SELDateTime  -SELGrid+2);
+   sprintf(tmp, "%i_Grid", SELGrid);               fListBox->AddEntry(tmp,   SELGrid      -SELGrid+2);
    sprintf(tmp, "%i_Logy", SELLogy);               fListBox->AddEntry(tmp,   SELLogy      -SELGrid+2);
    sprintf(tmp, "%i_Logz", SELLogz);               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
    //   sprintf(tmp, "%i_Div,LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    sprintf(tmp, "%i----------",SELbar4 );          fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
-   sprintf(tmp, "%i_Clear    ",SELClear );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
-   sprintf(tmp, "%i_RefreshAll  ",SELRefresh );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
 
-   sprintf(tmp, "%i_Unzoom  ",SELUnzoom );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
    sprintf(tmp, "%i_LoadCanv  ",SELDivide );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
-
-   sprintf(tmp, "%i_SaveSpe  ",SELSaveSpectra );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
    sprintf(tmp, "%i_SaveCanv  ",SELSaveCanvas );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
+
+   sprintf(tmp, "%i_SaveAllSpectra  ",SELSaveSpectra );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
+
+   sprintf(tmp, "%i_DivCanv,RangeAll",SELDivCanv);fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "%i_Unzoom  ",SELUnzoom );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+
+   sprintf(tmp, "%i_RefreshAll  ",SELRefresh );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
+   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "%i_Clear    ",SELClear );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
    sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "%i_ClearAll ",SELClearAll );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
-   //   sprintf(tmp, "%i_Unzoom,RangeAll",SELUnzoomAll);fListBox->AddEntry(tmp,   SELUnzoomAll-SELGrid+2  );
-   sprintf(tmp, "%i_DivCanv,RangeAll",SELUnzoomAll);fListBox->AddEntry(tmp,   SELUnzoomAll-SELGrid+2  );
+
+
+
    // sprintf(tmp, "%i_ZoomAll  "  ,SELZoomAll );  fListBox->AddEntry(tmp,   SELZoomAll-SELGrid+2  );
 
    } // PAGE2
@@ -1206,8 +1211,10 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  GPAD->Divide( 1 , 1 ,0.002,0.002, 0);  
  GPAD->Modified();GPAD->Update();
  GPAD->cd(1);
- GPAD->GetPad(1)->SetFillColor( 0 );
- GPAD->GetPad(1)->SetFillStyle( 2 );
+ // maybe this was a problem with labels not redrawn.......
+ // GPAD->GetPad(1)->SetFillColor( 0 );
+ // GPAD->GetPad(1)->SetFillStyle( 2 );
+ //-----------------------------------------------------------
 	GPAD->GetPad(1)->SetBorderSize(1);// TEST TO HAVE BETTER MODE
 	GPAD->GetPad(1)->SetBorderMode(1);// TEST TO HAVE BETTER MODE
 	GPAD->GetPad(1)->Modified();// force the color
@@ -2517,7 +2524,8 @@ void MyMainFrame::fSELUnzoom(int id,TString *fentry){
  *           2/  divide
  */
 
-void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){ 
+//void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){ 
+void MyMainFrame::fSELDivCanv(int id,TString *fentry){ 
   printf("item %2d:%s.... sel unzoom all\n",id,fentry->Data());  
   // Zrejme variantni moznost vyhledani TH1 vsude............... NEVER USE UNZOOMALL
   
@@ -2526,8 +2534,14 @@ void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){
   // nevim proc allth1s  SpiderAllTH1s( count, addr );   //  SPIDER ALL THE  TREE DOWN FROM THE MAIN  GPAD
   printf("count =  %d \n", count );
   //  TPad* tempo=(TPad*)gPad;
-  if (strlen(fEntry->GetText()) >0 ){// RANGE ALL
-    printf("TEXT MEANS RANGE ALL\n%s" , "");
+
+  //  if (strlen(fEntry->GetText()) >0 ){// RANGE ALL
+  //    printf("TEXT MEANS RANGE ALL\n%s" , "");
+
+  if ( (strlen(fEntry->GetText()) >0)&&( strstr(fEntry->GetText(),"-")!=NULL)   ){// RANGE ALL
+    printf("'-' inside text  MEANS RANGE ALL\n%s" , "");
+
+
 
   ///////////////////////////////////////////////////////////RANGEALL START
   char sr[100];  int range_ok=0;
@@ -2581,7 +2595,13 @@ void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){
   }// if (strlen(fEntry->GetText()) >0 )
   else{// IF NOT RANGE ALL===>>  PUT selDIVIDE =============
     //not divide anymore....    fSELDivide(id, fentry );
-
+    int targetpads=0;
+    if (  (strlen(fEntry->GetText())>0) && (atoi(fEntry->GetText())>0) ){
+      targetpads= atoi(fEntry->GetText()) ;
+      printf( "I WANT %d PADS...\n", targetpads );
+    }else{
+      printf("click for pads %d \n",targetpads);
+    }
    //    TCanvas *GPAD; // THIS IS KEY 1 to identify histogram
    //      GPAD=
       GPAD->GetCanvas()->Clear();
@@ -2591,6 +2611,24 @@ void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){
       float  dxy=0.002;
       GPAD->Clear();
       //printf("=== divide_mod_flag %d\n", divide_mod_flag   );
+      switch( targetpads ){
+      case 1:
+	divide_mod_flag=13; break;
+      case 2:
+	divide_mod_flag=0; break;
+      case 3:
+	divide_mod_flag=6; break;
+      case 4:
+	divide_mod_flag=4; break;
+      case 6:
+	divide_mod_flag=8; break;
+      case 9:
+	divide_mod_flag=9; break;
+      case 12:
+	divide_mod_flag=10; break;
+      case 16:
+	divide_mod_flag=11; break;
+      }
 	 switch(divide_mod_flag){
 	 case 0:
 	     divide_mod_flag++;
@@ -2711,7 +2749,7 @@ void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){
 
   RefreshAll();           /////  /////////
 
-}//fSELUnzoomAll - but now does Divide Canvas   DivCanv,RangeAll
+}// fSELDivCanv//fSELUnzoomAll - but now does Divide Canvas   DivCanv,RangeAll
 
 
 
@@ -3346,7 +3384,8 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected==SELSaveSpectra ){ fSELSaveSpectra(flistbox_selected,fentry);  }
   if (flistbox_selected== SELSaveCanvas ){ fSELSaveCanvas(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELClearAll   ){ fSELClearAll(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELUnzoomAll  ){ fSELUnzoomAll(flistbox_selected,fentry);  }
+  //  if (flistbox_selected== SELUnzoomAll  ){ fSELUnzoomAll(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELDivCanv  ){ fSELDivCanv(flistbox_selected,fentry);  }
 
   }// TLIST    1   id==89
 
