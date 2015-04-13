@@ -838,12 +838,12 @@ void  MyMainFrame::FillMainMenu(){
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    sprintf(tmp, "%i----------",SELbar4 );          fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
-   sprintf(tmp, "%i_LoadCanv  ",SELDivide );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
-   sprintf(tmp, "%i_SaveCanv  ",SELSaveCanvas );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
+   sprintf(tmp, "%i_LoadCanvas  ",SELDivide );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
+   sprintf(tmp, "%i_SaveCanvas  ",SELSaveCanvas );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
    sprintf(tmp, "%i_SaveAllSpectra  ",SELSaveSpectra );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
 
-   sprintf(tmp, "%i_DivCanv,RangeAll",SELDivCanv);fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "%i_DivCanvas,RangeAll",SELDivCanv);fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
    sprintf(tmp, "%i_Unzoom  ",SELUnzoom );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
 
    sprintf(tmp, "%i_RefreshAll  ",SELRefresh );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
@@ -2611,6 +2611,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       float  dxy=0.002;
       GPAD->Clear();
       //printf("=== divide_mod_flag %d\n", divide_mod_flag   );
+      fEntry->SetText(""); // I want to clear
       switch( targetpads ){
       case 1:
 	divide_mod_flag=13; break;
@@ -2785,14 +2786,28 @@ void MyMainFrame::fSELLogz(int id,TString *fentry){
 //                   divide is deprecated, loadcanvas remains
 //
 void MyMainFrame::fSELDivide(int id,TString *fentry){ 
-   printf("item %2d:%s  - divide ... deprecated, loadcanvas NOW\n",id,fentry->Data());
+   printf("item %2d:%s=fentry  - divide ... deprecated, loadcanvas NOW\n",id,fentry->Data());
+   //   char sr[100];sprintf( sr, "%s", fEntry->GetText() );
+   // no    TString sr=fEntry->GetText();  
+   TString *xfentry=new TString( fEntry->GetText() );  
+   int gofile=0;
+   if ( ( xfentry->CompareTo("")!=0)  ){ gofile=1;}
+   switch(  atoi( xfentry->Data() ) ){
 
-       TString sr=fEntry->GetText(); 
-
-
-       if ( (sr.CompareTo("")!=0)  ){ // HARD WAY - LOAD ANY FILENAME
-	 Desktop_setup_savecanvas(  (const char*)sr.Data()  );
-	  fEntry->SetText("");
+       case 1: CURRENT_SLOT=1; gofile=0;break;
+       case 2: CURRENT_SLOT=2; gofile=0;break;
+       case 3: CURRENT_SLOT=3; gofile=0;break;
+       case 4: CURRENT_SLOT=4; gofile=0;break;
+       case 5: CURRENT_SLOT=5; gofile=0;break;
+       case 6: CURRENT_SLOT=6; gofile=0;break;
+       case 7: CURRENT_SLOT=7; gofile=0;break;
+       case 8: CURRENT_SLOT=8; gofile=0;break;
+       case 9: CURRENT_SLOT=9; gofile=0;break;
+       }
+   fEntry->SetText("");
+       if ( gofile==1  ){ // HARD WAY - LOAD ANY FILENAME
+	 Desktop_setup_savecanvas(  (const char*)xfentry->Data()  );
+	 fEntry->SetText("");
 
 	  //       }else  if ( fChk1->GetState()==1 ){  // MULTI I IS  CHECKED
        }else  if ( 1==1 ){  // ALWAYS USE LOADCANV _ CYCLE
@@ -2814,7 +2829,7 @@ void MyMainFrame::fSELDivide(int id,TString *fentry){
 	     break;}
 	 }
 
-	   printf("###### %s ##### AFTER DECIMA \n", filename);
+	 printf("###### %s ##### AFTER DECIMA \n", filename);
 
 	 //-------------------SHOW #
 	   //	 TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, kGray ,?);
