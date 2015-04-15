@@ -830,27 +830,28 @@ void  MyMainFrame::FillMainMenu(){
    if (PAGE==2){
    sprintf(tmp, "%i_***Next/Page***", SELNextPage);fListBox->AddEntry(tmp, 1);
    // sprintf(tmp, "%i----------",SELbar3 );       fListBox->AddEntry(tmp,     2);
-   sprintf(tmp, "%i_DateTime,Calib", SELDateTime); fListBox->AddEntry(tmp,   SELDateTime  -SELGrid+2);
-   sprintf(tmp, "%i_Grid", SELGrid);               fListBox->AddEntry(tmp,   SELGrid      -SELGrid+2);
-   sprintf(tmp, "%i_Logy", SELLogy);               fListBox->AddEntry(tmp,   SELLogy      -SELGrid+2);
-   sprintf(tmp, "%i_Logz", SELLogz);               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
+   sprintf(tmp, "DateTime,Calib"); fListBox->AddEntry(tmp,   SELDateTime  -SELGrid+2);
+   sprintf(tmp, "Grid");               fListBox->AddEntry(tmp,   SELGrid      -SELGrid+2);
+   sprintf(tmp, "Logy");               fListBox->AddEntry(tmp,   SELLogy      -SELGrid+2);
+   sprintf(tmp, "Logz");               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
    //   sprintf(tmp, "%i_Div,LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
-   sprintf(tmp, "%i----------",SELbar4 );          fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
+   sprintf(tmp, "----------" );          fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
-   sprintf(tmp, "%i_LoadCanvas  ",SELDivide );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
-   sprintf(tmp, "%i_SaveCanvas  ",SELSaveCanvas );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
+   sprintf(tmp, "LoadCanvas  " );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
+   sprintf(tmp, "SaveCanvas  " );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
-   sprintf(tmp, "%i_SaveAllSpectra  ",SELSaveSpectra );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
+   sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
 
-   sprintf(tmp, "%i_DivCanvas,RangeAll",SELDivCanv);fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
-   sprintf(tmp, "%i_Unzoom  ",SELUnzoom );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   sprintf(tmp, "DivCanvas,RangeAll");fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "Unzoom  " );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
-   sprintf(tmp, "%i_RefreshAll  ",SELRefresh );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
-   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
-   sprintf(tmp, "%i_Clear    ",SELClear );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
-   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
-   sprintf(tmp, "%i_ClearAll ",SELClearAll );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
+   sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
+   sprintf(tmp, "----------" );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "Clear    " );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
+   sprintf(tmp, "ClearAll " );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
 
 
 
@@ -3296,7 +3297,8 @@ void MyMainFrame::HandleEvents(Int_t id)
 
 
 
-    if (OFaction==2){// SAVE NEW FILE //----------------------------
+    if (1==2){// SAVE NEW FILE //----------------------------
+//  if (OFaction==2){// SAVE NEW FILE //----------------------------
        TDirectory *curr=(TDirectory*)gDirectory;// to return back 
 
        // MUSI tam byt    fentry.  Jinak to blbne s ***openfile***
@@ -3401,6 +3403,7 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected== SELClearAll   ){ fSELClearAll(flistbox_selected,fentry);  }
   //  if (flistbox_selected== SELUnzoomAll  ){ fSELUnzoomAll(flistbox_selected,fentry);  }
   if (flistbox_selected== SELDivCanv  ){ fSELDivCanv(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELClone2Rint2     ){ fSELClone2Rint(flistbox_selected,fentry);  }       
 
   }// TLIST    1   id==89
 
@@ -3490,7 +3493,8 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 int next=0;
 	 // *** necessary to keep SORTing
 	 fListBoxOF->AddEntry( "***cancel ***", next++ );
-	 fListBoxOF->AddEntry( "*SaveToNewFile *", next++ ); // SORRY - until doubleclicked solves....
+	  fListBoxOF->AddEntry( "*S        *", next++ ); // SORRY - until doubleclicked solves....
+	  //	  fListBoxOF->AddEntry( "*SaveToNewFile *", next++ ); // SORRY - until doubleclicked solves....
 	 fListBoxOF->AddEntry( "*Memory *", next++ ); //   #HERE 
 	 while (  (pent = readdir (pdir))   ) // while in dir
 	   {
