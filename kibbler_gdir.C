@@ -198,7 +198,7 @@ TMultiGraph *mg;
  TString myname2=myname;
  myname2.ReplaceAll(".","_"); 
  myname2.ReplaceAll(" ","_"); 
- myname2.ReplaceAll("_mysql_dat","_MG"); 
+ myname2.ReplaceAll("_mysql_dat","_mysql_MG"); 
  if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
        ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
    mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );

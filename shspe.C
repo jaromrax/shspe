@@ -1457,9 +1457,12 @@ void  MyMainFrame::RefreshAll(){
 	      tpod->GetListOfPrimitives()->At(j)->ClassName()
 	      );*/
 	if ( strcmp("TMultiGraph",tpod->GetListOfPrimitives()->At(j)->ClassName()) ==0){
-	  printf("found tmultigraph in  sub tpad%s\n", "" );
+	  printf("found tmultigraph in  sub tpad===================%s\n", "" );
+	  
       TString sn2=tpod->GetListOfPrimitives()->At(j)->GetName();
-      sn2.ReplaceAll("_MG",".mysql");
+      if ( sn2.Contains("XXX_mysql_MG") ){
+	printf("found tmultigraph in  sub tpad======================Refresh%s\n", "" );
+      sn2.ReplaceAll("_mysql_MG",".mysql");
  	char commandrm[200];
  	char grname[200];
 	char grname2[200];  
@@ -1468,7 +1471,7 @@ void  MyMainFrame::RefreshAll(){
 	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
 		sn2.Data(), 0, atoi(fEntrySIG->GetText()),grname);
 	system(commandrm);
-	printf("%s\n", commandrm);
+	printf("going to execute: %s\n", commandrm);
 	sprintf(grname2,"%s.dat.cols",  sn2.Data() );
 	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
 		grname, grname2 );
@@ -1481,6 +1484,8 @@ void  MyMainFrame::RefreshAll(){
 	 if (myReadFile.is_open()) {myReadFile >> outputCol;}
 	 myReadFile.close();
 	 outputCol--;
+	 // i put  _mysql_MG
+	 //	 printf( "grname = %s ... i add _mysql\n", grname );
 	 for (int i=0;i<outputCol;i++){
 	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
 	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
@@ -1490,8 +1495,8 @@ void  MyMainFrame::RefreshAll(){
 	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
 	 }// for all columns ------ of mysql output
 	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
-	 //	 return;
-
+       //	 return;
+      }// contains _mysql_MG
 	}//it was tmultigraph under tpad
 	
       }//for all subobjects---looking for tmultigraph
@@ -1583,8 +1588,8 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
       int direc;
       if (factorl>0){ direc=1;}
       if (factorl<0){ direc=-1;}
-      if (  (sn.Index("_mysql_dat")>0) ){
-	printf("MYSQL FOUND\n%s","");
+      if (  (sn.Index("_mysql_dat")>0) ||   (sn.Index("_mysql_MG")>0) ){
+	printf("MYSQL FOUND======================= movexy\n%s","");
 	sn.ReplaceAll("_mysql_datb",".mysql");
 	sn.ReplaceAll("_mysql_datc",".mysql");
 	sn.ReplaceAll("_mysql_datd",".mysql");
@@ -1592,6 +1597,7 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	sn.ReplaceAll("_mysql_datf",".mysql");
 	sn.ReplaceAll("_mysql_datg",".mysql");
 	sn.ReplaceAll("_mysql_dath",".mysql");
+	sn.ReplaceAll("_mysql_MG",".mysql");
 	sn.ReplaceAll("_mysql_dat",".mysql");
  	char commandrm[200];
  	char grname[200];
@@ -1601,12 +1607,12 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
 		sn.Data(), direc, atoi(fEntrySIG->GetText()),grname);
 	system(commandrm);
-	printf("%s\n", commandrm);
+	printf("going to run: %s\n", commandrm);
 	sprintf(grname2,"%s.dat.cols",  sn.Data() );
 	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
 		grname, grname2 );
+	printf("going to run: %s\n", commandrm);
 	system(commandrm); // # columns
-	printf("%s\n", commandrm);
 
 	 ifstream myReadFile;
 	 int outputCol=2;
@@ -1619,7 +1625,7 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
 	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
 	   gDirectory->Add( res );
-	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
+	   //	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
 	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
 	 }// for all columns ------ of mysql output
 	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
