@@ -799,7 +799,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 
 
 void  MyMainFrame::FillMainMenu(){
-   char tmp[20];
+   char tmp[40];
 
    //NOT HERE....... fListBoxOF->AddEntry("testik", 1);
 
@@ -822,7 +822,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "%i_SaveFit", SELComSig);      fListBox->AddEntry(tmp, SELComSig);
    sprintf(tmp, "%i_", SELFit);            fListBox->AddEntry(tmp, SELFit);
    sprintf(tmp, "%i_HelpFit", SELDelFBX);         fListBox->AddEntry(tmp, SELDelFBX);
-   sprintf(tmp, "%i----------",SELbar3a );      fListBox->AddEntry(tmp, SELbar2);
+   sprintf(tmp, "%i----------",SELbar3a );      fListBox->AddEntry(tmp, SELbar3a);
 
    sprintf(tmp, "%i_Clone2Rint", SELClone2Rint);         fListBox->AddEntry(tmp, SELClone2Rint);
    }// PAGE==1
@@ -836,10 +836,10 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "Logz");               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
    //   sprintf(tmp, "%i_Div,LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
-   sprintf(tmp, "----------" );          fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
+   sprintf(tmp, "----------",SELbar4 );     fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
-   sprintf(tmp, "LoadCanvas  " );       fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
-   sprintf(tmp, "SaveCanvas  " );   fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
+   sprintf(tmp, "LoadCanvas  " );    fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
+   sprintf(tmp, "SaveCanvas  " );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
    sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
 
@@ -849,7 +849,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
    sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
-   sprintf(tmp, "----------" );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "----------", SELbar5  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "Clear    " );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
    sprintf(tmp, "ClearAll " );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
 
@@ -1254,6 +1254,7 @@ MyMainFrame*  shspe(int page=2){
    // Popup the GUI...
   //   new MyMainFrame(0, 200, 200);
   //     MyMainFrame *m= new MyMainFrame(0,100,100);
+
   da.Set(1995,1,1,0,0,0);  
   gStyle->SetTimeOffset( da.Convert(kTRUE) );
 
@@ -1261,6 +1262,7 @@ MyMainFrame*  shspe(int page=2){
   printf(" trying to start  shspe - mmframe %s\n","");
   //  mmframe= new MyMainFrame(0,120,180);  // TGWindow==0,  w,   h 
   mmframe= new MyMainFrame(0,mmframe_w,mmframe_h, page  );  // TGWindow==0,  w,   h 
+
   cutload();
   //  printf(" trying to add TH1%s\n","");
 
