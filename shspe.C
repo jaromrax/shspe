@@ -3224,15 +3224,15 @@ void MyMainFrame::HandleEvents(Int_t id)
      *   3   other file selected
      */
 
-    if (fListBoxOF->GetNumberOfEntries()>0){// MORE entries THEN just " CANCEL "
-     TString fileselect1=fListBoxOF->GetEntry(1)->GetTitle(); 
-     printf("   ...entry #2 ==<%s> - check of filesave mode...\n", fileselect1.Data()  );   
-     if ((fileselect1.Contains("*SaveToNewFile")>0)&&(ii>1)) { 
-       save++;printf("SAVING BOX file <%s> demanded BUT default file== <%s> is used\n",
-		     fileselect.Data(), savename.Data()  );
-       //NOT USED UNTIL DOUBLECLICKED...OFaction=2; // At least save new file, maybe otherfile (next time?)
-     }// SAVENEW EXISTS
-    }//MORE ENTRIES THAN ***CANCEL***
+    // if (fListBoxOF->GetNumberOfEntries()>0){// MORE entries THEN just " CANCEL "
+    //  TString fileselect1=fListBoxOF->GetEntry(1)->GetTitle(); 
+    //  printf("   ...entry #2 ==<%s> - check of filesave mode...\n", fileselect1.Data()  );   
+    //  if ((fileselect1.Contains("*SaveToNewFile")>0)&&(ii>1)) { 
+    //    save++;printf("SAVING BOX file <%s> demanded BUT default file== <%s> is used\n",
+    // 		     fileselect.Data(), savename.Data()  );
+    //    //NOT USED UNTIL DOUBLECLICKED...OFaction=2; // At least save new file, maybe otherfile (next time?)
+    //  }// SAVENEW EXISTS
+    // }//MORE ENTRIES THAN ***CANCEL***
 
 
     if (fileselect.Contains("*Memory")>0){ //directly NEW FILE demanded
@@ -3242,13 +3242,13 @@ void MyMainFrame::HandleEvents(Int_t id)
     } //
 
 
-    if (fileselect.Contains("*SaveToNewFile")>0){ //directly NEW FILE demanded
-      save++;printf("SAVING TO A NEW FILE <%s>\n", savename.Data()  );
-      OFaction=2; // SURELY NEW FILE
-    } //directly NEW FILE demanded
+    // if (fileselect.Contains("*SaveToNewFile")>0){ //directly NEW FILE demanded
+    //   save++;printf("SAVING TO A NEW FILE <%s>\n", savename.Data()  );
+    //   OFaction=2; // SURELY NEW FILE
+    // } //directly NEW FILE demanded
 
     //    if ((ii>0)&&(save==0)){ OFaction=1;}// OPEN - 
-    if ((ii>1)){ OFaction=1;}// not cancel, nor svatonew
+    if ((ii>0)){ OFaction=1;}// not cancel, nor svatonew
 
     if (ii==0){ OFaction=0;}// cancel
     /////#######################################################  DECIDE WHAT TO DO NOW
@@ -3501,7 +3501,7 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 int next=0;
 	 // *** necessary to keep SORTing
 	 fListBoxOF->AddEntry( "***cancel ***", next++ );
-	  fListBoxOF->AddEntry( "*S        *", next++ ); // SORRY - until doubleclicked solves....
+	 //	  fListBoxOF->AddEntry( "*S        *", next++ ); // SORRY - until doubleclicked solves....
 	  //	  fListBoxOF->AddEntry( "*SaveToNewFile *", next++ ); // SORRY - until doubleclicked solves....
 	 fListBoxOF->AddEntry( "*Memory *", next++ ); //   #HERE 
 	 while (  (pent = readdir (pdir))   ) // while in dir
