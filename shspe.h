@@ -193,7 +193,8 @@ int
   SELbar5=       29,
   SELClearAll=   30,
   SELDivCanv=  31,
-  SELClone2Rint2=32;
+  SELClone2Rint2=32,
+  SELbar5a=     33;
 //  SELUnzoomAll=  31;
 //  SELZoomAll=29;
 
