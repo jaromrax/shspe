@@ -2320,10 +2320,21 @@ void MyMainFrame::fSELClone2Rint(int id,TString *fentry){
       //fListBox2->GetSelected();
 
 TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
+ if (  (o!=NULL) && (strstr(o->ClassName(),"TH")  )    ){// ok class 
  char chtr[500]; 
  char ch[500]; 
  sprintf( chtr, "%s" ,  gDirectory->GetName() ); // trim
- chtr[6]='\0';
+ //chtr[6]='\0'; // this is runxxx
+ for (int i=3;i<strlen(chtr);i++){
+   ch[0]= chtr[i];
+   ch[1]='\0';
+   if ( strstr( "0123456789_", ch)!=NULL )
+     {
+     }else{
+     chtr[i]='\0';
+     break;
+   }
+ }
  printf("Trimstring = /%s/\n",chtr);
  sprintf( ch, "%s_%s", o->GetName() ,  chtr );
  printf("Finstring = /%s/\n",ch);
@@ -2341,8 +2352,10 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
    // can fall?
  gROOT->GetDirectory("Rint:/")->Add( o2 );
  }
-
-
+ }// ok class
+ else{
+   printf("%s\n","...unsupported classname...");
+ }
  /*  printf("...clone the %s to Rint:/   ... memory: name:%s /title:%s\n", 
 	 fListBox2->GetSelectedEntry()->GetTitle(),
 	 o2->GetName(),
@@ -2350,6 +2363,9 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
 	 );
  */
 }//----------------------------------Clone2Rint
+
+
+
 
   
 
