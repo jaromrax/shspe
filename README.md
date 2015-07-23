@@ -13,6 +13,9 @@ this is a standard procedure, (make and) go to some directory and then:
 ```
 
 
+
+root compilation
+-----
 **root compilation**  (example for 64bit)
 
 Here is some simple guide to root compilation - before anything else - if necessary.
@@ -51,12 +54,29 @@ Root should reside in $HOME/root/bin and should be reachable from commandline: *
 
 you may install the *~/.rootrc* and *~/.rootlogon* with
 	init_scripts/install_initscripts 
-and then 
+```
+cd 	init_scripts
+./install_initscripts 
+```
+...this step can make some problems if you have already tuned these startup scripts, so check it before use.
+
+and then go back to you shspe install directory (*cd ..*) and do
 ```
 make 
 make install
 ```
+shspe .so library should be installed in root macro directory
 
+===
+
+run root
+```
+root
+````
+and inside root  shspe. It is a function so don't miss parentheses.
+```
+root [0] shspe()
+```
 
 ===
 
