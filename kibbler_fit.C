@@ -103,8 +103,13 @@ class  Tbroomfit{
 
   void   printResult(){      
     if (fitresult!=NULL){ 
+      printf("%s\n",
+	     "==================================================+++" );
       fitresult->Print("v")  ;   
       fitresult->floatParsFinal().Print("s") ;
+      printf("%s\nfit range: %5.1f %5.1f\n",
+	     "==================================================+++",
+               min, max );
       //RooRealVar* par1_fitresult = (RooRealVar*) fitresult->floatParsFinal()->find("par1") 
       //par1_fitresult->GetAsymErrorHi() ; // etc... 
     }
@@ -603,9 +608,9 @@ for (int ii=0;ii<14;ii++){
      //   FIT    FIT    FIT    FIT    FIT    FIT    FIT     FIT    FIT   FIT   
       fitresult = model->fitTo( datah , Save()  );   
    }
-  fitresult->Print("v") ;
-  fitresult->floatParsFinal().Print("s") ;
-
+   // will be done by printResult ... fitresult->Print("v") ;
+  //duplicite  fitresult->floatParsFinal().Print("s") ;
+  // later - after  parsfinale .... : printResult();
     //    model->Print();  // not interesting........
     model->plotOn(xframe, LineColor(kRed),   DrawOption("l0z") );
 
@@ -685,8 +690,8 @@ for (int ii=0;ii<14;ii++){
  } //for for
  }// for for   
  printf("at the total end of the constructor....%s\n","");
- fitresult->floatParsFinal().Print("s") ;
-
+ // done in pirntResult .. fitresult->floatParsFinal().Print("s") ;
+ printResult();
   }; // constructor
 
 
