@@ -2240,6 +2240,8 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       //      run15_s9418_5_adc19->GetNbinsX() 
       double cal_a=histo->GetBinWidth(1);
       double cal_b=histo->GetXaxis()->GetXmin();
+      printf("... calibration found on histo %s: %lg %lg\n", 
+	     histo->GetName(),cal_a, cal_b);
       //UNUSED   double cal_chan=histo->GetNbinsX();
       // let us try.... no hope to get non-calibrated values anyway...
       //nonsense   ...histo->SetBins( cal_chan , 0.  ,  cal_chan );
@@ -2249,12 +2251,13 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       fit->accessParams(i+1, array[i] ); 
       //      printf("#%d  %f   %f        %f  %f\n", i,array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       //  E = k*a+b:   k=(E-b)/a
-      
-      fprintf(fo,"%8.3f %6.3f   %8.3f %6.3f\n", 
+      // when spe calibrated: array[i][0] is calibrated,not channel
+      //channel ene cherr enerr: read easy by TGrapherrors("zfitresults.ecal")
+      fprintf(fo,"%.3f  %8.3f %6.3f %9.6f\n", 
 	      (array[i][0]-cal_b)/cal_a, 
-    array[i][1]/cal_a,
-    array[i][0],
-    array[i][1]);
+	      array[i][0],
+	      array[i][1]/cal_a,
+	      array[i][1]         );
       }// i
       fclose( fo );
       //nonsense ...histo->SetBins( cal_chan , cal_b  ,  cal_b + cal_a*cal_chan );
