@@ -2157,15 +2157,20 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
      fit->printResult(); // PRINT--------------
     TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE
 
-
+      //DESCRIPTION ----
+      TString desc;
+        TH1* histo;  
+        int64_t addr[MAXPRIMITIVES];  
+        int count=1;addr[0]=0;
+        RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1
+        histo=(TH1*)addr[0];
+	//	printf("%s %s\n", 	       "trying to recover histo name:======",                histo->GetName() );
+	//	gPad->GetListOfPrimitives()->ls();
     TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
     if (c!=NULL){
       printf("saving also the canvas%s\n","");
-      //DESCRIPTION ----
-      TString desc;
-        TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
-        RecoverTH1fromGPAD( count, addr , "" ,1);
-        histo=(TH1*)addr[0];
+
+
 	//       printf(" canvas - new description == %s\n", desc.Data()  );
       desc.Append( "file:" );
       if (gFile!=NULL){ desc.Append( gFile->GetName() );}else{desc.Append("nofile" );}
@@ -2244,8 +2249,12 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       fit->accessParams(i+1, array[i] ); 
       //      printf("#%d  %f   %f        %f  %f\n", i,array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       //  E = k*a+b:   k=(E-b)/a
-      fprintf(fo,
-	    "%8.3f %6.3f   %8.3f %6.3f\n", (array[i][0]-cal_b)/cal_a, array[i][1]/cal_a,array[i][0],array[i][1]);
+      
+      fprintf(fo,"%8.3f %6.3f   %8.3f %6.3f\n", 
+	      (array[i][0]-cal_b)/cal_a, 
+    array[i][1]/cal_a,
+    array[i][0],
+    array[i][1]);
       }// i
       fclose( fo );
       //nonsense ...histo->SetBins( cal_chan , cal_b  ,  cal_b + cal_a*cal_chan );
@@ -2290,7 +2299,7 @@ void MyMainFrame::fSELDelFBX(int id,TString *fentry){
   //  printf("\n","");
   printf("pn  ... no background,  p0 ... constant background etc%s.\n","");
   printf("--modes----------%s-\n","");
-  printf("chi2  ...  doesnot work good now%s\n","");
+  printf("chi2  ...  doesnot work well now ... %s\n","");
   //  printf("\n","");
   //  printf("\n","");
   printf("--conditions-----------%s\n","");
