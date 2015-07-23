@@ -329,6 +329,7 @@ void savecanvas(const char *filenam, int slot=0){
   tt->Draw();
   printf("Draw label: %s\n\n", sla.Data() ); 
 
+  printf(".!  cp       %s ~/automatic_print/ \n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_e.Data()   ); 
   printf(".!  gqview   %s&\n\n",  s_png.Data()   ); 
@@ -2325,7 +2326,7 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
  char ch[500]; 
  sprintf( chtr, "%s" ,  gDirectory->GetName() ); // trim
  //chtr[6]='\0'; // this is runxxx
- for (int i=3;i<strlen(chtr);i++){
+ for (unsigned int i=3;i<strlen(chtr);i++){
    ch[0]= chtr[i];
    ch[1]='\0';
    if ( strstr( "0123456789_", ch)!=NULL )
@@ -3297,16 +3298,31 @@ void MyMainFrame::HandleEvents(Int_t id)
  printf("done  to open REMOTE_DATA_DIR %s\n", "file ");
  char output[300];
  if (myReadFile.is_open()) {
-  while (!myReadFile.eof()) {    myReadFile >> output;    cout<<output; }
+   while (!myReadFile.eof()) {
+     myReadFile >> output;
+     cout<<output<<endl;
+     if ( output[ strlen(output)-1 ] == '/'  ){
+       printf( "there is / in  LASTCHAR={%c}\n ", output[ strlen(output)-1]);
+     }else{
+       printf( " NO      / in  LASTCHAR={%c}\n ", output[ strlen(output)-1]);
+       int slen= strlen(output);
+       output[ slen ] = '/';
+       output[ slen+1 ] = '\0';
+       output[ slen+2 ] = '\0';
+       printf( "new file: {%s}\n ", output );
+     }
+     break; // only 1st line
+   }// while readfile
  }
  myReadFile.close();//============================ REMOTE DATADIR
 
 
       if (fn->BeginsWith("~")){
-	fn->ReplaceAll("~","/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/");
+	//	fn->ReplaceAll("~","/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/");
+	fn->ReplaceAll("~", output  );
       }
       
-      printf("File OPENINIG  <%s>\n",  fn->Data()    );
+      printf("\n<%s>\n",  fn->Data()    );
       fOpenFile(  fn   , fListBox2  , atoi(fEntrySIG->GetText() ) );  // 2nd fopenfile<< click in id=122 listboxOF
   //   sleep(1);
       printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
