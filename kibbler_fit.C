@@ -83,10 +83,10 @@ class  Tbroomfit{
   //
   //references to all variables ..........  mean sigma area tail nalpha n
   //
-  RooRealVar *msat[14][5]; //  POINTERS TO ALL variables..........but not used????
+  RooRealVar *msat[14][6]; //  POINTERS TO ALL variables..........but not used????
 
-  double  msat_values[14][5];
-  double  msat_errors[14][5];
+  double  msat_values[14][6];
+  double  msat_errors[14][6];
 
   RooFitResult *fitresult;
 
@@ -267,6 +267,8 @@ class  Tbroomfit{
    */    
     RooRealVar       x("x",    "x",   min, max);
 
+    int MAXPEAKS=6;  // later from 5 to 6 ???
+
 
     printf("RooFit: npeaks=%d\n",  npeaks );
     // ABOVE:  RooRealVar *msat[14][5]; //  POINTERS TO ALL variables
@@ -276,12 +278,14 @@ class  Tbroomfit{
     // 3  t     Tail
     // 4  [0] nalpha
     // 5  [0] n1
+
 for (int ii=0;ii<14;ii++){
- for (int jj=0;jj<5;jj++){
+ for (int jj=0;jj<MAXPEAKS;jj++){
    msat[ii][jj]=NULL; 
    msat_values[ii][jj]=0.0;
  } //for for
  }// for for 
+
  printf("delete fitresult, why crash?\n%s","");
  fitresult=NULL;
  printf("delete fitresult, no crash?\n%s","");
@@ -292,6 +296,7 @@ for (int ii=0;ii<14;ii++){
     RooRealVar    mean3("mean3", "mean",  3*(max-min)/(npeaks+1)+min,    min,max);msat[0][2]=&mean3;
     RooRealVar    mean4("mean4", "mean",  4*(max-min)/(npeaks+1)+min,    min,max);msat[0][3]=&mean4;
     RooRealVar    mean5("mean5", "mean",  5*(max-min)/(npeaks+1)+min,    min,max);msat[0][4]=&mean5;
+    RooRealVar    mean6("mean6", "mean",  6*(max-min)/(npeaks+1)+min,    min,max);msat[0][5]=&mean6;
 
 
     RooRealVar   sigma1("sigma1","sigma", (max-min)/10,       sigmamin,  sigmamax );msat[1][0]=&sigma1;
@@ -299,6 +304,7 @@ for (int ii=0;ii<14;ii++){
     RooRealVar   sigma3("sigma3","sigma", (max-min)/10,       sigmamin,  sigmamax );msat[1][2]=&sigma3;
     RooRealVar   sigma4("sigma4","sigma", (max-min)/10,       sigmamin,  sigmamax );msat[1][3]=&sigma4;
     RooRealVar   sigma5("sigma5","sigma", (max-min)/10,       sigmamin,  sigmamax );msat[1][4]=&sigma5;
+    RooRealVar   sigma6("sigma6","sigma", (max-min)/10,       sigmamin,  sigmamax );msat[1][5]=&sigma6;
 
 
     RooRealVar    area1("area1", "area",      areah2/npeaks,       areamin, areamax  );msat[2][0]=&area1;
@@ -306,6 +312,7 @@ for (int ii=0;ii<14;ii++){
     RooRealVar    area3("area3", "area",      areah2/npeaks,       areamin, areamax  );msat[2][2]=&area3; 
     RooRealVar    area4("area4", "area",      areah2/npeaks,       areamin, areamax  );msat[2][3]=&area4; 
     RooRealVar    area5("area5", "area",      areah2/npeaks,       areamin, areamax  );msat[2][4]=&area5; 
+    RooRealVar    area6("area6", "area",      areah2/npeaks,       areamin, areamax  );msat[2][5]=&area6; 
 
     RooRealVar   bgarea("bgarea", "bgarea", areah2/5, 0, 2*areah2);  
 
@@ -320,6 +327,7 @@ for (int ii=0;ii<14;ii++){
     RooRealVar    tail3("tail3", "tail",      tailstart,       tailmin, tailmax  );msat[3][2]=&tail3;
     RooRealVar    tail4("tail4", "tail",      tailstart,       tailmin, tailmax  );msat[3][3]=&tail4;
     RooRealVar    tail5("tail5", "tail",      tailstart,       tailmin, tailmax  );msat[3][4]=&tail5;
+    RooRealVar    tail6("tail6", "tail",      tailstart,       tailmin, tailmax  );msat[3][5]=&tail6;
 
     // for CBShape
     RooRealVar    nalpha1("nalpha1", "nalpha",      1.3, 0, 100  );msat[4][0]=&nalpha1;
@@ -339,6 +347,7 @@ for (int ii=0;ii<14;ii++){
     if (npeaks>=3) {mean3=peak[2];sigma3=sigm[2];}
     if (npeaks>=4) {mean4=peak[3];sigma4=sigm[3];}
     if (npeaks>=5) {mean5=peak[4];sigma5=sigm[4];}
+    if (npeaks>=6) {mean6=peak[5];sigma6=sigm[5];}
 
 
     /*
@@ -346,8 +355,8 @@ for (int ii=0;ii<14;ii++){
      *                 RooNovosibirsk
      *                 RooLandau
      */
-     RooAbsPdf *pk[5];                 // MAXIMUM PEAKS ==5             
-     RooAbsPdf *pk_dicto[14][5];        // ALL DICTIONARY OF PEAKS..........
+     RooAbsPdf *pk[6];                 // MAXIMUM PEAKS ==5    6 NOW!!             
+     RooAbsPdf *pk_dicto[14][6];        // ALL DICTIONARY OF PEAKS..........
      //  Abstract Class.... carrefuly
 
     RooGaussian gauss1("gauss1","gauss(x,mean,sigma)", x, mean1, sigma1);pk_dicto[0][0]=&gauss1;
@@ -355,13 +364,14 @@ for (int ii=0;ii<14;ii++){
     RooGaussian gauss3("gauss3","gauss(x,mean,sigma)", x, mean3, sigma3);pk_dicto[0][2]=&gauss3;
     RooGaussian gauss4("gauss4","gauss(x,mean,sigma)", x, mean4, sigma4);pk_dicto[0][3]=&gauss4;
     RooGaussian gauss5("gauss5","gauss(x,mean,sigma)", x, mean5, sigma5);pk_dicto[0][4]=&gauss5;
+    RooGaussian gauss6("gauss6","gauss(x,mean,sigma)", x, mean6, sigma6);pk_dicto[0][5]=&gauss6;
 
-    RooNovosibirsk ns1("ns1","novosib(x,mean,sigma,tail)", x, mean1, sigma1, tail1 );pk_dicto[1][0]=&ns1;
-    RooNovosibirsk ns2("ns2","novosib(x,mean,sigma,tail)", x, mean2, sigma2, tail2 );pk_dicto[1][1]=&ns2;
-    RooNovosibirsk ns3("ns3","novosib(x,mean,sigma,tail)", x, mean3, sigma3, tail3 );pk_dicto[1][2]=&ns3;
-    RooNovosibirsk ns4("ns4","novosib(x,mean,sigma,tail)", x, mean4, sigma4, tail4 );pk_dicto[1][3]=&ns4;
-    RooNovosibirsk ns5("ns5","novosib(x,mean,sigma,tail)", x, mean5, sigma5, tail5 );pk_dicto[1][4]=&ns5;
-
+    RooNovosibirsk ns1("ns1","novosib(x,mean,sigma,tail)", x, mean1,sigma1, tail1 );pk_dicto[1][0]=&ns1;
+    RooNovosibirsk ns2("ns2","novosib(x,mean,sigma,tail)", x, mean2,sigma2, tail2 );pk_dicto[1][1]=&ns2;
+    RooNovosibirsk ns3("ns3","novosib(x,mean,sigma,tail)", x, mean3,sigma3, tail3 );pk_dicto[1][2]=&ns3;
+    RooNovosibirsk ns4("ns4","novosib(x,mean,sigma,tail)", x, mean4,sigma4, tail4 );pk_dicto[1][3]=&ns4;
+    RooNovosibirsk ns5("ns5","novosib(x,mean,sigma,tail)", x, mean5,sigma5, tail5 );pk_dicto[1][4]=&ns5;
+ 
     // BreitWiegner  is  Lorentzian...?
     RooBreitWigner bw1("bw1","BreitWigner(x,mean,sigma)", x, mean1, sigma1 );pk_dicto[2][0]=&bw1;
     RooBreitWigner bw2("bw2","BreitWigner(x,mean,sigma)", x, mean2, sigma2 );pk_dicto[2][1]=&bw2;
@@ -374,6 +384,7 @@ for (int ii=0;ii<14;ii++){
     RooCBShape cb3("cb3","CBShape(x,mean,sigma)", x, mean3, sigma3, nalpha1, n1 );pk_dicto[3][2]=&cb3;
     RooCBShape cb4("cb4","CBShape(x,mean,sigma)", x, mean4, sigma4, nalpha1, n1 );pk_dicto[3][3]=&cb4;
     RooCBShape cb5("cb5","CBShape(x,mean,sigma)", x, mean5, sigma5, nalpha1, n1 );pk_dicto[3][4]=&cb5;
+    RooCBShape cb6("cb6","CBShape(x,mean,sigma)", x, mean6, sigma6, nalpha1, n1 );pk_dicto[3][5]=&cb6;
 
 
 
@@ -428,6 +439,8 @@ for (int ii=0;ii<14;ii++){
     pk[2]=&gauss3;
     pk[3]=&gauss4;
     pk[4]=&gauss5;
+    pk[5]=&gauss6;
+
 
   int maxi=spk.Length();
   if (maxi>npeaks){maxi=npeaks;}
@@ -489,6 +502,7 @@ for (int ii=0;ii<14;ii++){
  if (npeaks>2)rl.add( *pk[2] );  
  if (npeaks>3)rl.add( *pk[3] );  
  if (npeaks>4)rl.add( *pk[4] );  
+ if (npeaks>5)rl.add( *pk[5] );  
  rl.add( bkg ); 
  RooArgSet rs;
  if (npeaks>0)rs.add( area1 );  
@@ -496,6 +510,7 @@ for (int ii=0;ii<14;ii++){
  if (npeaks>2)rs.add( area3 );  
  if (npeaks>3)rs.add( area4 );  
  if (npeaks>4)rs.add( area5 );  
+ if (npeaks>5)rs.add( area6 );  
  rs.add( bgarea );
  RooAddPdf modelV("model","model", rl, rs );
 
@@ -514,6 +529,7 @@ for (int ii=0;ii<14;ii++){
      if (npeaks>2)cust.replaceArg(sigma3,sigma1) ;
      if (npeaks>3)cust.replaceArg(sigma4,sigma1) ;
      if (npeaks>4)cust.replaceArg(sigma5,sigma1) ;
+     if (npeaks>5)cust.replaceArg(sigma6,sigma1) ;
     }
    if (TPRegexp("tcom").Match(command)!=0){//----------------------TCOM
      printf("all tails have common values.....\n%s", ""); 
@@ -521,6 +537,7 @@ for (int ii=0;ii<14;ii++){
      if (npeaks>2)cust.replaceArg(tail3,tail1) ;
      if (npeaks>3)cust.replaceArg(tail4,tail1) ;
      if (npeaks>4)cust.replaceArg(tail5,tail1) ;
+     if (npeaks>5)cust.replaceArg(tail6,tail1) ;
     }
    /*   if (TPRegexp("tcom").Match(command)!=0){//----------------------TCOM Neni dalsi ACOM,NCOM pro CB...
      printf("all tails have common values.....\n%s", ""); 
@@ -545,6 +562,9 @@ for (int ii=0;ii<14;ii++){
    if  (TPRegexp("p5fix").Match(command)!=0){//----------------------
      mean5.setConstant();printf("position 5 set constant%s\n","");
    }
+   if  (TPRegexp("p6fix").Match(command)!=0){//----------------------
+     mean6.setConstant();printf("position 6 set constant%s\n","");
+   }
    if  (TPRegexp("s1fix").Match(command)!=0){//----------------------
      sigma1.setConstant();printf("sigma 1 set constant%s\n","");
    }
@@ -559,6 +579,9 @@ for (int ii=0;ii<14;ii++){
    }
    if  (TPRegexp("s5fix").Match(command)!=0){//----------------------
      sigma5.setConstant();printf("sigma 5 set constant%s\n","");
+   }
+   if  (TPRegexp("s6fix").Match(command)!=0){//----------------------
+     sigma6.setConstant();printf("sigma 6 set constant%s\n","");
    }
 
 
@@ -683,7 +706,7 @@ for (int ii=0;ii<14;ii++){
 
  // printf("msat reference to peak 0 0 = %d,  (%f)\n",  msat[0][0] ,  msat[0][0]->getVal()  );
  for (int ii=0;ii<14;ii++){
- for (int jj=0;jj<5;jj++){
+ for (int jj=0;jj<MAXPEAKS;jj++){
    if ( msat[ii][jj]!=NULL){
      msat_values[ii][jj]=msat[ii][jj]->getVal();
    }//if
