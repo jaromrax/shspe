@@ -12,7 +12,40 @@ this is a standard procedure, (make and) go to some directory and then:
  git pull origin master
 ```
 
-you have the sources there
+
+**root compilation**  (example for 64bit)
+
+Here is some simple guide to root compilation - before anything else - if necessary.
+
+I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
+and the last for eventual macros:
+```
+mkdir ~/root
+mkdir ~/root.inst
+mkdir ~/root_macros
+```
+
+Append to your  $HOME/.bashrc paths to ~/root/:  
+```
+export ROOTSYS=$HOME/root
+export PATH=$ROOTSYS/bin:~/root_macros:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
+```
+
+First you need to configure the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
+
+Here, you probably need some prerequisites: *... to be added later ...*
+```
+ ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
+
+make
+
+make install
+```
+Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
+
+
+
 
 **shspe compilation**
 
@@ -24,23 +57,6 @@ make
 make install
 ```
 
-
-**root compilation**  (example for 64bit)
-Append to   .bashrc :  
-```
-export ROOTSYS=$HOME/root
-export PATH=$ROOTSYS/bin:~/00_central:$PATH
-export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
-```
-
-compile
-```
- ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
-
-make
-
-make install
-```
 
 ===
 
