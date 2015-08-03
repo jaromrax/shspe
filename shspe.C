@@ -708,6 +708,9 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	 )
 	 ){  // LEFT CLICK - SUM DATA
        TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+       if (  gROOT->GetListOfSpecials()->FindObject("MARKS")==NULL){
+	 gROOT->GetListOfSpecials()->Add( g);
+       }
        printf("ADDING TO MARKS, now GetN() will = %d \n",
           g->GetN()+1 );
        //       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
@@ -1841,6 +1844,7 @@ void  MyMainFrame::fSELFindPks(int id,TString *fentry){
 	   m->SetLineStyle(2);
 	   m->SetLineColor(2);
 	   m->SetName("MARKS"); 
+
 	   //	   m->Sort(&TGraph::CompareRadius);
 	   m->Sort();   //  FindPeaks....sort here is OK....
 	   m->Draw("PL"); 
@@ -1903,7 +1907,13 @@ void MyMainFrame::fSELSetMarks(int id,TString *fentry){
 
 
    TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-   if (g!=NULL){ g->Delete(); }
+   if (g!=NULL){
+     if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
+       TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
+       gROOT->GetListOfSpecials()->Remove( gro ); // delete MARKS from gROOT
+     }
+     g->Delete(); 
+   }
    //DELMARKS....
  double px1=0.1; double py1=0.4; double px2=0.9;double py2=0.6;  int pnts=2; // 01
  double x[5],y[5],xe[5],ye[5], dx, dy;
