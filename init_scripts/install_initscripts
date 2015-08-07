@@ -2,8 +2,10 @@
 
 MACDIR=$HOME/root_macros
 
+mkdir -p  $MACDIR
+
 if [ -e $MACDIR ]; then
- echo ok, MACRO DIR $MACDIR exists
+ echo ok, MACRO DIR $MACDIR exists .. i probably created
 else
     MACDIR=$HOME/00_central
     if [ -e $MACDIR ]; then
@@ -45,16 +47,17 @@ if [[  -e $HOME/.rootrc || -e $HOME/.rootlogon ]]; then
 fi
 fi
 
+DT=`date +%Y%m%d_%H%M%S`
  
 if [ "$y" = "y" ]; then
  echo ... making backup
- tar -cvzf $HOME/.rootrclogon_backup.tgz $HOME/.rootrc $HOME/.rootlogon 2>/debv/null
- ls -ltr $HOME/.rootrclogon_backup.tgz
+ tar -cvzf $HOME/.rootrclogon_backup_$DT.tgz $HOME/.rootrc $HOME/.rootlogon 2>/dev/null
+ ls -ltr $HOME/.rootrclogon_backup_$DT.tgz
  echo ...
  cp rootrc  $HOME/.rootrc
  cp rootlogon $HOME/.rootlogon
  ls -ltrh $HOME/.rootrc $HOME/.rootlogon
- echo SCRIPTS COPPIED
+ echo SCRIPTS COPPIED...backup created
 else
  echo ok....quitting
 fi
