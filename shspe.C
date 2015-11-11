@@ -3,7 +3,7 @@
 //   started with scripts and help of people from root team (Antcheva 1/12/2006)
 //
 
-
+#include "TMapFile.h"
 
 #include "kibbler_fit.C"
 
@@ -1450,6 +1450,46 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
 void  MyMainFrame::RefreshAll(){ 
   GPAD->Modified();GPAD->Update();  
 
+ //=============== here is a part with mmap
+  FILE * pFile;
+  pFile=fopen( "mmap.histo" ,"r" ); 
+  if (pFile!=NULL) {
+    printf("mmap.histo file found \n%s","" );
+    
+    TMapFile* mfile =TMapFile::Create("mmap.histo");
+     TMapRec *mr = mfile->GetFirst();
+ while (mfile->OrgAddress(mr)) {
+   TString classn=mr->GetClassName();
+   if ( strcmp(classn.Data(),"TH1F")==0){
+     TString name=mr->GetName();
+     TH1F *h  =0;
+     h=(TH1F*)mfile->Get(name.Data(), h );
+
+
+     gROOT->cd();
+     TH1F *hc=(TH1F*)gDirectory->Get( name.Data()  );
+     if ( hc==NULL){
+       //printf("new histo\n%s","");
+       gDirectory->Add( h );
+     }else{
+       //printf("replay old\n%s","");
+       int entries=h->GetEntries();
+       for (int i=0;i<h->GetXaxis()->GetNbins(); i++){
+	 hc->SetBinContent(i,h->GetBinContent(i) );
+       }
+       hc->SetEntries(entries);
+       delete h;
+     }
+   }
+   mr   = mr->GetNext();
+ }
+ 
+ delete mr;
+  } // mmap file exists
+ //======================================= MMAP=======
+  
+
+  
     TList *prim=GPAD->GetListOfPrimitives();
  for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
