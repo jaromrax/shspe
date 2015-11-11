@@ -3,6 +3,8 @@
 //   started with scripts and help of people from root team (Antcheva 1/12/2006)
 //
 
+/// no #include "TMapRec.h"
+//#include "TMapFile.h"
 
 
 #include "kibbler_fit.C"
@@ -1447,14 +1449,26 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
 
 
 
+
+
 void  MyMainFrame::RefreshAll(){ 
   GPAD->Modified();GPAD->Update();  
 
-    TList *prim=GPAD->GetListOfPrimitives();
- for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
+  //=======================================EXTRA MMAP=======
+  FILE * pFile;
+  pFile=fopen( "mmap.histo" ,"r" ); 
+  if (pFile!=NULL) {
+    printf("mmap.histo file found \n%s","" );
+    
+    //    TMapFile* mfile =TMapFile::Create("mmap.histo");
+    
+  } // mmap
+  
+  //=======================================CLASSICAL TPADS=======
+  TList *prim=GPAD->GetListOfPrimitives();
+  for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
     //   printf( "refr:%2d  %s\n", ii,  sn.Data()  );
-
     if ( sn.Index("TPad")==0 ){  // there is TPad :< there 
       TPad *tpod=(TPad*)prim->At(ii);
       //printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
@@ -1466,6 +1480,7 @@ void  MyMainFrame::RefreshAll(){
 	  printf("found tmultigraph in  sub tpad===================%s\n", "" );
 	  
       TString sn2=tpod->GetListOfPrimitives()->At(j)->GetName();
+      // MG====================START
       if ( sn2.Contains("XXX_mysql_MG") ){
 	printf("found tmultigraph in  sub tpad======================Refresh%s\n", "" );
       sn2.ReplaceAll("_mysql_MG",".mysql");
@@ -1549,6 +1564,10 @@ void  MyMainFrame::RefreshAll(){
  }// for   ii (prim
  //============one extra thing is mysql multigraph========
 }// REFRESH   ALL =========================
+
+
+
+
 
 
 
