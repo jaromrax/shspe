@@ -1490,8 +1490,6 @@ void  MyMainFrame::RefreshAll(){
   
 
   
-  TList *prim=GPAD->GetListOfPrimitives();
-  for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TList *prim=GPAD->GetListOfPrimitives();
  for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
@@ -1591,8 +1589,8 @@ void  MyMainFrame::RefreshAll(){
     // }//MULTIGRAPH THERE
  }// for   ii (prim
  //============one extra thing is mysql multigraph========
-  }// REFRESH   ALL =========================
-}
+}// REFRESH   ALL =========================
+
 
 
 
