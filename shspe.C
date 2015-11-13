@@ -3,9 +3,7 @@
 //   started with scripts and help of people from root team (Antcheva 1/12/2006)
 //
 
-/// no #include "TMapRec.h"
-//#include "TMapFile.h"
-
+#include "TMapFile.h"
 
 #include "kibbler_fit.C"
 
@@ -1449,26 +1447,56 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
 
 
 
-
-
 void  MyMainFrame::RefreshAll(){ 
   GPAD->Modified();GPAD->Update();  
 
-  //=======================================EXTRA MMAP=======
+ //=============== here is a part with mmap
   FILE * pFile;
   pFile=fopen( "mmap.histo" ,"r" ); 
   if (pFile!=NULL) {
     printf("mmap.histo file found \n%s","" );
     
-    //    TMapFile* mfile =TMapFile::Create("mmap.histo");
-    
-  } // mmap
+    TMapFile* mfile =TMapFile::Create("mmap.histo");
+     TMapRec *mr = mfile->GetFirst();
+ while (mfile->OrgAddress(mr)) {
+   TString classn=mr->GetClassName();
+   if ( strcmp(classn.Data(),"TH1F")==0){
+     TString name=mr->GetName();
+     TH1F *h  =0;
+     h=(TH1F*)mfile->Get(name.Data(), h );
+
+
+     gROOT->cd();
+     TH1F *hc=(TH1F*)gDirectory->Get( name.Data()  );
+     if ( hc==NULL){
+       //printf("new histo\n%s","");
+       gDirectory->Add( h );
+     }else{
+       //printf("replay old\n%s","");
+       int entries=h->GetEntries();
+       for (int i=0;i<h->GetXaxis()->GetNbins(); i++){
+	 hc->SetBinContent(i,h->GetBinContent(i) );
+       }
+       hc->SetEntries(entries);
+       delete h;
+     }
+   }
+   mr   = mr->GetNext();
+ }
+ 
+ delete mr;
+  } // mmap file exists
+ //======================================= MMAP=======
   
-  //=======================================CLASSICAL TPADS=======
+
+  
   TList *prim=GPAD->GetListOfPrimitives();
   for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
+    TList *prim=GPAD->GetListOfPrimitives();
+ for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
     //   printf( "refr:%2d  %s\n", ii,  sn.Data()  );
+
     if ( sn.Index("TPad")==0 ){  // there is TPad :< there 
       TPad *tpod=(TPad*)prim->At(ii);
       //printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
@@ -1563,8 +1591,8 @@ void  MyMainFrame::RefreshAll(){
     // }//MULTIGRAPH THERE
  }// for   ii (prim
  //============one extra thing is mysql multigraph========
-}// REFRESH   ALL =========================
-
+  }// REFRESH   ALL =========================
+}
 
 
 
@@ -3505,42 +3533,7 @@ void MyMainFrame::HandleEvents(Int_t id)
       *
       */
      if (fListBox2->GetSelected()==1 ){ //openfile clicked
-       //  printf("testing .... file when getselected==1\n%s", "");
-       /*
-	*   I WILL NOT SUPPORT file in FENTRY, because problems of doubleclick.....
-	* 
-	*/
-       /*
-       FILE *ftst=fopen( fentry->Data(), "r");    //  check the existence of the filename in fentry
-       if (ftst!=NULL){ 
-	 printf("...FILE <%s> does exist\n",fentry->Data());
-       }else{
-	 printf("...FILE <%s> does NOT exist\n",fentry->Data());
-       }
-       */
-
-
-       /*
-	*       file exists     or       ""
-	*/
-       //not like this       if (fentry->Data()==""){printf(" fentry je NIC%s\n","");}
-       /*
-       TString *newfentry=fentry;
-       if  (ftst==NULL) { newfentry->Clear();}else{fEntry->Clear();}  // MAKE IT NO STRING
-       if ( (ftst!=NULL)||(newfentry->CompareTo("")==0) ){  //if empty -> open anyway (==refresh from memory)
-        if  (ftst!=NULL) {fclose(ftst);}
-	printf("going to open <%s> \n", newfentry->Data()  );
-        fOpenFile(newfentry,fListBox2); 
-
-        fOpenFile("",fListBox2); 
-	printf("         opened <%s>, going to resize \n", newfentry->Data()  );
-	//        fEntry->Clear();//always clear the text field...
-	//         fListBoxOF->Resize(1 , listbox_vsize );  // BY DEFAULT 
-	fListBox2->Resize(100,listbox_vsize); 
-	printf("      resized, going to layout %s\n",  "" );
-        Layout();// important !  makes it wider
-       }// no file, ok, refresh from memory
-       */
+    
        TString *newfentry=fentry;newfentry->Clear();
        
        fOpenFile(newfentry,fListBox2, atoi(fEntrySIG->GetText()));
@@ -3675,13 +3668,12 @@ void MyMainFrame::HandleEvents(Int_t id)
      /*
       *
       *   NEXT LINES------------------------------ OPENFILE NOT clicked ----------- >>>>>>>>>>>>
-      * 
+      *   SEEMS PROGRAM DOESNOT GO HERE ???????  2015 11 13?
       */
       if (fListBox2->GetSelected()>1 ){ 
 	//   printf("testing .... file when getselected!=1\n%s", "");
 	//             fOpenFile(fentry,fListBox2); 
 	     fDisplayFromList2( fListBox2->GetSelected() ,
-				//				"" );
 	                        fListBox2->GetSelectedEntry()->GetTitle(), fChk1->GetState()  );
 
       }// some item from flistbox2 ==display

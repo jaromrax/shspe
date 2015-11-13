@@ -323,6 +323,78 @@ void fSAVEFromList2(int id, const char* title, const char *savename){
 
 
 
+
+/*
+======================================================================
+ON MULTI in shspe this will be checked and displayed in one win
+ */
+TH1F* extract_next(TH1F* h){
+  char s[100];
+  if (h==NULL)return NULL;
+  sprintf( s, "%s", h->GetTitle() );
+  //  printf("I have   /%s/\n", s );
+
+    
+  char* ss;
+  ss=(char*)strstr( s, " next:" );
+  if ( ss==NULL) {printf("...end\n%s","");return NULL;}
+  //    printf("ss =%s\n", ss );
+
+    char sss[100];
+    strcpy( sss, &ss[6]   ); //  _next:  has 6 chars
+    //    printf("sss =%s\n", sss );
+    TH1F* nexth=(TH1F*)gDirectory->Get( sss );
+    if ( nexth!=NULL ){
+      printf("nexth=%s\n", nexth->GetName() );
+      //      printf("nexth=%s\n", nexth->GetTitle() );
+    return (TH1F*)nexth;
+    }
+    return NULL;
+}
+
+
+void ro_getnext(TH1F* h){
+
+  TH1F* h2,*h3,*h4, *h5, *h6;
+  h2=extract_next( h );
+  h->SetLineColor(1);h->SetLineWidth(2);
+  h->Draw();
+  if (h2!=NULL){
+    h2->SetLineColor(2);h2->SetLineWidth(2);
+    h2->Draw("same");
+      h3=extract_next( h2 );
+      if (h3!=NULL){
+	h3->SetLineColor(3);h3->SetLineWidth(2);
+	h3->Draw("same");
+	h4=extract_next( h3 );
+	if (h4!=NULL){
+	  h4->SetLineColor(4);h4->SetLineWidth(2);
+	  h4->Draw("same");
+	  h5=extract_next( h4 );
+	  if (h5!=NULL){
+	    h5->SetLineColor(5);h5->SetLineWidth(2);
+	    h5->Draw("same");
+	    h6=extract_next( h5 );
+	    if (h6!=NULL){
+	      h6->SetLineColor(6);h6->SetLineWidth(2);
+	      h6->Draw("same");
+	    }
+	  }
+	}
+      }
+  }
+}
+
+
+
+
+//
+//  GetTitle... vybiram podle title???
+//
+//  fchk1state  == Multi:checkbox
+//
+//   Nechapu 2015/11/13 proc  gettitle uplne staci...aha... title je vrealite name!
+//
 void fDisplayFromList2(int id, const char* title, int fchk1state=0){
   //  printf("...displaying from list2 #%d:<%s>\n", id, title );
   if (id>1){
@@ -333,17 +405,25 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
       //      printf("  the class is == %s\n", trida.Data() );
          if ( strstr(trida.Data(),"TH")!=0){
 	      TH1 *h=(TH1*)gDirectory->FindObject(title );
-	      printf("========== %s =====\n",  h->GetTitle()  );
+	      printf("========== %s =====\n",  title  );
 	      printf("entries  = %9.1f\n",  h->GetEntries()  );
 	      printf("mean     = %9.1f\n",  h->GetMean()   );
 	      printf("RMS      = %9.1f\n",  h->GetRMS()   );
 	      printf("integral = %9.1f\n",  h->Integral()   );
           }
 	  if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
-	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title ); h->Draw();}
+	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
+	    if (fchk1state!=0){
+	    ro_getnext(h);
+	    }else{
+	      h->Draw();
+	    }
+	  }
 	  if (trida.CompareTo("TH1D")==0){TH1D *h=(TH1D*)gDirectory->FindObject(title ); h->Draw();}
 	  if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
 
+
+	  
 	  if (trida.CompareTo("TCutG")==0){
 	    TCutG *hc=(TCutG*)obj;//gDirectory->FindObject(title ); 
 	    //	    TCutG *hc=(TCutG*)gROOT->GetListOfSpecials()->FindObject(title ); 
@@ -441,46 +521,7 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	  }
 
 
-	  /*
-	  if ( (trida.CompareTo("TGraph")==0)||(trida.CompareTo("TGraphErrors")==0)){
 
-	    TGraphErrors *gr=(TGraphErrors*)gDirectory->FindObject(title );
-	    TH1* histo;  int addr[1];  int count=1; addr[0]=0;
-	    RecoverTH1fromGPAD2( count, addr );
-	    int make_own_h=1;
-	    histo=(TH1*)addr[0];
-	    if (histo!=NULL){
-	      printf("histo belonging to tgraph was found: see the stats TGraphErrors:%s\n", "" );
-	      gr->Print();
-	      printf("histo belonging to tgraph was found: see the stats TH1:%s\n", "" );
-	      histo->Print();
-	      // CHECKING ONLY IN X ......  Y can be very difficult for 1D
-	      if ( (gr->GetXaxis()->GetXmin()>histo->GetXaxis()->GetXmin())&&
-		   (gr->GetXaxis()->GetXmax()<histo->GetXaxis()->GetXmax())//&&
-		   //		   (gr->GetYaxis()->GetXmin()>histo->GetYaxis()->GetXmin())&&
-		   //		   (gr->GetYaxis()->GetXmax()<histo->GetYaxis()->GetXmax())
-		   ){
- 		printf("Using a previous HISTO to plot TGraph...\n%s", "" );
-		 gr->Draw("pl");
-		 make_own_h=0;
-	      }// graph fits inside.
-	      else{
-		printf(" previous HISTO is too narrow.... to plot TGraph...\n%s", "" );
-		make_own_h=1;
-	      }// graph doesnot fit
-	    }// histo not null......
-	    if (make_own_h==1){
-	    // BETTER WE SHOULD FIND/CREATE histo for the tgraph....
-	    TString grhis=title;
-	    grhis.Append("_H");
-	    TH2F *hgr=new TH2F(grhis.Data(),grhis.Data(),200, gr->GetXaxis()->GetXmin() , gr->GetXaxis()->GetXmax(),
-			                                 200, gr->GetYaxis()->GetXmin() , gr->GetYaxis()->GetXmax() );
-	    hgr->SetStats(kFALSE);
-	    hgr->Draw();
-	    gr->Draw("pl");
-	    }// make own HISTO
-	  }// CLASS == TGRAPH  OR  TGRAPHERROR
-*/
 
 
 	  if (gPad!=NULL){ gPad->Modified();gPad->Update();}
