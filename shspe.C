@@ -3526,42 +3526,7 @@ void MyMainFrame::HandleEvents(Int_t id)
       *
       */
      if (fListBox2->GetSelected()==1 ){ //openfile clicked
-       //  printf("testing .... file when getselected==1\n%s", "");
-       /*
-	*   I WILL NOT SUPPORT file in FENTRY, because problems of doubleclick.....
-	* 
-	*/
-       /*
-       FILE *ftst=fopen( fentry->Data(), "r");    //  check the existence of the filename in fentry
-       if (ftst!=NULL){ 
-	 printf("...FILE <%s> does exist\n",fentry->Data());
-       }else{
-	 printf("...FILE <%s> does NOT exist\n",fentry->Data());
-       }
-       */
-
-
-       /*
-	*       file exists     or       ""
-	*/
-       //not like this       if (fentry->Data()==""){printf(" fentry je NIC%s\n","");}
-       /*
-       TString *newfentry=fentry;
-       if  (ftst==NULL) { newfentry->Clear();}else{fEntry->Clear();}  // MAKE IT NO STRING
-       if ( (ftst!=NULL)||(newfentry->CompareTo("")==0) ){  //if empty -> open anyway (==refresh from memory)
-        if  (ftst!=NULL) {fclose(ftst);}
-	printf("going to open <%s> \n", newfentry->Data()  );
-        fOpenFile(newfentry,fListBox2); 
-
-        fOpenFile("",fListBox2); 
-	printf("         opened <%s>, going to resize \n", newfentry->Data()  );
-	//        fEntry->Clear();//always clear the text field...
-	//         fListBoxOF->Resize(1 , listbox_vsize );  // BY DEFAULT 
-	fListBox2->Resize(100,listbox_vsize); 
-	printf("      resized, going to layout %s\n",  "" );
-        Layout();// important !  makes it wider
-       }// no file, ok, refresh from memory
-       */
+    
        TString *newfentry=fentry;newfentry->Clear();
        
        fOpenFile(newfentry,fListBox2, atoi(fEntrySIG->GetText()));
@@ -3696,13 +3661,12 @@ void MyMainFrame::HandleEvents(Int_t id)
      /*
       *
       *   NEXT LINES------------------------------ OPENFILE NOT clicked ----------- >>>>>>>>>>>>
-      * 
+      *   SEEMS PROGRAM DOESNOT GO HERE ???????  2015 11 13?
       */
       if (fListBox2->GetSelected()>1 ){ 
 	//   printf("testing .... file when getselected!=1\n%s", "");
 	//             fOpenFile(fentry,fListBox2); 
 	     fDisplayFromList2( fListBox2->GetSelected() ,
-				//				"" );
 	                        fListBox2->GetSelectedEntry()->GetTitle(), fChk1->GetState()  );
 
       }// some item from flistbox2 ==display
