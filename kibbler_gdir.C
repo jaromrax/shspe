@@ -354,13 +354,26 @@ TH1F* extract_next(TH1F* h){
 
 
 void ro_getnext(TH1F* h){
+  int mx,mn;
+  int mx1=h->GetMaximum();
+  int mn1=h->GetMinimum();
 
+  
+  
   TH1F* h2,*h3,*h4, *h5, *h6;
   h2=extract_next( h );
   h->SetLineColor(1);h->SetLineWidth(2);
   h->Draw();
   if (h2!=NULL){
     h2->SetLineColor(2);h2->SetLineWidth(2);
+    
+    int mx2=h2->GetMaximum();
+    int mn2=h2->GetMinimum();
+    if (mn2>mn1){ mn=mn1;}else{mn=mn2;}
+    if (mx2>mx1){ mx=mx2;}else{mx=mx1;}
+    h->GetYaxis()->SetRangeUser(mn1, mx*1.1);
+    h2->GetYaxis()->SetRangeUser(mn1, mx*1.1);
+
     h2->Draw("same");
       h3=extract_next( h2 );
       if (h3!=NULL){

@@ -1454,19 +1454,20 @@ void  MyMainFrame::RefreshAll(){
   FILE * pFile;
   pFile=fopen( "mmap.histo" ,"r" ); 
   if (pFile!=NULL) {
+    TDirectory *now=gDirectory;
     printf("mmap.histo file found \n%s","" );
     
     TMapFile* mfile =TMapFile::Create("mmap.histo");
-     TMapRec *mr = mfile->GetFirst();
- while (mfile->OrgAddress(mr)) {
-   TString classn=mr->GetClassName();
-   if ( strcmp(classn.Data(),"TH1F")==0){
-     TString name=mr->GetName();
-     TH1F *h  =0;
-     h=(TH1F*)mfile->Get(name.Data(), h );
-
-
-     gROOT->cd();
+    TMapRec *mr = mfile->GetFirst();
+    while (mfile->OrgAddress(mr)) {
+      TString classn=mr->GetClassName();
+      if ( strcmp(classn.Data(),"TH1F")==0){
+	TString name=mr->GetName();
+	TH1F *h  =0;
+	h=(TH1F*)mfile->Get(name.Data(), h );
+	
+	
+	gROOT->cd();
      TH1F *hc=(TH1F*)gDirectory->Get( name.Data()  );
      if ( hc==NULL){
        //printf("new histo\n%s","");
@@ -1480,13 +1481,14 @@ void  MyMainFrame::RefreshAll(){
        hc->SetEntries(entries);
        delete h;
      }
-   }
+      }
    mr   = mr->GetNext();
- }
- 
- delete mr;
+    }
+    
+    delete mr;
+    now->cd();
   } // mmap file exists
- //======================================= MMAP=======
+  //======================================= MMAP=======
   
 
   
