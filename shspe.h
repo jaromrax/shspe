@@ -108,8 +108,10 @@
 #include <dirent.h>
 #include <cstdio>
 
-
-
+// mmap file.... i use err()
+#include <err.h>
+#include <sys/mman.h>
+#include <fcntl.h>   //  open,  O_RW
 /*
  *   import other  functions......
  */
