@@ -28,12 +28,17 @@ mkdir ~/root.inst
 mkdir ~/root_macros
 ```
 
+
+
 Append to your  $HOME/.bashrc paths to ~/root/:  
 ```
 export ROOTSYS=$HOME/root
 export PATH=$ROOTSYS/bin:~/root_macros:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
 ```
+
+Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
+
 
 First you need to configure the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
 
