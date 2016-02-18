@@ -1204,6 +1204,8 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
  //------------------------------------------------------
  // lets   first  openfile......
+ RefreshAll();
+ 
  TString *fentry=new TString( fEntry->GetText() );  // normaly ""
  fOpenFile(fentry,fListBox2,  atoi(fEntrySIG->GetText()) );    // 1st fopenfile ---<<<<<<<<< read current directory
  TString GPADTITLE= GPAD->GetTitle();
@@ -1270,6 +1272,8 @@ MyMainFrame*  shspe(int page=2){
   mmframe= new MyMainFrame(0,mmframe_w,mmframe_h, page  );  // TGWindow==0,  w,   h 
 
   cutload();
+         mmframe->RefreshAll();
+
   //  printf(" trying to add TH1%s\n","");
 
   //      mmframe->AddTH1();
@@ -2623,7 +2627,7 @@ void MyMainFrame::fSELUnzoom(int id,TString *fentry){
 
 //void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){ 
 void MyMainFrame::fSELDivCanv(int id,TString *fentry){ 
-  printf("item %2d:%s.... sel unzoom all\n",id,fentry->Data());  
+  printf("item %2d:%s.... fSELDivCanv\n",id,fentry->Data());  
   // Zrejme variantni moznost vyhledani TH1 vsude............... NEVER USE UNZOOMALL
   
   int count=MAXPRIMITIVES;  int64_t addr[MAXPRIMITIVES];
@@ -2701,8 +2705,11 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
     }
    //    TCanvas *GPAD; // THIS IS KEY 1 to identify histogram
    //      GPAD=
+
+
       GPAD->GetCanvas()->Clear();
       GPAD->GetCanvas()->SetFillColor( 16 );
+      GPAD->GetCanvas()->Clear();
       //      	GPAD->GetPad(ii)->Modified();GPAD->GetPad(ii)->Update();
       TPad *p;
       float  dxy=0.002;
@@ -2711,21 +2718,71 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       fEntry->SetText(""); // I want to clear
       switch( targetpads ){
       case 1:
-	divide_mod_flag=13; break;
+	divide_mod_flag=24; break;
       case 2:
 	divide_mod_flag=0; break;
-      case 3:
-	divide_mod_flag=6; break;
-      case 4:
-	divide_mod_flag=4; break;
-      case 6:
-	divide_mod_flag=8; break;
-      case 9:
-	divide_mod_flag=9; break;
+      case 21:
+	divide_mod_flag=1; break;
       case 12:
+	divide_mod_flag=0; break;
+      case 3:
+	divide_mod_flag=2; break;
+      case 31:
+	divide_mod_flag=4; break;
+      case 13:
+	divide_mod_flag=5; break;
+	
+      case 4:
+	divide_mod_flag=7; break;
+      case 41:
+	divide_mod_flag=7; break;
+      case 14:
+	divide_mod_flag=8; break;
+      case 22:
+	divide_mod_flag=6; break;
+
+      case 5:
+	divide_mod_flag=9; break;
+      case 51:
+	divide_mod_flag=9; break;
+      case 15:
 	divide_mod_flag=10; break;
-      case 16:
+
+      case 6:
 	divide_mod_flag=11; break;
+      case 32:
+	divide_mod_flag=11; break;
+      case 23:
+	divide_mod_flag=12; break;
+      case 16:
+	divide_mod_flag=13; break;
+      case 61:
+	divide_mod_flag=14; break;
+
+      case 8:
+	divide_mod_flag=15; break;
+      case 24:
+	divide_mod_flag=15; break;
+      case 42:
+	divide_mod_flag=16; break;
+      case 81:
+	divide_mod_flag=17; break;
+	
+      case 9:
+	divide_mod_flag=18; break;
+      case 33:
+	divide_mod_flag=18; break;
+
+      case 43:
+	divide_mod_flag=19; break;
+      case 34:
+	divide_mod_flag=20; break;
+      case 44:
+	divide_mod_flag=21; break;
+      case 54:
+	divide_mod_flag=22; break;
+      case 45:
+	divide_mod_flag=23; break;
       }
 	 switch(divide_mod_flag){
 	 case 0:
@@ -2740,6 +2797,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 	     GPAD->cd(1);
 
 	     break;
+	     //==================================3jicky
 	 case 2: 
 	     divide_mod_flag++;
 	     //	     GPAD->Divide( 1 ,2  ,0.002,0.002, 0);
@@ -2768,52 +2826,115 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 	     break;
 	 case 4:
 	     divide_mod_flag++;
-	     GPAD->Divide( 2 ,2  ,0.002,0.002, 0);
-	     GPAD->cd(1);
+	     GPAD->Divide( 3 , 1 ,0.002,0.002, 0);	     GPAD->cd(1);
 
 	     break;
 	 case 5:
 	     divide_mod_flag++;
-	     GPAD->Divide( 3 , 1 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 1 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
 
 	     break;
+	     //========================== 4ricky
 	 case 6:
 	     divide_mod_flag++;
-	     GPAD->Divide( 1 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 2 ,2  ,0.002,0.002, 0);
+	     GPAD->cd(1);
 
 	     break;
 	 case 7:
 	     divide_mod_flag++;
-	     GPAD->Divide( 3 , 2 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 4 ,1  ,0.002,0.002, 0);
+	     GPAD->cd(1);
 
 	     break;
 	 case 8:
 	     divide_mod_flag++;
-	     GPAD->Divide( 2 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 1 ,4  ,0.002,0.002, 0);
+	     GPAD->cd(1);
 
 	     break;
+	     // =================== 5tice
 	 case 9:
 	     divide_mod_flag++;
-	     GPAD->Divide( 3 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 5 ,1  ,0.002,0.002, 0);
+	     GPAD->cd(1);
 
 	     break;
 	 case 10:
 	     divide_mod_flag++;
+	     GPAD->Divide( 1 ,5  ,0.002,0.002, 0);
+	     GPAD->cd(1);
+
+	     break;
+	     // ========================  6tice
+	 case 11:
+	     divide_mod_flag++;
+	     GPAD->Divide( 3 , 2 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 12:
+	     divide_mod_flag++;
+	     GPAD->Divide( 2 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 13:
+	     divide_mod_flag++;
+	     GPAD->Divide( 1 , 6 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 14:
+	     divide_mod_flag++;
+	     GPAD->Divide( 6 , 1 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	     //========================== 8mice
+	 case 15:
+	     divide_mod_flag++;
+	     GPAD->Divide( 2 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 16:
+	     divide_mod_flag++;
+	     GPAD->Divide( 4 , 2 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 17:
+	     divide_mod_flag++;
+	     GPAD->Divide( 8 , 1 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	     // =========================== 9
+	 case 18:
+	     divide_mod_flag++;
+	     GPAD->Divide( 3 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 19:
+	     divide_mod_flag++;
 	     GPAD->Divide( 4 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
 
 	     break;
-	 case 11:
+	 case 20:
+	     divide_mod_flag++;
+	     GPAD->Divide( 3 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 21:
 	     divide_mod_flag++;
 	     GPAD->Divide( 4 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
 	     break;
 
-	 case 12:
+	 case 22:
 	     divide_mod_flag++;
     	     GPAD->Divide( 5 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
-	     //	     GPAD->Divide( 2 , 2 ,0.002,0.002, 0);	     GPAD->cd(1);
 	     break;
 
-	 case 13:
+	 case 23:
+	     divide_mod_flag++;
+    	     GPAD->Divide( 4 , 5 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     break;
+
+	 case 24:
 	     divide_mod_flag=0; 
 	     GPAD->cd(0);
 	     p=new TPad("c1","c",    dxy,    dxy,1.0-dxy, 1.0-dxy,  4);p->Draw();//dolni
@@ -2825,7 +2946,10 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 
 	 int ii=1; 
 	 //	 int cols[22]={0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0};
-	 int cols[22]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	 int cols[22]={0,0,0,0,0,
+		       0,0,0,0,0,
+		       0,0,0,0,0,
+		       0,0,0,0,0,0};
       while ( GPAD->GetPad(ii)!= NULL){
 	//	printf("%2d  # %d\n", ii,   GPAD->GetPad(ii)->GetNumber()  );
 	GPAD->GetPad(ii)->SetFillColor( cols[ii] );
@@ -2973,30 +3097,6 @@ void MyMainFrame::fSELDivide(int id,TString *fentry){
 
 
 
-void MyMainFrame::fSELClear(int id,TString *fentry){ 
-   printf("item %2d:%s clear (one)\n",id,fentry->Data());  
-  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
-  // i use exclude tgraph;  restrict davam:0= muze to byt tgraph->Histo?
-  //ABY MI fungovalo clear     (x) multi, musim tohle zmenit........
-  RecoverTH1fromGPAD( count, addr ,"TH" ,0 , "TGraph");  // was 1+crash; either ,"TH" ,0   OR  "",1
-  for (int icount=0;icount<count;icount++){
-      histo=(TH1*)addr[icount];
-      //      printf("%d)from tpad %d recovered histo addresses (%ld,...) [DATE]\n", icount,count, (int64_t)addr[0] );
-      printf("Clearing histogram /%s/\n",  histo->GetName()  );
-      if (histo!=NULL){       histo->Reset();  } 
-  }//for loop
-    //---------previous---------------------
-  /*
-  histo=(TH1*)addr[0];
-  printf("from tpad %d recovered %d histo addresses\n", count, addr[0] );
-  printf("Clearing histogram /%s/\n",  histo->GetName()  );
-  if (histo!=NULL){       histo->Reset();  }
-  */
-  //  gPad->Modified();gPad->Update();  
-  RefreshAll();
-}   
-
-
 void  MyMainFrame::fSELRefresh(int id,TString *fentry){
   printf("item %2d:%s refresh (all)\n",id,fentry->Data());  
   RefreshAll();
@@ -3106,21 +3206,106 @@ void MyMainFrame::fSELSaveCanvas(int id,TString *fentry){
 
 
 
+
+
+
+
+
+void MyMainFrame::fSELClear(int id,TString *fentry){ 
+   printf("item %2d:%s clear (one)\n",id,fentry->Data());  
+  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
+  // i use exclude tgraph;  restrict davam:0= muze to byt tgraph->Histo?
+  //ABY MI fungovalo clear     (x) multi, musim tohle zmenit........
+  RecoverTH1fromGPAD( count, addr ,"TH" ,0 , "TGraph");  // was 1+crash; either ,"TH" ,0   OR  "",1
+  for (int icount=0;icount<count;icount++){
+      histo=(TH1*)addr[icount];
+      printf("Clearing histogram /%s/\n",  histo->GetName()  );
+      if (histo!=NULL){       histo->Reset();  } 
+  }//for loop
+
+    // THE ONLY COMMAND TO mmap.file ================================ start
+  //=============== here is a part with mmap
+  char *BinPath;
+  BinPath = getenv ("GREGORY");
+  if (BinPath==NULL){
+    BinPath=new char[4]; strcpy(BinPath, "../\0");
+  }
+  char mmapinfile[300];
+  sprintf( mmapinfile, "%s/%s" , BinPath, ".mmap.1.vme");
+  FILE * pFile;
+  // i presume to be in ./data/
+  //printf("test %s\n",  mmapinfile );
+  pFile=fopen( mmapinfile  ,"r" ); 
+  if (pFile!=NULL) {
+    TDirectory *now=gDirectory;
+    printf("+... %s file found \n", mmapinfile );
+    
+    //====================================== MMAP ====== communication 
+    //system("dd if=/dev/zero of=mmap.in  bs=4096  count=1 2> /dev/null");
+    int mmapfd;        //  =-1           file handle for mmap
+    char* mmap_file ;  // pointer to     mmap
+    if ((mmapfd = open( mmapinfile, O_RDWR, 0)) == -1) err(1, "open");
+    mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
+    if (mmap_file == MAP_FAILED) errx(1, "either mmap");
+    strcpy(mmap_file,  "clear\0\0\0"  ); // "acq_setup.xml\nrun=1\n";
+    //====================================== MMAP ====== communication
+    
+    now->cd();
+  }// pFile existed ==========================================END
+  
+  RefreshAll();
+}   
+
+
+
+
 void  MyMainFrame::fSELClearAll(int id,TString *fentry){ 
   printf("item %2d:%s clear all\n",id,fentry->Data()); 
 
-	         TH1 *o;
-	 for (int iii=0 ; iii<gDirectory->GetList()->GetEntries() ; iii++ ){ //why 1000? - just so
-	   TString sa1=gDirectory->GetList()->At(iii)->GetName();
-	   o=(TH1*)gDirectory->FindObject( sa1.Data() );
-	   TString sa2=o->ClassName();
-	   if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) ){
-	     o->Reset();
-	   }// TH  OBJECT 
-	}//iii (mem)
-	 //  gPad->Modified();gPad->Update();  
-	 RefreshAll();
-}
+  TH1 *o;
+  for (int iii=0 ; iii<gDirectory->GetList()->GetEntries() ; iii++ ){ //why 1000? - just so
+    TString sa1=gDirectory->GetList()->At(iii)->GetName();
+    o=(TH1*)gDirectory->FindObject( sa1.Data() );
+    TString sa2=o->ClassName();
+    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) ){
+      o->Reset();
+    }// TH  OBJECT 
+  }//iii (mem)
+  //  gPad->Modified();gPad->Update();
+  
+
+  // THE ONLY COMMAND TO mmap.file ================================ start
+  //=============== here is a part with mmap
+  char *BinPath;
+  BinPath = getenv ("GREGORY");
+  if (BinPath==NULL){
+    BinPath=new char[4]; strcpy(BinPath, "../\0");
+  }
+  char mmapinfile[300];
+  sprintf( mmapinfile, "%s/%s" , BinPath, ".mmap.1.vme");
+  FILE * pFile;
+  // i presume to be in ./data/
+  //printf("test %s\n",  mmapinfile );
+  pFile=fopen( mmapinfile  ,"r" ); 
+  if (pFile!=NULL) {
+    TDirectory *now=gDirectory;
+    printf("+... %s file found \n", mmapinfile );
+    
+    //====================================== MMAP ====== communication 
+    //system("dd if=/dev/zero of=mmap.in  bs=4096  count=1 2> /dev/null");
+    int mmapfd;        //  =-1           file handle for mmap
+    char* mmap_file ;  // pointer to     mmap
+    if ((mmapfd = open( mmapinfile, O_RDWR, 0)) == -1) err(1, "open");
+    mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
+    if (mmap_file == MAP_FAILED) errx(1, "either mmap");
+    strcpy(mmap_file,  "clear\0\0\0"  ); // "acq_setup.xml\nrun=1\n";
+    //====================================== MMAP ====== communication
+    
+    now->cd();
+  }// pFile existed ==========================================END
+  
+  RefreshAll();
+}//  ClearAll END ======================
 
 
 

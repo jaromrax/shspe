@@ -28,6 +28,8 @@ mkdir ~/root.inst
 mkdir ~/root_macros
 ```
 
+
+
 Append to your  $HOME/.bashrc paths to ~/root/:  
 ```
 export ROOTSYS=$HOME/root
@@ -35,9 +37,21 @@ export PATH=$ROOTSYS/bin:~/root_macros:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
 ```
 
+Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
+
+
 First you need to configure the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
 
-Here, you probably need some prerequisites: *... to be added later ...*
+Here, you probably need some prerequisites: 
+
+```
+aptitude install dpkg-cross
+aptitude install xpm-dev
+aptitude install libxpm-dev
+aptitude install libxft-dev
+```
+
+*... to be added later ...*
 ```
  ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
 
