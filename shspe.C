@@ -2,7 +2,9 @@
 // Author: Jaromir Mrazek -  2008/08
 //   started with scripts and help of people from root team (Antcheva 1/12/2006)
 //
-
+//--    logy
+//      gcut - crashes...
+//
 #include "TMapFile.h"
 
 #include "kibbler_fit.C"
@@ -2409,7 +2411,7 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
  sprintf( ch, "%s_%s", o->GetName() ,  chtr );
  printf("Finstring = /%s/\n",ch);
  TObject *o2=o->Clone( ch );
- printf("Cloned %d\n",o2);
+ //IDONTKNOW printf("Cloned %d\n",(int)o2);
  //I do direct clone ...  TObject *o2=gDirectory->FindObject( ch );
 
  // not nice ...sprintf( ch, "%s_{(from %s)}", o2->GetTitle(), gFile->GetName()  );
