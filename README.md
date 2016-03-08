@@ -25,7 +25,7 @@ Here, you probably need some prerequisites:
 
 ```
 aptitude install dpkg-cross
-aptitude install libxpm-dev
+aptitude install libxext-dev
 aptitude install libxpm-dev
 aptitude install libxft-dev
 ```
