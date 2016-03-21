@@ -156,7 +156,7 @@ void cutls(){
 
 
 
-void saveobj2file(char *filenam,  TH1* xobj, int bkup=0){
+void saveobj2file(const char *filenam,  TH1* xobj, int bkup=0){
   //  printf("obj 2 file ###########\n",1);
   TDirectory *oldir=gDirectory;
   TString s,nn;
@@ -216,7 +216,7 @@ void savecanvas(const char *filenam, int slot=0){
     char appcha[15]; 
   TString s_e=s;
   TString s_p=s;
-  TString s_r=s;
+  TString s_r=s;//root file:  but now i want to save spectra there
   TString s_png=s;
   if (slot==0){  //  SLOT==0 means   no  slot....
   sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );
@@ -347,8 +347,32 @@ void savecanvas(const char *filenam, int slot=0){
  
   cmy->SaveAs(s_e);
   cmy->SaveAs(s_p);
-  cmy->SaveAs(s_r);
   cmy->SaveAs(s_png);
+
+  
+  // cmy->SaveAs(s_r); // not as TCanvas but :
+  //--------------------------------------------------
+  int canen=cmy->GetListOfPrimitives()->GetEntries();
+  //  printf("DEBUG: %d\n", canen);
+  for (int i=0;i<canen;i++){
+    if ( strstr( cmy->GetListOfPrimitives()->At(i)->ClassName(),"TPad")!=NULL){
+      TPad *p=(TPad*)cmy->GetListOfPrimitives()->At(i);
+      int paden=p->GetListOfPrimitives()->GetEntries();
+      //      printf("DEBUG: %d\n", canen);
+        for (int j=0;j<paden;j++){
+	  //	  printf("DEBUG: checking %d  class:%s\n", j, p->GetListOfPrimitives()->At(i)->ClassName()  );
+	  if (strstr(p->GetListOfPrimitives()->At(j)->ClassName(),"TH")!=NULL){
+	    //	    printf("DEBUG: saving %d to %s\n", j,  s_r.Data() );
+	    saveobj2file(s_r.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
+	  } // strstr
+	} //j paden
+    } // strstr
+  } //i canen
+  //  printf("DEBUG: end canen   %d\n", canen);
+    
+  //--------------------------------------------------
+
+    
   cmy->SetName( cannaori.Data() ); // put the original name
   }else{printf("use: savecanvas(\"filename_without_extension\")\n");}  
 
@@ -2285,6 +2309,7 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 
 
       FILE *fo;
+      //====================================  k dk  A dA
       fo=fopen( filename_eff.Data() ,"a") ; 
       for (int i=0; i<fit->getNpeaks(); i++){
       fit->accessParams(i+1, array[i] ); 
@@ -2321,13 +2346,46 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 	      array[i][0],
 	      array[i][1]/cal_a,
 	      array[i][1]         );
-      }// i
-      fclose( fo );
-      //nonsense ...histo->SetBins( cal_chan , cal_b  ,  cal_b + cal_a*cal_chan );
+       }// i
+       fclose( fo );
+	  // nonsense ...histo->SetBins(cal_chan,cal_b,cal_b + cal_a*cal_chan );
 
 
-      printf("saved %s\n","");
-      curr->cd();
+       //================= MYSQL INSERT ===================== BEGIN
+       char cmdls[250]; char output[300];
+       ifstream myCurrFile;
+       myCurrFile.open(".CURRENTFILE");
+       if (myCurrFile.is_open()) {
+	  while (!myCurrFile.eof()) {
+	     myCurrFile >> output;
+	  }
+       }
+       myCurrFile.close();
+       
+       printf(" groot gFile = %f, but filename %s\n", (int64_t)gFile, output );
+       //       if (gROOT->GetFile() !=NULL){
+       if ( strlen( output)>3  ){
+       for (int i=0; i<fit->getNpeaks(); i++){
+        sprintf( cmdls,"./shspe_mysql %s %f %f %f %f %s", output ,
+		  array[i][0], array[i][1],
+		 array[i][2],  array[i][3],
+		 fentry->Data() );
+	 printf("+ ... running script:  %s\n",  cmdls );
+         system(cmdls);
+	 // i need
+	 //sig dsig
+	 //contour
+	 //detector
+	 //pkid
+       }// i peaks LOOP
+       } // gFile EXISTS
+       //================= MYSQL ===================== END
+
+
+       
+
+       printf("saved %s\n","");
+       curr->cd();
     }//C not NULL
    }//fit not null 
 }// SELComSig
@@ -3527,32 +3585,23 @@ void MyMainFrame::HandleEvents(Int_t id)
     /////#######################################################  DECIDE WHAT TO DO NOW
     printf("decision part %d:\n", OFaction );
     //   sleep(1);
-    if (OFaction==0){// cancel //------------------------------------------------
-    }//0 cancel
-
-    if (OFaction==1){// OPEN //------------------------------------------------
+    if (OFaction==0){// cancel //----------------------
+    }
+    if (OFaction==1){// OPEN //------------------------------
       if ( gFile!=NULL ){ 
 	printf("...closing file %ld <%s>\n",  (int64_t)gFile, gFile->GetName() );
       	// gFile->Close(); // BIG PROBLEMS TO CLOSE
  	printf("...file closed (virtualy) %ld \n", (int64_t)gFile );
      } // if file opened
-
-      //      sleep(1);
-      //      printf("%s","... file closed\n");
-      //    TString *fn= (TString*)fSelectedOF->At( ii) ;
       TString *fn=new TString(  fileselect.Data() ); 
-      //     printf("...appending  <%s>\n", fileselect.Data()     );
-      //     fn->Append( fileselect.Data() );
-     //     sleep(1);
+      ifstream myReadFile;
 
- ifstream myReadFile;
-
-
- // at startup........this appears================ REMOTE DATADIR
- printf("going to open REMOTE_DATA_DIR %s\n", "file"); // NOT HERE???????
- myReadFile.open("REMOTE_DATA_DIR");
- printf("done  to open REMOTE_DATA_DIR %s\n", "file ");
+ printf("going to open .REMOTE_DATA_DIR %s\n", "file"); // NOT HERE???????
+ myReadFile.open(".REMOTE_DATA_DIR");
+ printf("done  to open .REMOTE_DATA_DIR %s\n", "file ");
  char output[300];
+
+
  if (myReadFile.is_open()) {
    while (!myReadFile.eof()) {
      myReadFile >> output;
@@ -3573,47 +3622,39 @@ void MyMainFrame::HandleEvents(Int_t id)
  myReadFile.close();//============================ REMOTE DATADIR
 
 
-      if (fn->BeginsWith("~")){
-	//	fn->ReplaceAll("~","/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/");
-	fn->ReplaceAll("~", output  );
-      }
+  if (fn->BeginsWith("~")){
+//	fn->ReplaceAll("~","/mnt/hgfs/AA_share/DATA/20121029_elast_p_3He/");
+        fn->ReplaceAll("~", output  );
+  }
       
-      printf("\n<%s>\n",  fn->Data()    );
-      fOpenFile(  fn   , fListBox2  , atoi(fEntrySIG->GetText() ) );  // 2nd fopenfile<< click in id=122 listboxOF
-  //   sleep(1);
-      printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
-    }//1 OPEN  // OFaction==1
+  printf("\n<%s>\n",  fn->Data()    );
+  fOpenFile(fn,fListBox2,atoi(fEntrySIG->GetText() ) ); //2nd fopenfile<< click in id=122 listboxOF
+  printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
+  char aaa[500];
+  sprintf( aaa,"echo %s > .CURRENTFILE",  fn->Data()    );
+  system( aaa );
+ }//1 OPEN  // OFaction==1
 
 
-    //    // LETS CHANGE ANYTME   ***listboxOF clicked****
-      TString GPADTITLE= GPAD->GetTitle();
-      GPADTITLE.Replace(GPADTITLE.Index("##")+2, GPADTITLE.Length()-GPADTITLE.Index("##")+2 , gDirectory->GetName()  );
-      GPAD->SetTitle( GPADTITLE.Data()  );
-
+    
+//    // LETS CHANGE ANYTME   ***listboxOF clicked****
+    TString GPADTITLE= GPAD->GetTitle();
+    GPADTITLE.Replace(GPADTITLE.Index("##")+2, GPADTITLE.Length()-GPADTITLE.Index("##")+2 , gDirectory->GetName()  );
+    GPAD->SetTitle( GPADTITLE.Data()  );
 
 
 
     if (1==2){// SAVE NEW FILE //----------------------------
 //  if (OFaction==2){// SAVE NEW FILE //----------------------------
        TDirectory *curr=(TDirectory*)gDirectory;// to return back 
-
-       // MUSI tam byt    fentry.  Jinak to blbne s ***openfile***
        printf( "...before fSAVEFromList2 call: <%s>\n",  fEntry->GetText()  );
-       fSAVEFromList2( 2 , fEntry->GetText() ,  savename.Data() );  // TRY 2, id is obsolete...
-
-       // problem :  get entry gives   ** openfile *** .........  putin
-       //       printf( "...before fSAVEFromList2 call: <%s>\n",fListBox2->GetSelectedEntry()->GetTitle() );
-       //       fSAVEFromList2( 2 , fListBox2->GetSelectedEntry()->GetTitle() ,  savename.Data() );  // TRY 2, id is obsolete...
+       fSAVEFromList2(2,fEntry->GetText(),savename.Data() ); //TRY 2, id is obsl
        printf("saved %s\n",""); curr->cd();
     }//2 SAVE NEW
 
 
     if (OFaction==3){// SAVE TO EXISTING  //-----------------
     }//3
-
-
-    //    printf("decision ok %d, now Close OF:\n", OFaction );
-
 
     // IT CRASHES  SOMEWHERE  HERE==================================
     //    printf("???flbOF (%d entries). Removing entries from 1 to %d\n", 

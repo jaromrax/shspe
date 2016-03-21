@@ -834,10 +834,15 @@ if (gDirectory->GetListOfKeys()){
  */
 //printf(" keys in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", max);
 max=gDirectory->GetList()->GetEntries();
+ int newmax=max;
+ if (max > 1000 ){
+   printf("max entries is limited to 100 (in plae of %d)\n", max);
+    newmax=1000;
+ } // LIMIT ENTRIES 
 printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", max);
  int activentry=2; // this is entry number in the listbox2 .. 
  //             . ...not correlated with the displayed position in the box..
- for (int iii=0 ; iii<max ; iii++ ){
+ for (int iii=0 ; iii<newmax ; iii++ ){
  TString sa1=gDirectory->GetList()->At(iii)->GetName();
  if (sa1.Contains("/")>0){ printf("PROBLEM, I CANNOT HANDLE SLASH / in %s\n",sa1.Data() );}
  // printf("  %03d/  object: %s\n",  iii, sa1.Data()   );
@@ -861,7 +866,9 @@ printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", 
        //nfileentr++;	
    }//is TH1 th2 tgraph tcutg.....
  }//iii all entries gdir
-
+ if (max > newmax ){
+   printf("max entries is limited to 1000 (in place of %d)\n", max);
+ } // LIMITED ENTRIES 
 
 
 

@@ -20,6 +20,16 @@ root compilation
 
 Here is some simple guide to root compilation - before anything else - if necessary.
 
+
+Here, you probably need some prerequisites: 
+
+```
+aptitude install dpkg-cross
+aptitude install libxext-dev
+aptitude install libxpm-dev
+aptitude install libxft-dev
+```
+
 I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
 and the last for eventual macros:
 ```
@@ -39,17 +49,11 @@ export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
 
 Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
 
+Unpack to ~/root.inst and enter there
 
 First you need to configure the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
 
-Here, you probably need some prerequisites: 
 
-```
-aptitude install dpkg-cross
-aptitude install xpm-dev
-aptitude install libxpm-dev
-aptitude install libxft-dev
-```
 
 *... to be added later ...*
 ```
