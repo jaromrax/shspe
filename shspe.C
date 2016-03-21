@@ -154,7 +154,7 @@ void cutls(){
 
 
 
-void saveobj2file(char *filenam,  TH1* xobj, int bkup=0){
+void saveobj2file(const char *filenam,  TH1* xobj, int bkup=0){
   //  printf("obj 2 file ###########\n",1);
   TDirectory *oldir=gDirectory;
   TString s,nn;
@@ -214,7 +214,7 @@ void savecanvas(const char *filenam, int slot=0){
     char appcha[15]; 
   TString s_e=s;
   TString s_p=s;
-  TString s_r=s;
+  TString s_r=s;//root file:  but now i want to save spectra there
   TString s_png=s;
   if (slot==0){  //  SLOT==0 means   no  slot....
   sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );
@@ -345,8 +345,32 @@ void savecanvas(const char *filenam, int slot=0){
  
   cmy->SaveAs(s_e);
   cmy->SaveAs(s_p);
-  cmy->SaveAs(s_r);
   cmy->SaveAs(s_png);
+
+  
+  // cmy->SaveAs(s_r); // not as TCanvas but :
+  //--------------------------------------------------
+  int canen=cmy->GetListOfPrimitives()->GetEntries();
+  printf("DEBUG: %d\n", canen);
+  for (int i=0;i<canen;i++){
+    if ( strstr( cmy->GetListOfPrimitives()->At(i)->ClassName(),"TPad")!=NULL){
+      TPad *p=(TPad*)cmy->GetListOfPrimitives()->At(i);
+      int paden=p->GetListOfPrimitives()->GetEntries();
+      printf("DEBUG: %d\n", canen);
+        for (int j=0;j<paden;j++){
+	  printf("DEBUG: checking %d  class:%s\n", j, p->GetListOfPrimitives()->At(i)->ClassName()  );
+	  if (strstr(p->GetListOfPrimitives()->At(j)->ClassName(),"TH")!=NULL){
+	    printf("DEBUG: saving %d to %s\n", j,  s_r.Data() );
+	    saveobj2file(s_r.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
+	  } // strstr
+	} //j paden
+    } // strstr
+  } //i canen
+  printf("DEBUG: end canen   %d\n", canen);
+    
+  //--------------------------------------------------
+
+    
   cmy->SetName( cannaori.Data() ); // put the original name
   }else{printf("use: savecanvas(\"filename_without_extension\")\n");}  
 
