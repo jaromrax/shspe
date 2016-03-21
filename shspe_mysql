@@ -1,0 +1,69 @@
+#!/bin/bash
+
+CREDFILE="shspe.pk_mysql"
+
+function runnumber {
+    local RF=$1
+    echo $RF | grep "^run" >/dev/null
+    if [ "$?" != "0" ]; then
+	echo not a run
+	exit
+    fi
+    # run reomve; nonnumbers to =; first field; remove leading 0
+    echo $RF | sed  "s/^run//g" | sed  "s/[^0-9]/=/g" | cut -d = -f 1 | sed  "s/^0\+//g"
+#    echo $RF2
+}
+
+
+##################################### BEGIN ########
+##################################### BEGIN ########
+##################################### BEGIN ########
+##################################### BEGIN ########
+
+echo ======== bash script for insert to mysql=======
+if [ -e $CREDFILE ]; then
+  echo $CREDFILE exists
+else
+  echo you need file $CREDFILE:
+  echo user=
+  echo pass=
+  echo database=
+  exit
+fi
+
+#echo ... going to parse $CREDFILE
+USER=`cat $CREDFILE | grep -v \# | grep user= | cut -d = -f 2`
+echo USER=$USER
+PASS=`cat $CREDFILE | grep -v \# | grep pass= | cut -d = -f 2`
+DBASE=`cat $CREDFILE | grep -v \# | grep database= | cut -d = -f 2`
+echo DBASE=$DBASE
+# i need
+#    user,pass,server,databasename,run number
+########################################################
+
+
+#runnumber run0048_20140628_095336.root
+#RUN=`runnumber run0048_20140628_095336.root`
+RUN=`runnumber $1`
+echo run number=$RUN
+echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
+
+#HOW?
+pkid=1
+run=$RUN
+#HOW?  c019
+det=2
+#HOW?  contour
+part='d'
+k=$2
+dk=$3
+A=$4
+dA=$5
+sig=1.
+dsig=0.1
+
+fitcode="ccc+p1:scom"
+fitcode=$6
+valid=1
+echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE;
+
