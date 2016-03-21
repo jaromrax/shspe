@@ -3224,7 +3224,7 @@ void MyMainFrame::fSELClear(int id,TString *fentry){
     BinPath=new char[4]; strcpy(BinPath, "../\0");
   }
   char mmapinfile[300];
-  sprintf( mmapinfile, "%s/%s" , BinPath, "mmap.in");
+  sprintf( mmapinfile, "%s/%s" , BinPath, ".mmap.1.vme");
   FILE * pFile;
   // i presume to be in ./data/
   //printf("test %s\n",  mmapinfile );
@@ -3275,7 +3275,7 @@ void  MyMainFrame::fSELClearAll(int id,TString *fentry){
     BinPath=new char[4]; strcpy(BinPath, "../\0");
   }
   char mmapinfile[300];
-  sprintf( mmapinfile, "%s/%s" , BinPath, "mmap.in");
+  sprintf( mmapinfile, "%s/%s" , BinPath, ".mmap.1.vme");
   FILE * pFile;
   // i presume to be in ./data/
   //printf("test %s\n",  mmapinfile );
