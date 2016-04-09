@@ -349,7 +349,7 @@ void savecanvas(const char *filenam, int slot=0){
   cmy->SaveAs(s_p);
   cmy->SaveAs(s_png);
 
-  
+   if (slot==0){  //  SLOT==0 means   no  slot....
   // cmy->SaveAs(s_r); // not as TCanvas but :
   //--------------------------------------------------
   int canen=cmy->GetListOfPrimitives()->GetEntries();
@@ -369,6 +369,9 @@ void savecanvas(const char *filenam, int slot=0){
     } // strstr
   } //i canen
   //  printf("DEBUG: end canen   %d\n", canen);
+   }else{ // SLOT==0
+     cmy->SaveAs(s_r); // if SLOT != 0 => save TPad,not spectra
+   } // SLOT==0
     
   //--------------------------------------------------
 
