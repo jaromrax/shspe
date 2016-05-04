@@ -65,10 +65,13 @@ make install
 ```
 Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
 
+**Comment for Ubuntu xenial 16.04:**
+*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem*
 
 
 
 **shspe compilation**
+-----
 
 you may install the *~/.rootrc* and *~/.rootlogon* with
 	init_scripts/install_initscripts 
@@ -139,3 +142,13 @@ cutls()
 cutrm()
 cutcp()
 ```
+
+some details
+===========
+creates .CURRENTFILE on open
+
+checks .REMOTEDIR on open
+
+searches for shspe.pk_mysql setup file on savefit
+
+
