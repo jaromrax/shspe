@@ -154,7 +154,21 @@ void cutls(){
 //==============================================================
 
 
-
+void saveobj2asc(const char *filenam,  TH1* xobj){
+  FILE * pFile;
+  pFile=fopen( filenam ,"w" );
+  if (pFile!=NULL) {
+    int c,i,max;
+    max=xobj->GetNbinsX();
+    for (i=0;i<max;i++){
+      c=xobj->GetBinContent(i);
+      fprintf(pFile,"%d %d\n",i,c);
+    } //>alfa_run50_de6.txt
+    fclose(pFile);
+    printf("file /%s/ saved\n", filenam );
+  }
+  
+}
 
 void saveobj2file(const char *filenam,  TH1* xobj, int bkup=0){
   //  printf("obj 2 file ###########\n",1);
@@ -217,16 +231,19 @@ void savecanvas(const char *filenam, int slot=0){
   TString s_e=s;
   TString s_p=s;
   TString s_r=s;//root file:  but now i want to save spectra there
+  TString s_asc=s;//ascii file:  but now i want to save spectra there
   TString s_png=s;
   if (slot==0){  //  SLOT==0 means   no  slot....
   sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );
   sprintf( appcha,".%s", "ps" );    s_p.Append(  appcha  );
   sprintf( appcha,".%s", "root" );  s_r.Append(  appcha  );
+  sprintf( appcha,".%s", "asc" );  s_asc.Append(  appcha  );
   sprintf( appcha,".%s", "jpg" );   s_png.Append(appcha );
   }else{
   sprintf( appcha,"_%d.%s", slot, "eps" );   s_e.Append(  appcha );
   sprintf( appcha,"_%d.%s", slot, "ps" );    s_p.Append(  appcha  );
   sprintf( appcha,"_%d.%s", slot, "root" );  s_r.Append(  appcha  );
+  sprintf( appcha,"_%d.%s", slot, "asc" );  s_asc.Append(  appcha  );
   sprintf( appcha,"_%d.%s", slot, "jpg" );  s_png.Append(appcha );
   }
  
@@ -331,7 +348,7 @@ void savecanvas(const char *filenam, int slot=0){
   tt->Draw();
   printf("Draw label: %s\n\n", sla.Data() ); 
 
-  printf(".!  cp       %s ~/automatic_print/ \n\n",   s_p.Data()   ); 
+  //  printf(".!  cp       %s ~/automatic_print/ \n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_e.Data()   ); 
   printf(".!  gqview   %s&\n\n",  s_png.Data()   ); 
@@ -364,6 +381,8 @@ void savecanvas(const char *filenam, int slot=0){
 	  if (strstr(p->GetListOfPrimitives()->At(j)->ClassName(),"TH")!=NULL){
 	    //	    printf("DEBUG: saving %d to %s\n", j,  s_r.Data() );
 	    saveobj2file(s_r.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
+	    saveobj2asc(s_asc.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
+	    //int c; for ((i=0;i<4096;i++)){ c=c022->GetBinContent(i);printf("%d %d\n",i,c);} >alfa_run50_de6.txt
 	  } // strstr
 	} //j paden
     } // strstr

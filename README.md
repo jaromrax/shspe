@@ -1,10 +1,10 @@
-shspe
+**shspe**
 =====
 
 root macro to SHow SPEctra
 
-**download from git**
-
+1.1 download shspe from git
+-------
 this is a standard procedure, (make and) go to some directory and then:
 ```
  git init
@@ -14,14 +14,11 @@ this is a standard procedure, (make and) go to some directory and then:
 
 
 
-root compilation
------
-**root compilation**  (example for 64bit)
-
-Here is some simple guide to root compilation - before anything else - if necessary.
 
 
-Here, you probably need some prerequisites: 
+2.2 prerequisites for compilation of root: 
+----------
+basically, better check root.cern.ch website.
 
 ```
 aptitude install dpkg-cross
@@ -30,8 +27,13 @@ aptitude install libxpm-dev
 aptitude install libxft-dev
 ```
 
+2.3 root compilation
+-----
+  (example for 64bit)
+
+
 I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
-and the last for eventual macros:
+and the last for macros and compiled .so files:
 ```
 mkdir ~/root
 mkdir ~/root.inst
@@ -40,7 +42,7 @@ mkdir ~/root_macros
 
 
 
-Append to your  $HOME/.bashrc paths to ~/root/:  
+Append to your  ```$HOME/.bashrc``` paths to your ~/root/:  
 ```
 export ROOTSYS=$HOME/root
 export PATH=$ROOTSYS/bin:~/root_macros:$PATH
@@ -51,11 +53,10 @@ Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
 
 Unpack to ~/root.inst and enter there
 
-First you need to configure the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
+First you need to *configure* the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
 
 
 
-*... to be added later ...*
 ```
  ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
 
@@ -66,14 +67,14 @@ make install
 Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
 
 **Comment for Ubuntu xenial 16.04:**
-*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem*
+*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem as of 2016/05*
 
 
 
-**shspe compilation**
+3.1 shspe compilation
 -----
 
-you may install the *~/.rootrc* and *~/.rootlogon* with
+you may install the *~/.rootrc* and *~/.rootlogon* - it is my choice, you may prefer something differerent
 	init_scripts/install_initscripts 
 ```
 cd 	init_scripts
@@ -86,11 +87,12 @@ and then go back to you shspe install directory (*cd ..*) and do
 make 
 make install
 ```
-shspe .so library should be installed in root macro directory
+shspe .so library should be installed in root macro directory (verify)
 
-===
 
-run root
+
+4.1 run root
+----------
 ```
 root
 ````
@@ -98,8 +100,29 @@ and inside root  shspe. It is a function so don't miss parentheses.
 ```
 root [0] shspe()
 ```
+**4.1.1  AUTOLOAD**
 
-===
+At this point - in the directory I want to work - I create *autoload_libs.C* with a content like this:
+```
+{
+gROOT->ProcessLine("shspe()");
+}
+```
+and the next start of root, the shspe() opens automaticaly.
+
+**4.1.2 .REMOTE_DATA_DIR**
+
+If the data are on different PATH than your working dir: create a /hidden/ file:
+``` .REMOTE_DATA_DIR ``` . shspe() on *Openfile* will show the content also of this destination.
+
+**4.1.3 OPEN FILE**
+
+First thing you can do now is open a root file with histograms. 
+
+**FILE SAVE** 
+
+5.1 Other functions
+------------
 
 There are more functions loaded with shspe:
 
@@ -143,12 +166,11 @@ cutrm()
 cutcp()
 ```
 
-some details
-===========
+6.1 some specific  details
+------------
 creates .CURRENTFILE on open
 
 checks .REMOTEDIR on open
 
 searches for shspe.pk_mysql setup file on savefit
-
 
