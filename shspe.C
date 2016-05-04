@@ -3829,8 +3829,8 @@ void MyMainFrame::HandleEvents(Int_t id)
 	 //-----------------------stage 2 start---------------
 	 //THIS PART I SEE WHEN I DO OPENFILE: ::::
 	 ifstream myReadFile;
-	 printf("going to open file  REMOTE_DATA_DIR to append additional files from remote repo%s\n", "");
-	 myReadFile.open("REMOTE_DATA_DIR");
+	 printf("going to open file  .REMOTE_DATA_DIR to append additional files from remote repo%s\n", "");
+	 myReadFile.open(".REMOTE_DATA_DIR");
 	 char output[300];
 	 if (myReadFile.is_open()) {
 	   while (!myReadFile.eof()) {    
