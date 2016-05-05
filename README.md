@@ -187,3 +187,7 @@ checks .REMOTE_DATA_DIR on open
 
 searches for a script  *shspe.pk_mysql* setup file on savefit
 
+
+
+*edited in http://dillinger.io/*
+

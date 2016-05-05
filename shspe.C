@@ -2257,6 +2257,7 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
   //  printf("item %2d:%s\n",id,fentry->Data());  
   TString filename="zfitresults_final.root";// SAVE SAVE SAVE
   TString filename_eff="zfitresults.eff";
+  TString filename_tmp="zfitresults.tmp";
   TString filename_cal="zfitresults.ecal";
   if (id==999)printf("  unused id, fentry %d %s\n", id, fentry->Data()  );
 
@@ -2330,16 +2331,20 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 
 
 
-      FILE *fo;
+      FILE *fo, *ftmp;
       //====================================  k dk  A dA
+      ftmp=fopen( filename_tmp.Data() ,"w") ; 
       fo=fopen( filename_eff.Data() ,"a") ; 
       for (int i=0; i<fit->getNpeaks(); i++){
       fit->accessParams(i+1, array[i] ); 
       //      printf("#%d  %f   %f        %f  %f\n", i,array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       fprintf(fo,
          "%8.3f   %6.3f  %f  %f\n", array[i][0], array[i][1],  array[i][2],  array[i][3]  );
+      fprintf(ftmp,
+         "%8.3f   %6.3f  %f  %f\n", array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       }// i
       fclose( fo );
+      fclose( ftmp );
 
       /*
        * CALIBRATION FILE
