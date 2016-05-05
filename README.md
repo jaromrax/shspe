@@ -1,3 +1,4 @@
+
 **shspe**
 =====
 
@@ -117,9 +118,21 @@ If the data are on different PATH than your working dir: create a /hidden/ file:
 
 **4.1.3 OPEN FILE**
 
-First thing you can do now is open a root file with histograms. 
+First thing you can do now is open a root file with histograms. Root files that are on ```.REMOTE_DATA_DIR``` path are displayed with a tilde ~. The actual opened file name written to /hidden/ ```.CURRENTFILE```. This could be usefull if you needed to deduce the run number in some script or something. But this can also create difficulties when two shspe() sessions are open in the same directory.
 
-**FILE SAVE** 
+**4.1.4. OPEN FILE details**
+
+The  shspe() can also open:
+* mysql reference files with a name like *tablename.mysql* /host-user-password/ that refers to database nemaed *test*
+* *mmap.histo file* that shares memory with histograms from digitizer acquisistion
+
+
+**4.1.5 FILE SAVE** 
+
+You can save
+* canvases + histograms on screen click ```SaveCanvas``` - you can input you filename into the text field and save multiple format, with a time tag. Withou a name it stores canvas as 1.root, 2.root,... 9.root that can be recovered later with ```LoadCanvas```
+* all histograms click ```SaveAllSpectra``` - filename is always based on datetime
+* copy histogram from file to memory ```Spectrum2Memory``` and go to memory later and compare histograms from different files there.
 
 5.1 Other functions
 ------------
@@ -170,7 +183,7 @@ cutcp()
 ------------
 creates .CURRENTFILE on open
 
-checks .REMOTEDIR on open
+checks .REMOTE_DATA_DIR on open
 
-searches for shspe.pk_mysql setup file on savefit
+searches for a script  *shspe.pk_mysql* setup file on savefit
 
