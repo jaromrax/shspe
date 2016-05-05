@@ -134,6 +134,26 @@ You can save
 * all histograms click ```SaveAllSpectra``` - filename is always based on datetime
 * copy histogram from file to memory ```Spectrum2Memory``` and go to memory later and compare histograms from different files there.
 
+
+
+4.2 Fitting
+------------
+
+**4.2.1 Prepare fit**
+
+**4.2.2 Fit procedure**
+
+**4.2.3 Save fit**
+
+Several files are created ```zfitresults``` the extensions are
+
+*```.eff``` - for calibration of efficiency
+*```.ecal``` - just energy and channel
+*```.tmp``` - same as eff but only the last fit - can be parsed by script
+*```final.root``` - all objects of results
+*```tmp.root``` - as root, but the last fit
+
+
 5.1 Other functions
 ------------
 
@@ -189,5 +209,5 @@ searches for a script  *shspe.pk_mysql* setup file on savefit
 
 
 
-*edited in http://dillinger.io/*
+*edited in http://dillinger.io/   and elpa-markup-more*
 

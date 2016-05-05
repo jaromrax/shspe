@@ -871,7 +871,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "%i----------",SELbar2 );     fListBox->AddEntry(tmp, SELbar2);
    sprintf(tmp, "%i_StartFIT", SELFBX);       fListBox->AddEntry(tmp, SELFBX );
    sprintf(tmp, "%i_UpdateMARKS", SELUpdate);      fListBox->AddEntry(tmp, SELUpdate);
-   sprintf(tmp, "%i_SaveFit", SELComSig);      fListBox->AddEntry(tmp, SELComSig);
+   sprintf(tmp, "%i_SaveFit", SELSaveFit);      fListBox->AddEntry(tmp, SELSaveFit);
    sprintf(tmp, "%i_", SELFit);            fListBox->AddEntry(tmp, SELFit);
    sprintf(tmp, "%i_HelpFit", SELDelFBX);         fListBox->AddEntry(tmp, SELDelFBX);
    sprintf(tmp, "%i----------",SELbar3a );      fListBox->AddEntry(tmp, SELbar3a);
@@ -2253,7 +2253,7 @@ void MyMainFrame::fSELUpdate(int id,TString *fentry){
 
 //  SAVE THE FIT SOMEWHERE -------------------------
 //  SAVE THE FIT SOMEWHERE -------------------------
-void  MyMainFrame::fSELComSig(int id,TString *fentry){ 
+void  MyMainFrame::fSELSaveFit(int id,TString *fentry){ 
   //  printf("item %2d:%s\n",id,fentry->Data());  
   TString filename="zfitresults_final.root";// SAVE SAVE SAVE
   TString filename_eff="zfitresults.eff";
@@ -2264,24 +2264,23 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 
    if (fit!=NULL){
 
-     fit->printResult(); // PRINT--------------
-    TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE
+     //   fit->printResult(); // PRINT--ALL--DETAILS--not usefullll NOW.....
+     
+    TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE AND GET STAMP!
 
-      //DESCRIPTION ----
+    //DESCRIPTION ----
       TString desc;
-        TH1* histo;  
-        int64_t addr[MAXPRIMITIVES];  
-        int count=1;addr[0]=0;
-        RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1
-        histo=(TH1*)addr[0];
-	//	printf("%s %s\n", 	       "trying to recover histo name:======",                histo->GetName() );
+      TH1* histo;  
+      int64_t addr[MAXPRIMITIVES];  
+      int count=1;addr[0]=0;
+      RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1
+      histo=(TH1*)addr[0];
+      //	printf("%s %s\n", 	       "trying to recover histo name:======",                histo->GetName() );
 	//	gPad->GetListOfPrimitives()->ls();
     TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
     if (c!=NULL){
-      printf("saving also the canvas%s\n","");
-
-
-	//       printf(" canvas - new description == %s\n", desc.Data()  );
+      printf("! ... saving also the canvas%s\n","");
+      //       printf(" canvas - new description == %s\n", desc.Data()  );
       desc.Append( "file:" );
       if (gFile!=NULL){ desc.Append( gFile->GetName() );}else{desc.Append("nofile" );}
       //       printf(" canvas - new description == %s\n", desc.Data()  );
@@ -2302,36 +2301,39 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       //       printf(" canvas - new description == %s\n", desc.Data()  );
       desc.Append( fentry->Data()  );
 
-      printf(" canvas - new description == %s\n", desc.Data()  );
+      printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
 
 
       TDirectory *curr=(TDirectory*)gDirectory;// to return back
-
-
       TFile f( filename ,"UPDATE") ; 
       //      c->SetTitle( name->Data() );
       c->SetTitle( desc.Data() );
       c->Write( name->Data() );  // CANVAS-------
       f.Close();
       //SAVED  TO  permanent root file........................
-      printf(" canvas (successfully) saved....%s\n","");
+      printf("i ... canvas (successfully) saved....%s\n","");
 
 
-      printf("Canvas saved now, trying accessParams: %s\n", "");
+      //      printf("Canvas saved now, trying accessParams: %s\n", "");
       //      fit->printResult(); 
       //
       //   also bgarea.....
       double array[5][8];  //peaks,    k  dk  a da
+
+      /*
+//NICE but not useful to access
       for (int i=0; i<fit->getNpeaks(); i++){
-
-      fit->accessParams(i+1, array[i] ); 
-      printf("#%d  %f   %f        %f  %f\n", i,array[i][0], array[i][1],  array[i][2],  array[i][3]  );
+        fit->accessParams(i+1, array[i] ); 
+        printf("#%d  %f   %f        %f  %f\n", i,array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       }// i
+      */
 
+      TString fentryccc=fentry->Data();
+      if ( fentryccc.Length()==0 ){
+	fentryccc.Append("none");
+      }
 
-
-
-      FILE *fo, *ftmp;
+      FILE *fo, *ftmp;   // TEXT PART  EFF CAL TMP   // TMP I need more..... 
       //====================================  k dk  A dA
       ftmp=fopen( filename_tmp.Data() ,"w") ; 
       fo=fopen( filename_eff.Data() ,"a") ; 
@@ -2341,7 +2343,9 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       fprintf(fo,
          "%8.3f   %6.3f  %f  %f\n", array[i][0], array[i][1],  array[i][2],  array[i][3]  );
       fprintf(ftmp,
-         "%8.3f   %6.3f  %f  %f\n", array[i][0], array[i][1],  array[i][2],  array[i][3]  );
+	      "%8.3f   %6.3f  %f  %f   %s  %s\n",
+	      array[i][0], array[i][1],  array[i][2],  array[i][3],
+	      fentryccc.Data(),  histo->GetName()   );
       }// i
       fclose( fo );
       fclose( ftmp );
@@ -2355,7 +2359,7 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
       //      run15_s9418_5_adc19->GetNbinsX() 
       double cal_a=histo->GetBinWidth(1);
       double cal_b=histo->GetXaxis()->GetXmin();
-      printf("... calibration found on histo %s: %lg %lg\n", 
+      printf("i ... calibration coef of /%s/: %lg %lg\n", 
 	     histo->GetName(),cal_a, cal_b);
       //UNUSED   double cal_chan=histo->GetNbinsX();
       // let us try.... no hope to get non-calibrated values anyway...
@@ -2378,9 +2382,13 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 	  // nonsense ...histo->SetBins(cal_chan,cal_b,cal_b + cal_a*cal_chan );
 
 
+       
        //================= MYSQL INSERT ===================== BEGIN
+       // I think - .CURRENTFILE and zfitresult.tmp can go directly to script !
        char cmdls[250]; char output[300];
-       ifstream myCurrFile;
+       sprintf( cmdls,"./shspe_mysql 2>/dev/null%s",""); 
+       system(cmdls);
+       /*       ifstream myCurrFile;
        myCurrFile.open(".CURRENTFILE");
        if (myCurrFile.is_open()) {
 	  while (!myCurrFile.eof()) {
@@ -2388,34 +2396,32 @@ void  MyMainFrame::fSELComSig(int id,TString *fentry){
 	  }
        }
        myCurrFile.close();
-       
-       printf(" groot gFile = %f, but filename %s\n", (int64_t)gFile, output );
-       //       if (gROOT->GetFile() !=NULL){
+       */
+       /*       
+       printf("i ... groot gFile = %ld, but filename %s\n", (int64_t)gFile, output );
        if ( strlen( output)>3  ){
        for (int i=0; i<fit->getNpeaks(); i++){
-        sprintf( cmdls,"./shspe_mysql %s %f %f %f %f %s", output ,
+        sprintf( cmdls,"./shspe_mysql %s %f %f %f %f %s 2>/dev/null", output ,
 		  array[i][0], array[i][1],
 		 array[i][2],  array[i][3],
 		 fentry->Data() );
-	 printf("+ ... running script:  %s\n",  cmdls );
+	 printf("+ ... running:  %s\n",  cmdls );
          system(cmdls);
-	 // i need
-	 //sig dsig
-	 //contour
-	 //detector
-	 //pkid
+	 // i need	 //sig dsig	 //contour	 //detector	 //pkid
        }// i peaks LOOP
        } // gFile EXISTS
+       */
+       
        //================= MYSQL ===================== END
 
 
        
 
-       printf("saved %s\n","");
+       printf("i ... SaveFit end %s\n","");
        curr->cd();
     }//C not NULL
    }//fit not null 
-}// SELComSig
+}// SELSaveFit
 
 
 
@@ -3748,7 +3754,7 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected==SELDelPks      ){ fSELDelPks(flistbox_selected,fentry);  }
   if (flistbox_selected== SELFBX        ){ fSELFBX(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELUpdate     ){ fSELUpdate(flistbox_selected,fentry);  }  
-  if (flistbox_selected== SELComSig     ){ fSELComSig(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELSaveFit     ){ fSELSaveFit(flistbox_selected,fentry);  }
   if (flistbox_selected== SELFit        ){ fSELFit(flistbox_selected,fentry);  }       
   if (flistbox_selected== SELDelFBX     ){ fSELDelFBX(flistbox_selected,fentry);  }       
   if (flistbox_selected== SELClone2Rint     ){ fSELClone2Rint(flistbox_selected,fentry);  }       

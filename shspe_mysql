@@ -21,10 +21,10 @@ function runnumber {
 ##################################### BEGIN ########
 ##################################### BEGIN ########
 
-echo ======== bash script for insert to mysql=======
-if [ -e $CREDFILE ]; then
-  echo $CREDFILE exists
-else
+if [ ! -e $CREDFILE ]; then
+#  echo $CREDFILE exists
+#else
+  exit  
   echo you need file $CREDFILE:
   echo user=
   echo pass=
@@ -34,10 +34,13 @@ fi
 
 #echo ... going to parse $CREDFILE
 USER=`cat $CREDFILE | grep -v \# | grep user= | cut -d = -f 2`
-echo USER=$USER
+#echo USER=$USER
 PASS=`cat $CREDFILE | grep -v \# | grep pass= | cut -d = -f 2`
 DBASE=`cat $CREDFILE | grep -v \# | grep database= | cut -d = -f 2`
-echo DBASE=$DBASE
+if [ "$DBASE" = "" ]; then
+    exit
+fi
+#echo DBASE=$DBASE
 # i need
 #    user,pass,server,databasename,run number
 ########################################################
@@ -45,26 +48,77 @@ echo DBASE=$DBASE
 
 #runnumber run0048_20140628_095336.root
 #RUN=`runnumber run0048_20140628_095336.root`
-RUN=`runnumber $1`
-echo run number=$RUN
-echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
+RUNNAME=`cat .CURRENTFILE`
+RUN=`runnumber $RUNNAME`
+RUN=$(( $RUN + 0 ))
+#echo $RUN
+if [ "$RUN" -ge "0" -a "$RUN" -le "9999" ]; then
+    echo ======== bash script for insert to mysql=======
+else
+    exit
+fi
+echo "run $RUN; database $DBASE"
+#echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
 
+### LAST FIT SAVED RESULT:
+### zfitresults.tmp###########################3
+#k dk A dA cc:scom histoname=cut=d=diag=
+#
+#  naming from mkmat
+#     c022=>diag6 ...22-16 = de6 = #6
+#         =>cutd t6d 
+#
 #HOW?
+pkid=0
+while read line           
+do            database $DBASE
+    echo -e "$line"
+    pkid=$(( $pkid + 1 ))
+    part='d'
+     k=`echo $line | awk '{print $1}'`
+    dk=`echo $line | awk '{print $2}'`
+     A=`echo $line | awk '{print $3}'`
+    dA=`echo $line | awk '{print $4}'`
+    fitcode=`echo $line | awk '{print $5}'`
+    #histoname
+    det=2
+    det=`echo $line | awk '{print $6}'`
+    echo $det | grep -e "^c" >/dev/null
+    if [ "$?" = "0" ]; then
+	det2=`echo $det | sed 's/c//' | awk '{print $1-16}'`
+	det=$det2
+    fi
+    valid=1
+    sig=1.
+    dsig=0.1
+    run=$RUN
+    
+    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE;
+    
+done <zfitresults.tmp
+
+exit
+################################    EXIT
+################################    EXIT
+################################    EXIT
+################################    EXIT
+
+
 pkid=1
 run=$RUN
 #HOW?  c019
 det=2
 #HOW?  contour
 part='d'
-k=$2
-dk=$3
-A=$4
-dA=$5
+k=$1
+dk=$2
+A=$3
+dA=$4
 sig=1.
 dsig=0.1
 
 fitcode="ccc+p1:scom"
-fitcode=$6
+fitcode="$5"
 valid=1
 echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE;
 

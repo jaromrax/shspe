@@ -171,7 +171,7 @@ int
 //  SELFitGaus=8,
   SELFBX=10,
   SELUpdate=11,
-  SELComSig=12,
+  SELSaveFit=12,
   SELFit=13,
   SELDelFBX=14,
   SELbar3a=15, //----------
@@ -354,7 +354,7 @@ public:
 
   void fSELFBX(int id,TString *fentry);    // MAKES FIT
   void fSELUpdate(int id,TString *fentry); // PUTS back to MARKS
-  void  fSELComSig(int id,TString *fentry); // SAVE FIT & CANVAS
+  void  fSELSaveFit(int id,TString *fentry); // SAVE FIT & CANVAS
   void fSELDelFBX(int id,TString *fentry);//  HELP
 
   void  fSELDateTime(int id,TString *fentry); // 

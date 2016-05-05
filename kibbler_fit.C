@@ -198,16 +198,20 @@ class  Tbroomfit{
       //======= TIME AND DATE ===============
     time_t curtime;  struct tm *loctime;  
     char ch[200];
+    char chroof[200];
     curtime = time (NULL);  loctime = localtime (&curtime);
 
-    TString sr=s.Data();     // commandbox contents
+    //    TString sr=s.Data();     // commandbox contents
     //    if ( sr.CompareTo("")==0 ){
 
 	 sprintf(ch,"fit%04d%02d%02d_%02d%02d%02d",
  	   1900+loctime->tm_year,   1+loctime->tm_mon,  
 	   loctime->tm_mday,  loctime->tm_hour,   loctime->tm_min,  loctime->tm_sec);
+	 sprintf(chroof,"roo%04d%02d%02d_%02d%02d%02d",
+ 	   1900+loctime->tm_year,   1+loctime->tm_mon,  
+	   loctime->tm_mday,  loctime->tm_hour,   loctime->tm_min,  loctime->tm_sec);
 
-	 TString *stamp=new TString(ch);
+      	 TString *stamp=new TString(ch); //tpad fit HERE
 
 	 //       }else{
 	 //	 sprintf(ch,"shspe%04d%02d%02d_%02d%02d%02d_%s_.root",
@@ -215,14 +219,14 @@ class  Tbroomfit{
 	 //		 loctime->tm_mday,  loctime->tm_hour,   loctime->tm_min,  loctime->tm_sec,
 	 //		 sr.Data()  );
 	 //    }
-    printf("saving FIT into file   %s\n",  filename  );
-    printf("saving FIT under code  %s\n",  ch );
+    printf("! ... saving RooFitResult into /%s/\n",  filename  );
+    printf("i ... names:  /%s/ \n" , chroof );
     
     TFile f(filename,"UPDATE") ; 
-    fitresult->Write( ch ) ;
+    fitresult->Write( chroof ) ; //write RooFitResult
     f.Close() ;
       curr->cd();
-      printf("back in current dir == %s\n" , gDirectory->GetPath());
+      printf("i ... returned to current dir == %s\n" , gDirectory->GetPath());
     return stamp;
   }//saveresult...
 
