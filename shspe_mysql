@@ -1,5 +1,12 @@
 #!/bin/bash
 
+DEBUG=0
+if [ "$1" = "debug" ]; then
+    DEBUG=1
+else
+    DEBUG=0
+fi
+
 #credentials...........
 CREDFILE="shspe.pk_mysql"
 
@@ -22,22 +29,25 @@ function runnumber {
 ##################################### BEGIN ########
 
 if [ ! -e $CREDFILE ]; then
-#  echo $CREDFILE exists
 #else
-  exit  
-  echo you need file $CREDFILE:
-  echo user=
-  echo pass=
-  echo database=
+#  exit  
+    if [ "$DEBUG" = "1" ]; then
+	#echo $CREDFILE exists;
+	echo you need file $CREDFILE:
+	echo user=
+	echo pass=
+	echo database=
+    fi
   exit
 fi
 
-#echo ... going to parse $CREDFILE
+ if [ "$DEBUG" = "1" ]; then echo ... going to parse $CREDFILE; fi
 USER=`cat $CREDFILE | grep -v \# | grep user= | cut -d = -f 2`
-#echo USER=$USER
+ if [ "$DEBUG" = "1" ]; then echo USER=$USER; fi
 PASS=`cat $CREDFILE | grep -v \# | grep pass= | cut -d = -f 2`
 DBASE=`cat $CREDFILE | grep -v \# | grep database= | cut -d = -f 2`
 if [ "$DBASE" = "" ]; then
+     if [ "$DEBUG" = "1" ]; then echo ... no DBASE name defined;fi
     exit
 fi
 #echo DBASE=$DBASE
@@ -49,15 +59,20 @@ fi
 #runnumber run0048_20140628_095336.root
 #RUN=`runnumber run0048_20140628_095336.root`
 RUNNAME=`cat .CURRENTFILE`
-RUN=`runnumber $RUNNAME`
+if [ "$DEBUG" = "1" ]; then echo "d ... runname $RUNNAME"; fi
+RUNBA=`basename $RUNNAME`
+if [ "$DEBUG" = "1" ]; then echo "d ... runfull $RUNBA"; fi
+RUN=`runnumber $RUNBA`
+if [ "$DEBUG" = "1" ]; then echo "d ... run     $RUN"; fi
 RUN=$(( $RUN + 0 ))
-#echo $RUN
+if [ "$DEBUG" = "1" ]; then echo "d ... run     $RUN"; fi
+
 if [ "$RUN" -ge "0" -a "$RUN" -le "9999" ]; then
     echo ======== bash script for insert to mysql=======
 else
     exit
 fi
-echo "run $RUN; database $DBASE"
+echo "i ... run /$RUN/; database /$DBASE"
 #echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
 
 ### LAST FIT SAVED RESULT:
@@ -67,11 +82,11 @@ echo "run $RUN; database $DBASE"
 #  naming from mkmat
 #     c022=>diag6 ...22-16 = de6 = #6
 #         =>cutd t6d 
-#
 #HOW?
 pkid=0
 while read line           
-do            database $DBASE
+do
+    if [ "$DEBUG" = "1" ]; then echo i ... database /$DBASE/; fi
     echo -e "$line"
     pkid=$(( $pkid + 1 ))
     part='d'
@@ -80,29 +95,41 @@ do            database $DBASE
      A=`echo $line | awk '{print $3}'`
     dA=`echo $line | awk '{print $4}'`
     fitcode=`echo $line | awk '{print $5}'`
-    #histoname
-    det=2
+    #### histoname $6   c022  t3_d    t4_diag
+    detnumbr=0
     det=`echo $line | awk '{print $6}'`
+    ###########  first ... check c0024 ###############
     echo $det | grep -e "^c" >/dev/null
     if [ "$?" = "0" ]; then
-	det2=`echo $det | sed 's/c//' | awk '{print $1-16}'`
-	det=$det2
+	detnumbr=`echo $det | sed 's/c//' | awk '{print $1-16}'`
+    else
+    ######################################  c017 ... c022
+      if [ "$DEBUG" = "1" ]; then echo i ... detector /$det/... not c022; fi
+      detnum=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,2,1);}'`
+      detlet=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,1,1);}'`
+      if [ "$DEBUG" = "1" ]; then echo i ... letter=t  /$detlet/; fi
+      if [ "$DEBUG" = "1" ]; then echo i ... detnumbr /$detnum/; fi
+      part=`echo $det | awk 'BEGIN{FS="_"} {print $2}'`
+      if [ "$DEBUG" = "1" ]; then echo i ... particle /$part/; fi
     fi
+    #####################################
     valid=1
     sig=1.
     dsig=0.1
     run=$RUN
     
-    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE;
+    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE 2>/dev/null;
+    echo "r ... result $?"
     
 done <zfitresults.tmp
 
-exit
-################################    EXIT
-################################    EXIT
-################################    EXIT
-################################    EXIT
 
+
+exit
+############################################################    EXIT
+########################################################    EXIT
+####################################################    EXIT
+################################################    EXIT
 
 pkid=1
 run=$RUN
@@ -120,5 +147,5 @@ dsig=0.1
 fitcode="ccc+p1:scom"
 fitcode="$5"
 valid=1
-echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE;
+echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE   2>/dev/null ;
 

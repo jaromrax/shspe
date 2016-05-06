@@ -2273,9 +2273,10 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
       TH1* histo;  
       int64_t addr[MAXPRIMITIVES];  
       int count=1;addr[0]=0;
-      RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1
+      RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1; then 0=but=MARKS; now 1?,no 0
       histo=(TH1*)addr[0];
-      //	printf("%s %s\n", 	       "trying to recover histo name:======",                histo->GetName() );
+      printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
+      //SOMETIMES-I-GET-MARKS-WHICH-IS-NO-GOOD------------------
 	//	gPad->GetListOfPrimitives()->ls();
     TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
     if (c!=NULL){
@@ -2386,6 +2387,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
        //================= MYSQL INSERT ===================== BEGIN
        // I think - .CURRENTFILE and zfitresult.tmp can go directly to script !
        char cmdls[250]; char output[300];
+       printf("%s\n", "x ... ./shspe_mysql ... (try ./shspe_mysql debug)" );
        sprintf( cmdls,"./shspe_mysql 2>/dev/null%s",""); 
        system(cmdls);
        /*       ifstream myCurrFile;
@@ -2412,9 +2414,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
        } // gFile EXISTS
        */
        
-       //================= MYSQL ===================== END
-
-
+      //================= MYSQL ===================== END
        
 
        printf("i ... SaveFit end %s\n","");
