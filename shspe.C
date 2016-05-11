@@ -2310,7 +2310,19 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
 	  if (c!=NULL){
             desc.Append( "file:" );
-	    if (gFile!=NULL){ desc.Append( gFile->GetName() );}else{desc.Append("nofile" );}
+	    if (gFile!=NULL){ desc.Append( gFile->GetName() );
+	    }else{
+	      ifstream myCurrFile;
+	      TString tempi;
+	      myCurrFile.open(".CURRENTFILE");
+	      if (myCurrFile.is_open()) {
+		if (!myCurrFile.eof()) {
+		  tempi.ReadLine( myCurrFile );
+		}
+	      } // isopen
+	      myCurrFile.close();
+	      desc.Append( tempi.Data()  );
+	    }// ELSE___________________
 	    desc.Append( "    histo:" );
 	    //	    desc.Append( histo->GetName() );
 	    desc.Append( c->GetTitle() ); // should keep the histoname!
