@@ -219,14 +219,14 @@ class  Tbroomfit{
 	 //		 loctime->tm_mday,  loctime->tm_hour,   loctime->tm_min,  loctime->tm_sec,
 	 //		 sr.Data()  );
 	 //    }
-    printf("! ... saving RooFitResult into /%s/\n",  filename  );
+	 //    printf("! ... saving RooFitResult into /%s/\n",  filename  );
     printf("i ... names:  /%s/ \n" , chroof );
     
     TFile f(filename,"UPDATE") ; 
     fitresult->Write( chroof ) ; //write RooFitResult    fitresult je GLOBALNI
     f.Close() ;
       curr->cd();
-      printf("i ... returned to current dir == %s\n" , gDirectory->GetPath());
+      //      printf("i ... returned to current dir == %s\n" , gDirectory->GetPath());
     return stamp;
   }//saveresult...
 

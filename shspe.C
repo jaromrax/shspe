@@ -1412,13 +1412,13 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
   count=0;  addr[0]=0;
   TList *prim;
   prim=GPAD->GetListOfPrimitives();//evidently GPAD IS CURRENT PAD-MAYBENOT?
-  printf( "GPAD name=/%s/\n", GPAD->GetName() );
+  //  printf( "GPAD name=/%s/\n", GPAD->GetName() );
   //NEEE-PODELA SE TO  if (restrict>0){  fChk1->SetState( kButtonEngaged ); } // NASILNICKY TO UDELAM RESTRICT
   // LOGIC IS DIFFERENT - Spider-----
   if ( (fChk1->GetState()==0)&&(restrict==0) ){// if not all
     //    printf("RecoverTH1fromGPAD  taking only from gPad\n");
     prim=gPad->GetListOfPrimitives();
-    printf( "gPad name=/%s/\n", gPad->GetName() );
+    //    printf( "gPad name=/%s/\n", gPad->GetName() );
   }
 
        // I CREATE <shadow> prim not to change gpad contents
@@ -2223,9 +2223,9 @@ void MyMainFrame::fSELFBX(int id,TString *fentry){
 	RefreshAll();
 	gSystem->Sleep(1500);
 	if (fChk1->GetState()!=0){ // MULTI SWITCH ON !!!
-	  TString *faketry=new TString("");
-	  fSELSaveFit( 1, faketry );
-	  delete faketry;
+	  //	  TString *faketry=fentr-;
+	  fSELSaveFit( 1, fentry );
+	  //	  delete faketry;
 	}
       }else{
 	printf("...  oops  -------------------------------NPEAKS==%d ! ----\n",   npeaks );
@@ -2294,25 +2294,29 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 
   TString fentryccc=fentry->Data(); // fitline
   if ( fentryccc.Length()==0 ){
+    printf("!Nothing in fentry: /%s/\n", fentry->Data() );
     fentryccc.Append("none");
   }
 
    if (fit!=NULL){
      //   fit->printResult(); // PRINT--ALL--DETAILS--not usefullll NOW.....
-    TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE AND GET STAMP!
+     //  1st  save RooFitResult:from kibbler_fit
+    TString *name=fit->saveResult( filename.Data() ); //SAVE SAVE SAVE AND GET STAMP!
     TDirectory *curr=(TDirectory*)gDirectory;// to return back
 
     //DESCRIPTION ----
       TString desc;
 
       //ok-I save only the fitresult===================================================
-	  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
+      TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
+      TString tempi;
+      TString histoname;
 	  if (c!=NULL){
             desc.Append( "file:" );
-	    if (gFile!=NULL){ desc.Append( gFile->GetName() );
-	    }else{
+	    //	    if (gFile!=NULL){
+	    //	      desc.Append( gFile->GetName() );
+	    //	    }else{
 	      ifstream myCurrFile;
-	      TString tempi;
 	      myCurrFile.open(".CURRENTFILE");
 	      if (myCurrFile.is_open()) {
 		if (!myCurrFile.eof()) {
@@ -2321,24 +2325,54 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	      } // isopen
 	      myCurrFile.close();
 	      desc.Append( tempi.Data()  );
-	    }// ELSE___________________
+	      //	    }// ELSE___________________
 	    desc.Append( "    histo:" );
 	    //	    desc.Append( histo->GetName() );
+	    histoname=c->GetTitle();
 	    desc.Append( c->GetTitle() ); // should keep the histoname!
 	    desc.Append( "    range:" );
 	    double x[5];
 	    x[0]=((TFrame*)gPad->GetFrame())->GetX1();
 	    x[1]=((TFrame*)gPad->GetFrame())->GetX2();
 	    desc+=x[0]; desc.Append( ".." ); desc+=x[1];  desc.Append( " CmdBox:" );
-	    desc.Append( fentryccc->Data()  );
-	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
+	    desc.Append( fentryccc.Data()  );
+	    //	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
+	    printf("%s\n", desc.Data()  );
 	    //TFile reopen
 	    TFile f( filename ,"UPDATE") ; 
 	    c->SetTitle( desc.Data() );
 	    c->Write( name->Data() );  // CANVAS-------
 	    f.Close();
+	    //ROOT SAVED
 	    //SAVED  TO  permanent root file........................
-	    printf("i ... canvas /%s/ saved\n", c->GetName() );
+	    double array[5][8];  //peaks,    k  dk  a da
+	    FILE *fo, *ftmp;
+	    ftmp=fopen( filename_tmp.Data() ,"w") ; 
+	    fo=fopen( filename_eff.Data() ,"a") ; 
+	    for (int i=0; i<fit->getNpeaks(); i++){
+	      fit->accessParams(i+1, array[i] );
+	      fprintf(ftmp,
+		      "%8.3f %6.3f %f %f %f %f %s %s %s\n",
+		      array[i][0], array[i][1],  array[i][2],  array[i][3],// k dk a da
+		      x[0],x[1],        //limits
+		      fentryccc.Data(), // cmdBox ccc
+		      histoname.Data(),    // histoname at fitresult Title
+		      tempi.Data()      //filename
+		      );
+	      fprintf(fo,
+		      "%8.3f %6.3f %f %f %f %f %s %s %s\n",
+		      array[i][0], array[i][1],  array[i][2],  array[i][3],// k dk a da
+		      x[0],x[1],        //limits
+		      fentryccc.Data(), // cmdBox ccc
+		      histoname.Data(),    // histoname at fitresult Title
+		      tempi.Data()      //filename
+		      );
+	    }
+	    fclose( ftmp );
+	    fclose( fo );
+	    //SAVED  TO  tmp  file........................
+
+	    //	    printf("i ... canvas /%s/ saved\n", c->GetName() );
 	  }// c!=NULL
 	  if (fChk1->GetState()!=0){ printf("%s\n","EXITING AUTO-FITSAVE..........");return; } // FINISH-I DONT KNOW WHAT
 	  //============================ ROOT saved without touching GPAD ==================
@@ -2348,7 +2382,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
   int count=1;addr[0]=0;
   RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1; then 0=but=MARKS; now 1?,no 0
   histo=(TH1*)addr[0];
-  printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
+  //  printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
 
 	  /*      //wrong=I search in all histograms
       for (int icount=0;icount<count;icount++){
@@ -2364,7 +2398,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	//	gPad->GetListOfPrimitives()->ls();
     c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
     if (c!=NULL){
-      printf("! ... saving also the canvas%s\n","");
+      //      printf("! ... saving also the canvas%s\n","");
       //       printf(" canvas - new description == %s\n", desc.Data()  );
 
 
@@ -2386,6 +2420,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
       */
 
 
+      /*
       FILE *fo, *ftmp;   // TEXT PART  EFF CAL TMP   // TMP I need more..... 
       //====================================  k dk  A dA
       ftmp=fopen( filename_tmp.Data() ,"w") ; 
@@ -2399,14 +2434,14 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	      "%8.3f   %6.3f  %f  %f   %s  %s\n",
 	      array[i][0], array[i][1],  array[i][2],  array[i][3],
 	      fentryccc.Data(),  histo->GetName()   );
-      }// i
+      }// i=0 i<npeaks
       fclose( fo );
       fclose( ftmp );
-
+      */
       /*
        * CALIBRATION FILE
        */
-      //      ->GetBinWidth();         // coef a
+      //      ->GetBinWidth();         // coefa 
       //      ->GetXaxis()->GetXmin()  // coef b
       //      run15_s9418_5_adc19->SetBins( 4096, -9.3, -9.3+0.96665*4096 )
       //      run15_s9418_5_adc19->GetNbinsX() 
@@ -2417,6 +2452,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
       //UNUSED   double cal_chan=histo->GetNbinsX();
       // let us try.... no hope to get non-calibrated values anyway...
       //nonsense   ...histo->SetBins( cal_chan , 0.  ,  cal_chan );
+      FILE *fo;
       fo=fopen( filename_cal.Data() ,"a") ; 
       fprintf( fo, "%s\n", "");
       for (int i=0; i<fit->getNpeaks(); i++){

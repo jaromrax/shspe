@@ -86,18 +86,20 @@ echo "i ... run /$RUN/; database /$DBASE"
 pkid=0
 while read line           
 do
+    #ALL depends ok order
+    # k dk A dA  5from 6to 7code 8name file
     if [ "$DEBUG" = "1" ]; then echo i ... database /$DBASE/; fi
     echo -e "$line"
     pkid=$(( $pkid + 1 ))
-    part='d'
+    part='n'
      k=`echo $line | awk '{print $1}'`
     dk=`echo $line | awk '{print $2}'`
      A=`echo $line | awk '{print $3}'`
     dA=`echo $line | awk '{print $4}'`
-    fitcode=`echo $line | awk '{print $5}'`
-    #### histoname $6   c022  t3_d    t4_diag
+    fitcode=`echo $line | awk '{print $7}'`
+    #### histoname $6   c022  t3_d    t4_diag    #8
     detnumbr=0
-    det=`echo $line | awk '{print $6}'`
+    det=`echo $line | awk '{print $8}'`
     ###########  first ... check c0024 ###############
     echo $det | grep -e "^c" >/dev/null
     if [ "$?" = "0" ]; then
