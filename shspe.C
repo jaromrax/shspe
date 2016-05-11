@@ -1261,7 +1261,12 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  //FUTURE::: a.Replace( a.Index("##")+2, a.Length()-a.Index("##")+2 , "safdasfDS" )
  printf("very first openfile done%s\n","");
 
+ GPAD->cd();
+ TPad *p=new TPad("Ep","Ep",0.,0.,1.,1.);
+ p->Draw();
+ p->cd();
 
+ /*
  // I know that 0 is canvas;   1 is TPad
  GPAD->Divide( 1 , 1 ,0.002,0.002, 0);  
  GPAD->Modified();GPAD->Update();
@@ -1274,6 +1279,8 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 	GPAD->GetPad(1)->SetBorderMode(1);// TEST TO HAVE BETTER MODE
 	GPAD->GetPad(1)->Modified();// force the color
 	GPAD->GetPad(1)->Update();// force the color printf("very first TPad created%s\n","");
+ */
+
 }// TGMAINFRAME......................................
 
 
