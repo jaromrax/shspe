@@ -2292,6 +2292,11 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
   TString filename_cal="zfitresults.ecal";
   if (id==999)printf("  unused id, fentry %d %s\n", id, fentry->Data()  );
 
+  TString fentryccc=fentry->Data(); // fitline
+  if ( fentryccc.Length()==0 ){
+    fentryccc.Append("none");
+  }
+
    if (fit!=NULL){
      //   fit->printResult(); // PRINT--ALL--DETAILS--not usefullll NOW.....
     TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE AND GET STAMP!
@@ -2299,14 +2304,8 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 
     //DESCRIPTION ----
       TString desc;
-      TH1* histo;  
-      int64_t addr[MAXPRIMITIVES];  
-      int count=1;addr[0]=0;
-      RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1; then 0=but=MARKS; now 1?,no 0
-      histo=(TH1*)addr[0];
-      printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
 
-      //ok-I save only the fitresult
+      //ok-I save only the fitresult===================================================
 	  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
 	  if (c!=NULL){
             desc.Append( "file:" );
@@ -2330,8 +2329,8 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    double x[5];
 	    x[0]=((TFrame*)gPad->GetFrame())->GetX1();
 	    x[1]=((TFrame*)gPad->GetFrame())->GetX2();
-	    desc+=x[0]; desc.Append( "->" ); desc+=x[1];  desc.Append( "    CmdBox:" );
-	    desc.Append( fentry->Data()  );
+	    desc+=x[0]; desc.Append( ".." ); desc+=x[1];  desc.Append( " CmdBox:" );
+	    desc.Append( fentryccc->Data()  );
 	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
 	    //TFile reopen
 	    TFile f( filename ,"UPDATE") ; 
@@ -2341,8 +2340,16 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    //SAVED  TO  permanent root file........................
 	    printf("i ... canvas /%s/ saved\n", c->GetName() );
 	  }// c!=NULL
-	  if (fChk1->GetState()!=0){ printf("%s\n","EXITING ..........");return; } // FINISH-I DONT KNOW WHAT NEXT
-      
+	  if (fChk1->GetState()!=0){ printf("%s\n","EXITING AUTO-FITSAVE..........");return; } // FINISH-I DONT KNOW WHAT
+	  //============================ ROOT saved without touching GPAD ==================
+
+  TH1* histo;  
+  int64_t addr[MAXPRIMITIVES];  
+  int count=1;addr[0]=0;
+  RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1; then 0=but=MARKS; now 1?,no 0
+  histo=(TH1*)addr[0];
+  printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
+
 	  /*      //wrong=I search in all histograms
       for (int icount=0;icount<count;icount++){
 	histo=(TH1*)addr[icount];
@@ -2378,10 +2385,6 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
       }// i
       */
 
-      TString fentryccc=fentry->Data();
-      if ( fentryccc.Length()==0 ){
-	fentryccc.Append("none");
-      }
 
       FILE *fo, *ftmp;   // TEXT PART  EFF CAL TMP   // TMP I need more..... 
       //====================================  k dk  A dA
