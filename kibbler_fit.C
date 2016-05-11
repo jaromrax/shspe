@@ -223,7 +223,7 @@ class  Tbroomfit{
     printf("i ... names:  /%s/ \n" , chroof );
     
     TFile f(filename,"UPDATE") ; 
-    fitresult->Write( chroof ) ; //write RooFitResult
+    fitresult->Write( chroof ) ; //write RooFitResult    fitresult je GLOBALNI
     f.Close() ;
       curr->cd();
       printf("i ... returned to current dir == %s\n" , gDirectory->GetPath());
@@ -607,9 +607,10 @@ for (int ii=0;ii<14;ii++){
    c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
    if (c==NULL){
      printf("making new canvas\n%s","");
-     c=new TCanvas("fitresult","fitresult",1000,700);  
+     c=new TCanvas("fitresult",h2->GetName(),1000,700);  
    }else{
      printf("using old canvas\n%s","");
+     c->SetTitle( h2->GetName() );
    }
    c->Clear();
      printf(" canvas cleared\n%s","");
@@ -635,6 +636,9 @@ for (int ii=0;ii<14;ii++){
      //   FIT    FIT    FIT    FIT    FIT    FIT    FIT     FIT    FIT   FIT   
       fitresult = model->fitTo( datah , Save()  );   
    }
+
+   fitresult->SetTitle( h2->GetName() ); // I PUT histogram name to global fitresult
+   
    // will be done by printResult ... fitresult->Print("v") ;
   //duplicite  fitresult->floatParsFinal().Print("s") ;
   // later - after  parsfinale .... : printResult();

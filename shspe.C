@@ -13,7 +13,7 @@
 #include "kibbler_gdir.C"
 
 //#include "cuts_manip.h"
-
+#include <TPolyLine.h>
 
 //we move to  gui.h .......to have visibility...#include "kibbler_graphs.C"
 
@@ -1261,10 +1261,21 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  //FUTURE::: a.Replace( a.Index("##")+2, a.Length()-a.Index("##")+2 , "safdasfDS" )
  printf("very first openfile done%s\n","");
 
+ GPAD->Modified();GPAD->Update();
  GPAD->cd();
  TPad *p=new TPad("Ep","Ep",0.,0.,1.,1.);
  p->Draw();
+ p->Modified();p->Update();
  p->cd();
+ printf( "This is gPad /%s/\n", gPad->GetName() );
+ // plotting on TPad can help
+ // TMarker *l=new TMarker(0.1,0.1, 21);
+   Double_t px[5] = {.1,.3,.1,.2,.2};
+   Double_t py[5] = {.1,.1,.3,.2,.5};
+   TPolyLine *pline = new TPolyLine(5,px,py);
+   // TLine *l=new TLine(0.1,0.1, 1., 1. );
+ pline->Draw();
+ 
 
  /*
  // I know that 0 is canvas;   1 is TPad
@@ -1400,12 +1411,14 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
   int countmax=MAXPRIMITIVES;  //was 26
   count=0;  addr[0]=0;
   TList *prim;
-  prim=GPAD->GetListOfPrimitives();//evidently GPAD IS CURRENT PAD
+  prim=GPAD->GetListOfPrimitives();//evidently GPAD IS CURRENT PAD-MAYBENOT?
+  printf( "GPAD name=/%s/\n", GPAD->GetName() );
   //NEEE-PODELA SE TO  if (restrict>0){  fChk1->SetState( kButtonEngaged ); } // NASILNICKY TO UDELAM RESTRICT
   // LOGIC IS DIFFERENT - Spider-----
   if ( (fChk1->GetState()==0)&&(restrict==0) ){// if not all
     //    printf("RecoverTH1fromGPAD  taking only from gPad\n");
     prim=gPad->GetListOfPrimitives();
+    printf( "gPad name=/%s/\n", gPad->GetName() );
   }
 
        // I CREATE <shadow> prim not to change gpad contents
@@ -2184,33 +2197,44 @@ void MyMainFrame::fSELFBX(int id,TString *fentry){
   	sigm[ii]=g->GetEX()[ii];   // prepare sigma value from MARKS
 	printf("from MARKS: p=%f  s=%f\n", peak[ii], sigm[ii] );
       }
-    }// MARKS  EXIST
-     printf("...FBX  %d peaks\n",  npeaks );
+    }// MARKS  EXIST  g==NULL
+    printf("...FBX  %d peak(s)\n",  npeaks );
 
    //-----------------------------------------
    //  GET HISTO 
   TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
   //  RecoverTH1fromGPAD( count, addr , "" ,1 ); .//WAS PROBLEM
   RecoverTH1fromGPAD( count, addr , "TH1" ,0 );//OK
-  histo=(TH1*)addr[0];
-  //  printf("from tpad %d recovered %ld histo addresses\n", count, (int64_t)addr[0] );
-  printf("...FBX  %d peaks\n",  npeaks );
+  //histo=(TH1*)addr[0];
+  for (int icount=0;icount<count;icount++){
+    histo=(TH1*)addr[icount];
+    if (histo!=NULL){
+      printf("...histo=/%s/  gpad=/%s/\n",  histo->GetName(), gPad->GetName() );
+    }//non null histo
+    //   TBROOOOOOOOOOOOOOMMMMMM________________________________________
+    if (histo!=NULL){  
+      //    Tbroomfit *fit=new Tbroomfit( x[0], x[1],  (TH1F*)histo, npeaks, peak, "p1" );  
+      // DEFINED  IN   kibbler_gui.h            Tbroomfit *fit;
+      printf("...FBX  deleting fit %ld \n",  (int64_t)fit );
+      if (fit!=NULL){ delete fit;}
+      printf("####################################################################NPEAKS==%d\n",   npeaks );
+      if (npeaks>0){
+	fit=new Tbroomfit( x[0], x[1],  (TH1*)histo, npeaks,   peak,sigm,   fentry->Data()  );
+	RefreshAll();
+	gSystem->Sleep(1500);
+	if (fChk1->GetState()!=0){ // MULTI SWITCH ON !!!
+	  TString *faketry=new TString("");
+	  fSELSaveFit( 1, faketry );
+	  delete faketry;
+	}
+      }else{
+	printf("...  oops  -------------------------------NPEAKS==%d ! ----\n",   npeaks );
+      }
+    }//if ...  (histo!=NULL)
+  }//FOR ICOUNT all histo
 
 
-
-  //   TBROOOOOOOOOOOOOOMMMMMM________________________________________
-  if (histo!=NULL){  
-    //    Tbroomfit *fit=new Tbroomfit( x[0], x[1],  (TH1F*)histo, npeaks, peak, "p1" );  
-    // DEFINED  IN   kibbler_gui.h            Tbroomfit *fit;
-    printf("...FBX  deleting fit %ld \n",  (int64_t)fit );
-    if (fit!=NULL){ delete fit;}
-    printf("...FBX  brooooooom  -----------------------NPEAKS==%d-------\n",   npeaks );
-    if (npeaks>0){
-     fit=new Tbroomfit( x[0], x[1],  (TH1*)histo, npeaks,   peak,sigm,   fentry->Data()  );  
-    }else{
-    printf("...  oops  -------------------------------NPEAKS==%d ! ----\n",   npeaks );
-    }
-  }//if ...  (histo!=NULL)
+  
  }// tgraph not NULL ............
 }// fselfbx____________________________________________________________ 
 
@@ -2268,12 +2292,10 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
   TString filename_cal="zfitresults.ecal";
   if (id==999)printf("  unused id, fentry %d %s\n", id, fentry->Data()  );
 
-
    if (fit!=NULL){
-
      //   fit->printResult(); // PRINT--ALL--DETAILS--not usefullll NOW.....
-     
     TString *name=fit->saveResult( filename.Data() );   //SAVE SAVE SAVE AND GET STAMP!
+    TDirectory *curr=(TDirectory*)gDirectory;// to return back
 
     //DESCRIPTION ----
       TString desc;
@@ -2283,43 +2305,51 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
       RecoverTH1fromGPAD( count, addr , "TH" ,0); //was"" 1; then 0=but=MARKS; now 1?,no 0
       histo=(TH1*)addr[0];
       printf("%s %s\n",  "trying to recover histo name:======", histo->GetName() );
+
+      //ok-I save only the fitresult
+	  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
+	  if (c!=NULL){
+            desc.Append( "file:" );
+	    if (gFile!=NULL){ desc.Append( gFile->GetName() );}else{desc.Append("nofile" );}
+	    desc.Append( "    histo:" );
+	    //	    desc.Append( histo->GetName() );
+	    desc.Append( c->GetTitle() ); // should keep the histoname!
+	    desc.Append( "    range:" );
+	    double x[5];
+	    x[0]=((TFrame*)gPad->GetFrame())->GetX1();
+	    x[1]=((TFrame*)gPad->GetFrame())->GetX2();
+	    desc+=x[0]; desc.Append( "->" ); desc+=x[1];  desc.Append( "    CmdBox:" );
+	    desc.Append( fentry->Data()  );
+	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
+	    //TFile reopen
+	    TFile f( filename ,"UPDATE") ; 
+	    c->SetTitle( desc.Data() );
+	    c->Write( name->Data() );  // CANVAS-------
+	    f.Close();
+	    //SAVED  TO  permanent root file........................
+	    printf("i ... canvas /%s/ saved\n", c->GetName() );
+	  }// c!=NULL
+	  if (fChk1->GetState()!=0){ printf("%s\n","EXITING ..........");return; } // FINISH-I DONT KNOW WHAT NEXT
+      
+	  /*      //wrong=I search in all histograms
+      for (int icount=0;icount<count;icount++){
+	histo=(TH1*)addr[icount];
+	if (histo!=NULL){
+	}//if not null
+      }// FOR ALL HISTOS
+      // FOR MULTIPLE HISTOGRAM FIT - I DONT KNOW NOW
+      */
+
+      
       //SOMETIMES-I-GET-MARKS-WHICH-IS-NO-GOOD------------------
 	//	gPad->GetListOfPrimitives()->ls();
-    TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
+    c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
     if (c!=NULL){
       printf("! ... saving also the canvas%s\n","");
       //       printf(" canvas - new description == %s\n", desc.Data()  );
-      desc.Append( "file:" );
-      if (gFile!=NULL){ desc.Append( gFile->GetName() );}else{desc.Append("nofile" );}
-      //       printf(" canvas - new description == %s\n", desc.Data()  );
-      desc.Append( "    histo:" );
-      desc.Append( histo->GetName() );
-      //       printf(" canvas - new description == %s\n", desc.Data()  );
-      desc.Append( "    range:" );
-      double x[5];
-      //      double y[5]; //unused , dx, dy;
-      x[0]=((TFrame*)gPad->GetFrame())->GetX1();
-      x[1]=((TFrame*)gPad->GetFrame())->GetX2();
-      //      y[0]=((TFrame*)gPad->GetFrame())->GetY1();
-      //      y[1]=((TFrame*)gPad->GetFrame())->GetY2();
-      desc+=x[0];
-      desc.Append( "->" );
-      desc+=x[1];
-      desc.Append( "    CmdBox:" );
-      //       printf(" canvas - new description == %s\n", desc.Data()  );
-      desc.Append( fentry->Data()  );
-
-      printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
 
 
-      TDirectory *curr=(TDirectory*)gDirectory;// to return back
-      TFile f( filename ,"UPDATE") ; 
-      //      c->SetTitle( name->Data() );
-      c->SetTitle( desc.Data() );
-      c->Write( name->Data() );  // CANVAS-------
-      f.Close();
-      //SAVED  TO  permanent root file........................
-      printf("i ... canvas (successfully) saved....%s\n","");
+
 
 
       //      printf("Canvas saved now, trying accessParams: %s\n", "");
@@ -2422,13 +2452,15 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
        */
        
       //================= MYSQL ===================== END
-       
 
        printf("i ... SaveFit end %s\n","");
        curr->cd();
     }//C not NULL
    }//fit not null 
 }// SELSaveFit
+
+
+
 
 
 
