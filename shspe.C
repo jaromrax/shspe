@@ -2563,10 +2563,13 @@ void MyMainFrame::fSELDelFBX(int id,TString *fentry){
 
 
 
+
+
+
 void MyMainFrame::fSELClone2Rint(int id,TString *fentry){ 
   printf("item %2d:%s\n",id,fentry->Data());  
 
-       //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
+  /*       //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
       TString *xfentry=new TString( fEntrySIG->GetText() );
       if ( xfentry->CompareTo("")!=0 ){ 
 	 if  (TPRegexp("^[\\d]+$").Match(xfentry->Data() )!=0){// match
@@ -2575,24 +2578,34 @@ void MyMainFrame::fSELClone2Rint(int id,TString *fentry){
       }//xfentry  exists---------------possibility to change defaultsigma
       
       //fListBox2->GetSelected();
+      */
 
 TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
  if (  (o!=NULL) && (strstr(o->ClassName(),"TH")  )    ){// ok class 
  char chtr[500]; 
+ char chtr2[500]; 
  char ch[500]; 
- sprintf( chtr, "%s" ,  gDirectory->GetName() ); // trim
+ sprintf( chtr2, "%s" ,  gDirectory->GetName() ); // trim-same as .CURFILE? 
+ TSystem ts;
+ sprintf( chtr, "%s",  ts.BaseName(chtr2)  );
  //chtr[6]='\0'; // this is runxxx
  for (unsigned int i=3;i<strlen(chtr);i++){
    ch[0]= chtr[i];
    ch[1]='\0';
-   if ( strstr( "0123456789_", ch)!=NULL )
+   if ( strstr( "0123456789_", ch)!=NULL ) // if something else... STOPwith\0
      {
      }else{
      chtr[i]='\0';
      break;
    }
+   /*   if ( strlen( ch)>11 ) // if something else... STOPwith\0
+     {
+     }else{
+     chtr[i]='\0';
+     break;
+     }*/
  }
- printf("Trimstring = /%s/\n",chtr);
+ printf("Trimstring = /%s/\n",chtr); // path trimmed...3letters + run#
  sprintf( ch, "%s_%s", o->GetName() ,  chtr );
  printf("Finstring = /%s/\n",ch);
  TObject *o2=o->Clone( ch );
