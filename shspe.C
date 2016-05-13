@@ -156,14 +156,20 @@ void cutls(){
 
 void saveobj2asc(const char *filenam,  TH1* xobj){
   FILE * pFile;
-  pFile=fopen( filenam ,"w" );
+  int c,i,max;
+  TString newfilename = filenam;
+  newfilename.ReplaceAll(".asc","");
+  newfilename.Append("_");
+  newfilename.Append(xobj->GetName() );
+  newfilename.Append(".asc");
+  pFile=fopen( newfilename.Data()  ,"w" );
   if (pFile!=NULL) {
-    int c,i,max;
     max=xobj->GetNbinsX();
     for (i=0;i<max;i++){
       c=xobj->GetBinContent(i);
       fprintf(pFile,"%d %d\n",i,c);
     } //>alfa_run50_de6.txt
+
     fclose(pFile);
     printf("file /%s/ saved\n", filenam );
   }
@@ -2927,7 +2933,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 	divide_mod_flag=5; break;
 	
       case 4:
-	divide_mod_flag=7; break;
+	divide_mod_flag=6; break;
       case 41:
 	divide_mod_flag=7; break;
       case 14:
