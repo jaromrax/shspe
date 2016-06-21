@@ -2311,12 +2311,12 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
     TDirectory *curr=(TDirectory*)gDirectory;// to return back
 
     //DESCRIPTION ----
-      TString desc;
+    TString desc="";
 
       //ok-I save only the fitresult===================================================
       TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("fitresult");
       TString tempi;
-      TString histoname;
+      TString histoname;   //// first c name if c017; after save=> becomes file:
 	  if (c!=NULL){
             desc.Append( "file:" );
 	    //	    if (gFile!=NULL){
@@ -2334,7 +2334,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	      //	    }// ELSE___________________
 	    desc.Append( "    histo:" );
 	    //	    desc.Append( histo->GetName() );
-	    histoname=c->GetTitle();
+	    histoname=c->GetTitle(); // THIS IS
 	    desc.Append( c->GetTitle() ); // should keep the histoname!
 	    desc.Append( "    range:" );
 	    double x[5];
@@ -2345,10 +2345,14 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    //	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
 	    printf("%s\n", desc.Data()  );
 	    //TFile reopen
-	    TFile f( filename ,"UPDATE") ; 
-	    c->SetTitle( desc.Data() );
+	    TFile f( filename ,"UPDATE") ;
+	    //	    TCanvas *cclone=(TCanvas*)c->Clone();
+	    // maybe this was for better orientation in saved canvas
+	    //	    cclone->SetTitle( desc.Data() ); // WHY THIS??????????? I REMOVE ....???
+	    //	    cclone->Write( name->Data() );  // CANVAS-------
 	    c->Write( name->Data() );  // CANVAS-------
 	    f.Close();
+	    //	    delete cclone;
 	    //ROOT SAVED
 	    //SAVED  TO  permanent root file........................
 	    double array[5][8];  //peaks,    k  dk  a da

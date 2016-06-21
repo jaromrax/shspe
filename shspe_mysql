@@ -6,10 +6,13 @@ if [ "$1" = "debug" ]; then
 else
     DEBUG=0
 fi
+DEBUG=1
 
 #credentials...........
 CREDFILE="shspe.pk_mysql"
 
+
+########### GETS parameter and ....
 function runnumber {
     local RF=$1
     echo $RF | grep "^run" >/dev/null
@@ -29,11 +32,8 @@ function runnumber {
 ##################################### BEGIN ########
 
 if [ ! -e $CREDFILE ]; then
-#else
-#  exit  
     if [ "$DEBUG" = "1" ]; then
-	#echo $CREDFILE exists;
-	echo you need file $CREDFILE:
+	echo you need file $CREDFILE  that contains:
 	echo user=
 	echo pass=
 	echo database=
@@ -41,6 +41,7 @@ if [ ! -e $CREDFILE ]; then
   exit
 fi
 
+### READ CREDENTIALS 
  if [ "$DEBUG" = "1" ]; then echo ... going to parse $CREDFILE; fi
 USER=`cat $CREDFILE | grep -v \# | grep user= | cut -d = -f 2`
  if [ "$DEBUG" = "1" ]; then echo USER=$USER; fi
@@ -50,14 +51,17 @@ if [ "$DBASE" = "" ]; then
      if [ "$DEBUG" = "1" ]; then echo ... no DBASE name defined;fi
     exit
 fi
+
+
+
 #echo DBASE=$DBASE
 # i need
 #    user,pass,server,databasename,run number
 ########################################################
-
-
 #runnumber run0048_20140628_095336.root
 #RUN=`runnumber run0048_20140628_095336.root`
+
+## GET RUN NUMBER FROM .CURRENTFILE ##
 RUNNAME=`cat .CURRENTFILE`
 if [ "$DEBUG" = "1" ]; then echo "d ... runname $RUNNAME"; fi
 RUNBA=`basename $RUNNAME`
@@ -68,27 +72,28 @@ RUN=$(( $RUN + 0 ))
 if [ "$DEBUG" = "1" ]; then echo "d ... run     $RUN"; fi
 
 if [ "$RUN" -ge "0" -a "$RUN" -le "9999" ]; then
-    echo ======== bash script for insert to mysql=======
+    echo ======== continuing bash script for insert to mysql=======
 else
     exit
 fi
-echo "i ... run /$RUN/; database /$DBASE"
+
+
+echo "i ... run /$RUN/; database /$DBASE/"
 #echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
 
 ### LAST FIT SAVED RESULT:
-### zfitresults.tmp###########################3
+### zfitresults.tmp##########################
 #k dk A dA cc:scom histoname=cut=d=diag=
 #
-#  naming from mkmat
+#  NAMING CONVENTIONS!!!!  naming from mkmat
 #     c022=>diag6 ...22-16 = de6 = #6
 #         =>cutd t6d 
-#HOW?
-pkid=0
+
+pkid=0;    ##### reading from <zfitresults.tmp   where multiples are
 while read line           
 do
-    #ALL depends ok order
-    # k dk A dA  5from 6to 7code 8name file
-    if [ "$DEBUG" = "1" ]; then echo i ... database /$DBASE/; fi
+    # k dk A dA  5from 6to 7fitcode 8spename 9filename
+    if [ "$DEBUG" = "1" ]; then echo d ... while loop START ===============; fi
     echo -e "$line"
     pkid=$(( $pkid + 1 ))
     part='n'
@@ -97,33 +102,47 @@ do
      A=`echo $line | awk '{print $3}'`
     dA=`echo $line | awk '{print $4}'`
     fitcode=`echo $line | awk '{print $7}'`
+    if [ "$DEBUG" = "1" ]; then
+	echo "d ... k   dk   A  aA    fitcode"
+	echo "d ... $k   $dk  $A  $dA"
+    fi
     #### histoname $6   c022  t3_d    t4_diag    #8
     detnumbr=0
     det=`echo $line | awk '{print $8}'`
-    ###########  first ... check c0024 ###############
+    if [ "$DEBUG" = "1" ]; then echo d ... detector v1. /$det/; fi
+    ###########  first ... check c0024 ###############  tele de,e,sum
     echo $det | grep -e "^c" >/dev/null
     if [ "$?" = "0" ]; then
-	detnumbr=`echo $det | sed 's/c//' | awk '{print $1-16}'`
+	detnum=`echo $det | sed 's/c//' | awk '{print $1-16}'`
+	# for 1-8 ... I have negative values
+	if [ "$DEBUG" = "1" ]; then echo d ... detNUM\(c\)   v2. /$detnum/... ; fi
     else
     ######################################  c017 ... c022
-      if [ "$DEBUG" = "1" ]; then echo i ... detector /$det/... not c022; fi
+#      if [ "$DEBUG" = "1" ]; then echo d ... detector v2. /$det/... not c022; fi
       detnum=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,2,1);}'`
+      if [ "$DEBUG" = "1" ]; then echo d ... detNUM\(nonc\) v2. /$detnum/... ; fi
       detlet=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,1,1);}'`
-      if [ "$DEBUG" = "1" ]; then echo i ... letter=t  /$detlet/; fi
-      if [ "$DEBUG" = "1" ]; then echo i ... detnumbr /$detnum/; fi
+      if [ "$DEBUG" = "1" ]; then echo d ... letter=t  /$detlet/; fi
+      if [ "$DEBUG" = "1" ]; then echo d ... detnumbr /$detnum/; fi
       part=`echo $det | awk 'BEGIN{FS="_"} {print $2}'`
-      if [ "$DEBUG" = "1" ]; then echo i ... particle /$part/; fi
+      if [ "$DEBUG" = "1" ]; then echo d ... particle /$part/; fi
     fi
     #####################################
     valid=1
     sig=1.
     dsig=0.1
     run=$RUN
+    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');"
     
     echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE 2>/dev/null;
-    echo "r ... result $?"
-    
-done <zfitresults.tmp
+    RESULT=$?
+    if [ "$RESULT" = "0" ]; then
+	echo "R ... result OK"
+    else
+	echo "R ... PROBLEM WITH INSERTING"
+    fi
+#    echo "r ... result $?"
+ done <zfitresults.tmp
 
 
 
