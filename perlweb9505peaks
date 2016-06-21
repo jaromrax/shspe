@@ -1,0 +1,526 @@
+#!/usr/bin/perl
+############   http://perldoc.perl.org/CGI.html
+############   http://stackoverflow.com/questions/14425220/perl-http-server
+use strict;
+use warnings;
+
+
+use CGI qw/ :standard /;
+
+my $PORT=9505;
+my $DBASE="mg26_3Hed_20150606";
+#  h1()  p() a()
+use Data::Dumper;
+use HTTP::Daemon;
+use HTTP::Response;
+use HTTP::Status;
+use POSIX qw/ WNOHANG /;
+
+use constant HOSTNAME => qx{hostname};
+
+
+################## MYSQL ###########
+#####http://www.mysqltutorial.org/perl-mysql/perl-mysql-connect/
+use DBI;
+
+my $MYHOME="/home/ojr/.myservice/";
+
+print "Perl MySQL Connect Demo\n";
+# MySQL database configuration
+my $dsn = "DBI:mysql:$DBASE";
+print "$dsn\n";
+my $username = `cat /home/ojr/.$DBASE.mysql | tail -2 | head -1`;
+my $password = `cat /home/ojr/.$DBASE.mysql | tail -1 | head -1`;
+chop($username);
+chop($password);
+# connect to MySQL database
+my %attr = ( PrintError=>0,  # turn off error reporting via warn()
+	     RaiseError=>1);   # turn on error reporting via die()           
+my $dbh  = DBI->connect($dsn,$username,$password, \%attr);
+print "Connected to the MySQL database.\n";
+print &QUERY($dbh);
+$dbh->disconnect();
+
+
+
+my %O = (
+    'listen-host' => '127.0.0.1',
+    'listen-port' => $PORT,
+    'listen-clients' => 30,
+    'listen-max-req-per-child' => 100,
+);
+
+my $d = HTTP::Daemon->new(
+    LocalAddr => $O{'listen-host'},
+    LocalPort => $O{'listen-port'},
+    Reuse => 1,
+) or die "Can't start http listener at $O{'listen-host'}:$O{'listen-port'}";
+
+
+
+print "Started HTTP listener at " . $d->url . "\n";
+
+my %chld;
+
+if ($O{'listen-clients'}) {
+    $SIG{CHLD} = sub {
+        # checkout finished children
+        while ((my $kid = waitpid(-1, WNOHANG)) > 0) {
+            delete $chld{$kid};
+        }
+    };
+}
+
+while (1) {
+    if ($O{'listen-clients'}) {
+        # prefork all at once
+        for (scalar(keys %chld) .. $O{'listen-clients'} - 1 ) {
+            my $pid = fork;
+
+            if (!defined $pid) { # error
+                die "Can't fork for http child $_: $!";
+            }
+            if ($pid) { # parent
+                $chld{$pid} = 1;
+            }
+            else { # child
+                $_ = 'DEFAULT' for @SIG{qw/ INT TERM CHLD /};
+                http_child($d);
+                exit;
+            }
+        }
+
+        sleep 1;
+    }
+    else {
+        http_child($d);
+    }
+}
+################ END OF MAIN SERVICE LOOP ###########
+
+
+
+
+sub http_child {
+    my $d = shift;
+
+    my $i;
+    my $css = <<CSS;
+    .inline { display:inline-block; padding:15px;}
+    body {
+	background-image: url("19.jpg"); 
+    #   background-repeat: no-repeat;
+    }
+CSS
+
+    while (++$i < $O{'listen-max-req-per-child'}) {
+        my $c = $d->accept or last;
+        my $r = $c->get_request(1) or last;
+        $c->autoflush(1);
+
+        print sprintf("[%s] %s %s\n", $c->peerhost, $r->method, $r->uri->as_string);
+
+        my %FORM = $r->uri->query_form(); 
+        if ($r->uri->path eq '/') {
+	    &PRESENT_MAIN_PAGE($c,$css,\%FORM);  
+        }
+	#### jpg IMAGE DISPLAY #### tmp
+        elsif ($r->uri->path=~/^\/tmp\/[\w\d\/]+\.jpg$/) {
+	    my $img; ($img)=($r->uri->path=~/\/tmp\/([\w\d\/]+\.jpg$)/);
+	    print "tmpsending $img\n";  $c->send_file("/tmp/$img");
+        }
+	#### jpg IMAGE DISPLAY #### with sub path
+        elsif ($r->uri->path=~/^\/[\w\d\/]+\.jpg$/) {
+	    my $img; ($img)=($r->uri->path=~/\/([\w\d\/]+\.jpg$)/);
+	    print "sending $img\n";  $c->send_file("$MYHOME/$img");
+        }
+	#### png IMAGE DISPLAY ####
+        elsif ($r->uri->path=~/^\/[\w\d\/]+\.png$/) {
+	    my $img; ($img)=($r->uri->path=~/\/([\w\d\/]+\.png$)/);
+	    print "sending $img\n";  $c->send_file("$MYHOME/$img");
+        }
+        elsif ($r->uri->path eq '/error') {
+            _http_error($c, RC_INTERNAL_SERVER_ERROR, "my error"); die "my error";
+        } ###ERROR
+	################################################################ END OF MAIN SEQUENCE
+        elsif ($r->uri->path eq '/formpeaks') {
+	    &PRESENT_FORMPEAKS( $c, $css );
+        }
+        elsif ($r->uri->path=~/^\/insertpeaks/) {
+	    &PRESENT_INSERTPEAKS( $c, $css, \%FORM );
+        } 
+        else {  _http_error($c, RC_NOT_FOUND);  }
+
+        $c->close();
+        undef $c;
+    }
+}
+
+############################################################################  PRESENTATION SUBROUTINES 
+
+
+
+
+sub _http_error {my ($c, $code, $msg) = @_;$c->send_error($code, $msg);}
+
+sub _http_response {
+    my $c = shift;
+    my $options = shift;
+
+    $c->send_response(
+        HTTP::Response->new(
+            RC_OK,
+            undef,
+            [
+                'Content-Type' => $options->{content_type},
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0',
+                'Pragma' => 'no-cache',
+                'Expires' => 'Thu, 01 Dec 1994 16:00:00 GMT',
+            ],
+            join("\n", @_),
+        )
+    );
+}
+
+sub PRESENT_PLAIN{
+    my $c=shift;
+    _http_response($c, { content_type => 'text/plain' }, 1);
+}
+sub PRESENT_SOME_RESPONSE{
+    my $c=shift;
+    my $css=shift;
+    _http_response($c, { content_type => 'text/html' }, 
+		   start_html(
+		       -title => HOSTNAME,
+		       -encoding => 'utf-8',
+		       -style => { -verbatim => $css },
+		   ), "ahoj",
+		   end_html()
+	);
+}
+
+sub PRESENT_EXAMPLEFORM{
+    my $c=shift;
+    my $css=shift;
+
+            _http_response($c, { content_type => 'text/html' }, 
+			   start_html(
+			       -title => HOSTNAME,
+			       -encoding => 'utf-8',
+			       -style => { -verbatim => $css },
+			   ), 
+			   h1("jdi do prcic"),
+			   h2("jdi do prcic"),
+			   ol({compact=>undef},li('one'),li('two'),li('three')),
+			   p("jdi do prcic"),
+			   blockquote(em('Hi'),'mom!  HERE IS A FORM'), hr(),
+			   start_form( {method=>'GET',-action=>"http://localhost:$PORT"}),
+#			   gradient({-start=>'red',-end=>'blue'}),
+			   checkbox_group(
+				 -name=>'locations',
+				 -values=>['England','France','Spain','Asia','Hoboken'],
+				 -linebreak=>'yes',
+				 -defaults=>['England','Asia']),
+			   radio_group(
+			       -name=>'howfar',
+			       -values=>['10 ft','1 mile','10 miles','real far'],
+			       -default=>'1 mile'),
+			   popup_menu(-name=>'Color',
+				      -values=>['black','brown','red','yellow'],
+				      -default=>'red'),
+			   br(),
+			   scrolling_list(
+			       -name=>'possessions',
+			       -values=>['A Coconut','A Grail','An Icon',
+					 'A Sword','A Ticket'],
+			       -size=>5,
+			       -multiple=>'true'),
+			   br(),
+			    popup_menu('menu_name',
+				       ['eenie','meenie','minie',
+					optgroup('optgroup_name', ['moe', 'catch'],
+						 {'catch'=>{'class'=>'red'}})],'meenie',
+				       {'eenie'=>'one','meenie'=>'two','minie'=>'three'}),
+			   radio_group(-name=>'enimini',
+				       -values=>['eenie','meenie','minie','moe'],
+				       -rows=>2,-columns=>2),
+#			   textarea(-name=>'Comments',  -rows=>10, -columns=>50),
+#			   submit("http://localhost:$PORT/",'SEND'),
+			   image_button('picture','http://sciencemag.cz/wp-content/uploads/2016/05/vitualnirealita-660x330.jpg','MIDDLE'),
+			   end_form(),
+			   img{-src=>'19.jpg'},
+			   end_html()
+		);  #END OF RESPONSE 
+
+}
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
+#######################################################################################
+#######################################################################################
+
+
+
+sub PRESENT_MAIN_PAGE{
+      my $c=shift;
+      my $css=shift;
+      
+      my @tpeaks=`cat /tmp/$DBASE/zfitresults.tmp`;
+      my $a;
+      my $table="";
+      my $i=0;
+      foreach $a (@tpeaks){
+	  $i++;
+	  $table.="<p> <td>$i.</td> <td>$a</td> </p>\n";
+      }
+	  
+      $dbh  = DBI->connect($dsn,$username,$password, \%attr);
+      my $text=&QUERY($dbh);
+      $dbh->disconnect();
+
+   _http_response($c, { content_type => 'text/html' }, 
+		   start_html(
+		       -title => HOSTNAME,
+		       -encoding => 'utf-8',
+		       -style => { -verbatim => $css },
+#		       -style => { -code => $css },
+		   ),	
+		   h1("Database : $DBASE "), hr(),
+		   h3(
+		       a({href => "formpeaks"}, "go to the FORM PEAKS page"),br(),
+		       hr(),
+		  ),
+		  table( { -border=>"3", -text_align=>"center", -width=>"100%" },
+			 #			  Tr(  td("a"), td("a") ),
+			 Tr( $text ),
+		  ),
+		  $table,
+		  hr(),
+		  end_html()
+       );
+
+}
+####################################  PRESENT DIARY    SHOW 
+
+
+
+
+
+sub PRESENT_FORMPEAKS{
+      my $c=shift;
+      my $css=shift;
+      
+      my @tpeaks=`cat /tmp/$DBASE/zfitresults.tmp`;
+      my $a;
+      my $table="";
+      my $i=0;
+      my $selection="<div class=\"inline\">".
+      p("27Al").scrolling_list(-name=>"27Al",
+		     -values=>["none",0,840,1020,1234,3213,3245,542,43,23432],
+		     -default=>"none")."</div>"."<div class=\"inline\">".p("13N").scrolling_list(-name=>"13N",
+		     -values=>["none",0,840,1020,1234,3213,3245,542,43,23432],
+		     -default=>"none")."</div>";
+      # prepare different selections #
+      my @selection;
+      for ($i=1;$i<5;$i++){
+	  $selection[$i]=$selection; 
+	  $selection[$i]=~s/27Al/27Al$i/g;
+	  $selection[$i]=~s/13N/13N$i/g;
+      }
+      $i=0;
+      foreach $a (@tpeaks){
+	  $i++;
+	  $a=~s/^\s+//;
+	  $a=~s/\s+$//;
+	  my @a=split/\s+/,$a;
+#	  $table.="<div class=\"inline\">$selection[$i] $i.  \&nbsp; $a[0] \&nbsp; $a[2]</div>\n";
+	  $table.="$selection[$i] $i.  \&nbsp; $a[0] \&nbsp; $a[2]\n";
+      }
+      print "\nSHOWING ACTUAL TABLE\n$table\n\n";
+      
+      
+    _http_response($c, { content_type => 'text/html' }, 
+		   start_html(
+		       -title => HOSTNAME,
+		       -encoding => 'utf-8',
+		       -style => { -verbatim => $css },
+#		       -style => { -code => $css },
+		   ),	
+		   a({href => "/"}, "back to MAIN page"),hr(),
+
+#		   table( { -border=>"3", -width=>"50%" },
+########			  Tr(  td("a"), td("a") ),
+#			  Tr( $text ),
+#			  ),
+ ################ FORM START
+		   start_form( {method=>'GET',-action=>"/insertpeaks"}), 
+		   submit("submit",'SEND'), hr(),
+		   $table,
+		   "<div class=\"inline\">",
+		   img{-src=>"/tmp/$DBASE/zfitresults.jpg", -width=>500},
+		   "</div>",
+		   end_form(),
+
+################ FORM END
+		   end_html()
+	);  
+}
+############################ FORMPEAKS
+
+
+
+
+
+
+
+
+
+
+
+
+sub QUERY{
+     # query from the table
+    my ($dbh) = @_;
+#    my $sql = "SELECT day,dow,obdivcit,inet,video,nadrh,kukacka,manzetka,pruser FROM diary.zaznam order by day";
+    my $sql = "SELECT pkid,run,det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid,edesum,elem,elev  FROM peaks WHERE valid = 1 ORDER BY  peaks.i DESC LIMIT 10";
+    my $sth = $dbh->prepare($sql);
+
+
+    my $tot="<td>pkid</td>
+<td style=\"text-align:right\"> RUN</td>
+<td style=\"text-align:right\">edes</td>
+<td style=\"text-align:right\">d#</td>
+<td style=\"text-align:right\">particle</td>
+<td style=\"text-align:right\">k</td>
+<td style=\"text-align:right\">dk</td>
+<td style=\"text-align:right\">A</td>
+<td style=\"text-align:right\">dA</td>
+<td style=\"text-align:right\">Element</td>
+<td style=\"text-align:right\">E_level</td>
+<td style=\"text-align:right\">t</td>
+</tr>";
+    
+    my $BGSTYLE=" background-position:left 0px;background-size:100%; background-repeat:no-repeat;";
+    $tot=$tot."\n";
+    # execute the query
+  $sth->execute();
+###    $"="</td><td>"; 
+
+    while(my @row = $sth->fetchrow_array()){
+
+$tot=$tot."<tr>
+<td style=\"text-align:right\">$row[0]</td>
+<td style=\"text-align:right\">$row[1]</td>
+<td style=\"text-align:right\">$row[13]</td>
+<td style=\"text-align:right\">$row[2]</td>
+<td style=\"text-align:right\">$row[3]</td>
+<td style=\"text-align:right\">$row[5]</td>
+<td style=\"text-align:right\">$row[6]</td>
+<td style=\"text-align:right\">$row[7]</td>
+<td style=\"text-align:right\">$row[8]</td>
+<td style=\"text-align:right\">$row[14]</td>
+<td style=\"text-align:right\">$row[15]</td>
+<td style=\"text-align:right\">$row[4]</td>
+\n";
+
+	#     printf("%s\t%s\n",$row[0],$row[1]);
+    }       
+###    $"=" ";
+###    $tot=~s/\<tr\>\<td\>$//;
+    $sth->finish();
+    return $tot;
+}
+
+
+
+
+
+
+########################
+#
+#  peaks - mame tabulku, kde to jde rvat primo z shspe()
+#  runs  - mame tabulku kde jsou info o runech, calib, angle,area, deadtime
+#               tgt thick, time, Q,
+# ALE TAKY      dOmega, Ebeam, conversionLab2CMS
+#        - potreba tabulka, kde je identifikace? 27Al001 ?
+#
+
+
+sub PRESENT_INSERTPEAKS{
+    my $c=shift;
+    my $css=shift;
+    my (%FORM)=%{$_[0]};
+    my $elev=-1.;
+    my $element="--";
+    my $t;
+    my $tn;
+    my $pkn=0;
+    my @pkelem;
+    my @pkelev;
+    my $result;
+    for $t (keys %FORM){
+	print "i ... testing key $t\n";
+	($tn)=($t=~/(\d+)$/);
+	if ($tn){
+	    if ($tn gt $pkn){$pkn=$tn;}
+	    if ($FORM{$t} ne "none"){$pkelev[$tn-1]=$FORM{$t};($pkelem[$tn-1])=($t=~/^(\d+\w+)\d+$/);}
+	}
+    }
+    print "# peaks = $pkn\n @pkelem\n@pkelev\n";
+    
+    my @fields=`cat /tmp/$DBASE/insert_into_mysql`;
+
+#    if ( (exists $FORM{"27Al1"}) && ($FORM{"27Al1"} ne "none") ){ $element="al27";$elev=$FORM{"27Al"};}
+#    if ( (exists $FORM{"13N"})  && ($FORM{"13N"}  ne "none") ){ $element="13N"; $elev=$FORM{"13N"};}
+
+    ####### BEGIN OF INSERTION
+    for ($t=0;$t<$pkn;$t++){
+	$fields[$t]=~s/^\s+//;$fields[$t]=~s/\s+$//; 
+	my @f=split/\s+/,$fields[$t];
+	print "to insert $t+1  $pkelem[$t] $pkelev[$t] MeV\n";
+	$dbh  = DBI->connect($dsn,$username,$password, \%attr);
+	my $sql = "INSERT INTO peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid,edesum,elem,elev)
+     VALUES(?,?,?,?,NOW(),?,?,?,?,?,?,?,?,?,?,?)";
+	my $stmt = $dbh->prepare($sql);
+	if  (  $stmt->execute(
+		   $f[0],$f[1],$f[2],$f[3],
+		   $f[5],$f[6],$f[7],$f[8],$f[9],$f[10],$f[11],$f[12],$f[13],
+		   $pkelem[$t],
+		   $pkelev[$t],
+	       )  ){
+	    print "OK\n";}else{
+		print "diary Insert error \n"; 
+		_http_error($c, RC_INTERNAL_SERVER_ERROR, "Problem with insertion: probably duplicate entry\n");     # 	    $result="PROBLEM insert into diary ...... NO\n";
+	    }
+	$stmt->finish();
+	$dbh->disconnect();
+	####### EO INSERTION
+    }
+
+    
+    _http_response($c, { content_type => 'text/html' }, 
+		   start_html(
+		       -title => HOSTNAME,
+		       -encoding => 'utf-8',
+		       -style => { -verbatim => $css },
+		   ),
+		   a({href => "/"}, "back to MAIN page"),hr(),
+		   h1("inserting into database "),
+		   h2(" $element ... $elev keV"),
+		   hr(),
+		   '<META http-equiv="refresh" content="5;URL=http://localhost:9505">',
+		   pre(Data::Dumper->Dump([\%FORM],['FORM'])),hr(),
+
+		   a({href => "formpeaks"}, "go to the FORM page"),br(),
+
+		   end_html()
+	);
+}
+##################### END OF INSERTPEAKS
+
+
+
+
+
+

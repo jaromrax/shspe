@@ -6,11 +6,11 @@ if [ "$1" = "debug" ]; then
 else
     DEBUG=0
 fi
-DEBUG=1
+#DEBUG=1
 
-#credentials...........
+#  credentials...........
 CREDFILE="shspe.pk_mysql"
-
+ZFITFILE=zfitresults.tmp
 
 ########### GETS parameter and ....
 function runnumber {
@@ -52,6 +52,13 @@ if [ "$DBASE" = "" ]; then
     exit
 fi
 
+
+#### preparation for database ##### only local zfitresults.tmp
+mkdir -p /tmp/$DBASE
+cp $ZFITFILE /tmp/$DBASE/
+echo i ... copy  `basename $ZFITFILE`.jpg  TO /tmp/$DBASE/
+cp `basename $ZFITFILE .tmp`.jpg /tmp/$DBASE/
+rm /tmp/$DBASE/insert_into_mysql
 
 
 #echo DBASE=$DBASE
@@ -108,17 +115,25 @@ do
     fi
     #### histoname $6   c022  t3_d    t4_diag    #8
     detnumbr=0
+    #  E or DE  or SUM or NON
+    edesum="non"
     det=`echo $line | awk '{print $8}'`
     if [ "$DEBUG" = "1" ]; then echo d ... detector v1. /$det/; fi
-    ###########  first ... check c0024 ###############  tele de,e,sum
+    ###########  first ... check c0024 ###### beginof c017-c024
     echo $det | grep -e "^c" >/dev/null
     if [ "$?" = "0" ]; then
 	detnum=`echo $det | sed 's/c//' | awk '{print $1-16}'`
+	edesum="de"
 	# for 1-8 ... I have negative values
 	if [ "$DEBUG" = "1" ]; then echo d ... detNUM\(c\)   v2. /$detnum/... ; fi
+	if [ "$detnum" -le "0" ]; then
+	    detnum=`echo $det | sed 's/c//' | awk '{print $1}'`
+	    edesum="e"
+	fi
     else
-    ######################################  c017 ... c022
-#      if [ "$DEBUG" = "1" ]; then echo d ... detector v2. /$det/... not c022; fi
+      ######################################  endof c017 ... c022
+      edesum="sum"
+#     if [ "$DEBUG" = "1" ]; then echo d ... detector v2. /$det/... not c022; fi
       detnum=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,2,1);}'`
       if [ "$DEBUG" = "1" ]; then echo d ... detNUM\(nonc\) v2. /$detnum/... ; fi
       detlet=`echo $det | awk 'BEGIN{FS="_"} {print substr($1,1,1);}'`
@@ -132,9 +147,13 @@ do
     sig=1.
     dsig=0.1
     run=$RUN
-    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');"
     
-    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE 2>/dev/null;
+    echo "$pkid $run $detnum $part NOW() $k $dk $A $dA $sig $dsig $fitcode $valid $edesum" >> /tmp/$DBASE/insert_into_mysql
+
+#    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid,edesum) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid','$edesum');"
+
+#    $valid=0;
+    echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid,edesum) VALUES ('$pkid','$run', '$detnum','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid','$edesum');" | mysql -u$USER -p$PASS $DBASE 2>/dev/null;
     RESULT=$?
     if [ "$RESULT" = "0" ]; then
 	echo "R ... result OK"
@@ -142,7 +161,7 @@ do
 	echo "R ... PROBLEM WITH INSERTING"
     fi
 #    echo "r ... result $?"
- done <zfitresults.tmp
+ done <$ZFITFILE
 
 
 
@@ -150,23 +169,4 @@ exit
 ############################################################    EXIT
 ########################################################    EXIT
 ####################################################    EXIT
-################################################    EXIT
-
-pkid=1
-run=$RUN
-#HOW?  c019
-det=2
-#HOW?  contour
-part='d'
-k=$1
-dk=$2
-A=$3
-dA=$4
-sig=1.
-dsig=0.1
-
-fitcode="ccc+p1:scom"
-fitcode="$5"
-valid=1
-echo "INSERT INTO  peaks (pkid,run, det,part,t,k,dk,A,dA,sig,dsig,fitcode,valid) VALUES ('$pkid','$run', '$det','$part',NOW(),'$k','$dk','$A','$dA','$sig','$dsig','$fitcode','$valid');" | mysql -u$USER -p$PASS $DBASE   2>/dev/null ;
-
+#######

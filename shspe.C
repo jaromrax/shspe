@@ -2344,7 +2344,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    desc.Append( fentryccc.Data()  );
 	    //	    printf("i ... canvas - new description: \n%s\n\n", desc.Data()  );
 	    printf("%s\n", desc.Data()  );
-	    //TFile reopen
+	    //TFile reopen ========== I wanted to save canvas with all text...probem 2clone
 	    TFile f( filename ,"UPDATE") ;
 	    //	    TCanvas *cclone=(TCanvas*)c->Clone();
 	    // maybe this was for better orientation in saved canvas
@@ -2352,6 +2352,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    //	    cclone->Write( name->Data() );  // CANVAS-------
 	    c->Write( name->Data() );  // CANVAS-------
 	    f.Close();
+	    c->SaveAs("zfitresults.jpg");
 	    //	    delete cclone;
 	    //ROOT SAVED
 	    //SAVED  TO  permanent root file........................
