@@ -1,0 +1,86 @@
+#!/bin/bash
+
+
+DBASE="mg26_3Hed_20150606" ;
+
+
+# CREATE TABLE NOW
+echo CREATING TABLE ............................ RUNS
+echo "create table runs(
+    run INT NOT NULL,
+    Q FLOAT NOT NULL,
+    t FLOAT NOT NULL,
+    deadt FLOAT NOT NULL,
+    tgtname VARCHAR(10),
+    tgtth FLOAT NOT NULL,
+    det INT NOT NULL,
+    cal1 FLOAT,
+    cal0 FLOAT,
+    ang FLOAT, 
+    dist FLOAT,
+    ds FLOAT );" | mysql -uojr -pojrojr $DBASE;
+
+
+#######INSERT INTO runs (number,Q,t,deadt,tgtname,tgtth,)  VALUES ();" | mysql -uojr -pojrojr
+
+
+
+acal1=( 1.0   0.008941    1.     1.      1.     0.008984  1.0   1.0 )
+acal0=( 0.0  -0.983682    0.     0.      0.    -1.019220  0.0   0.0 )
+adist=( 184.0  184.0  184.0  184.0  184.0  184.0  184.0  184.0  )
+ads=(   6.0     6.0     6.0     6.0     6.0     6.0     6.0     6.0  )
+booang=(  1.0      1.0   1.0    1.0      1.0    0.0    0.0    0.0  )
+fixang=(  0.0      0.0   0.0    0.0      0.0    15.0    25.0    35.0  )
+adang=(  0.0      0.0   10.0   20.0    30.0    0.0      0.0       0.0 )
+
+
+inputfile="mg26runs.txt"
+
+#run Q t deadt  tgtname tgtth
+#23 789145  3898.3  0.0  mylar 1.1
+#24 3041412 17213   0.0  mg26  8.1
+
+
+rm ${inputfile}_FillingtheRuns
+
+echo "i ... reading  $inputfile "
+cat $inputfile | while read   run Q t deadt tgtname tgtth ; do
+
+    #nqtdtt   det#  cal1 cal0  ang   dist  ds
+    #
+    baseang="0.0"
+    echo "i ... LINE RUN = $run"
+    for ((i=0;i<8;i++)); do
+	echo "  i ... det = $i"
+	det=$(( $i + 1 ))
+	cal1=${acal1[$i]}
+	cal0=${acal0[$i]}
+	if [ "$run" = "23" ]; then   baseang=15.0; fi
+	if [ "$run" = "24" ]; then   baseang=15.0; fi
+	if [ "$run" = "25" ]; then   baseang=15.0; fi
+	if [ "$run" = "48" ]; then   baseang=15.0; fi
+	########	ang=$booang *( $adang + $baseang ) + $fixang;
+####	echo "DEBUG ${booang[$i]} *( ${adang[$i]} + ${baseang} ) + ${fixang[$i]};a"
+	ang=`awk "BEGIN {print  ${booang[$i]} *( ${adang[$i]} + ${baseang} ) + ${fixang[$i]}; exit}"`
+	dist=${adist[$i]}
+	ds=${ads[$i]}
+    echo "INSERT INTO  runs (run,Q,t,deadt,tgtname,tgtth,det,cal1,cal0, ang,dist,ds)  VALUES ('$run','$Q','$t','$deadt','$tgtname','$tgtth','$det','$cal1','$cal0','$ang','$dist','$ds');" >>  ${inputfile}_FillingtheRuns
+
+
+    done
+    
+done
+     ##| mysql -uojr -pojrojr mg26_3Hed_20150606;
+
+
+
+
+
+
+###| mysql -uojr -pojrojr mg26_3Hed_20150606;
+##test (IP,MAC,SERVER) VALUES ('$ip', '$mac', '$server');"
+##done | mysql -uroot -ptest test;
+##INSERT INTO runs (number,Q,t,deadt,tgtname,tgtth,cal1t1,cal0t1,cal1t2,cal0t2,cal1t3,cal0t3,cal1t4,cal0t4,cal1t5,cal0t5,cal1t6,cal0t6,cal1t7,cal0t7, cal1t8,cal0t8,ant1,ant2,ant3,ant4,ant5,ant6,ant7,ant8, distt1,distt2,distt3,distt4,distt5,distt6,distt7,distt8,dst1,dst2,dst3,dst4,dst5,dst6,dst7,dst8)  VALUES ();
+
+
+echo " cat mg26runs.txt_FillingtheRuns |  mysql -uojr -pojrojr $DBASE ;"

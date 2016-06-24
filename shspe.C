@@ -2352,7 +2352,7 @@ void  MyMainFrame::fSELSaveFit(int id,TString *fentry){
 	    //	    cclone->Write( name->Data() );  // CANVAS-------
 	    c->Write( name->Data() );  // CANVAS-------
 	    f.Close();
-	    c->SaveAs("zfitresults.jpg");
+	    c->GetPad(1)->SaveAs("zfitresults.jpg");
 	    //	    delete cclone;
 	    //ROOT SAVED
 	    //SAVED  TO  permanent root file........................

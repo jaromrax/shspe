@@ -53,14 +53,6 @@ if [ "$DBASE" = "" ]; then
 fi
 
 
-#### preparation for database ##### only local zfitresults.tmp
-mkdir -p /tmp/$DBASE
-cp $ZFITFILE /tmp/$DBASE/
-echo i ... copy  `basename $ZFITFILE`.jpg  TO /tmp/$DBASE/
-cp `basename $ZFITFILE .tmp`.jpg /tmp/$DBASE/
-rm /tmp/$DBASE/insert_into_mysql
-
-
 #echo DBASE=$DBASE
 # i need
 #    user,pass,server,databasename,run number
@@ -78,18 +70,34 @@ if [ "$DEBUG" = "1" ]; then echo "d ... run     $RUN"; fi
 RUN=$(( $RUN + 0 ))
 if [ "$DEBUG" = "1" ]; then echo "d ... run     $RUN"; fi
 
+
+
 if [ "$RUN" -ge "0" -a "$RUN" -le "9999" ]; then
     echo ======== continuing bash script for insert to mysql=======
 else
     exit
 fi
 
+############# COPY ###### TMP ##############################
+#### preparation for database ##### only local zfitresults.tmp
+mkdir -p /tmp/$DBASE
+cp $ZFITFILE /tmp/$DBASE/
+echo i ... copy  `basename $ZFITFILE`.jpg  TO /tmp/$DBASE/
+cp `basename $ZFITFILE .tmp`.jpg /tmp/$DBASE/
+rm /tmp/$DBASE/insert_into_mysql
+cp .CURRENTFILE  /tmp/$DBASE/CURRENTFILE
+rm   /tmp/$DBASE/CURRENTRUN
+if [ "$RUN" -gt "0" ]; then
+    echo $RUN >  /tmp/$DBASE/CURRENTRUN
+fi
+
+
 
 echo "i ... run /$RUN/; database /$DBASE/"
 #echo "# run /$RUN/ saved to database $DBASE " >> zfitresults.eff
 
 ### LAST FIT SAVED RESULT:
-### zfitresults.tmp##########################
+### zfitres ults.tmp##########################
 #k dk A dA cc:scom histoname=cut=d=diag=
 #
 #  NAMING CONVENTIONS!!!!  naming from mkmat
@@ -147,6 +155,9 @@ do
     sig=1.
     dsig=0.1
     run=$RUN
+
+    rm  /tmp/$DBASE/CURRENTDETECTOR
+    echo $detnum > /tmp/$DBASE/CURRENTDETECTOR
     
     echo "$pkid $run $detnum $part NOW() $k $dk $A $dA $sig $dsig $fitcode $valid $edesum" >> /tmp/$DBASE/insert_into_mysql
 

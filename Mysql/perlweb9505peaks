@@ -16,7 +16,8 @@ use HTTP::Response;
 use HTTP::Status;
 use POSIX qw/ WNOHANG /;
 
-use constant HOSTNAME => qx{hostname};
+#use constant HOSTNAME => qx{hostname};
+#use constant HOSTNAME => scalar "$DBASE";
 
 
 ################## MYSQL ###########
@@ -107,6 +108,7 @@ sub http_child {
     my $i;
     my $css = <<CSS;
     .inline { display:inline-block; padding:15px;}
+    .static { position:static; clear: both; padding:15px;}
     body {
 	background-image: url("19.jpg"); 
     #   background-repeat: no-repeat;
@@ -191,7 +193,7 @@ sub PRESENT_SOME_RESPONSE{
     my $css=shift;
     _http_response($c, { content_type => 'text/html' }, 
 		   start_html(
-		       -title => HOSTNAME,
+		       -title => $DBASE,
 		       -encoding => 'utf-8',
 		       -style => { -verbatim => $css },
 		   ), "ahoj",
@@ -205,7 +207,7 @@ sub PRESENT_EXAMPLEFORM{
 
             _http_response($c, { content_type => 'text/html' }, 
 			   start_html(
-			       -title => HOSTNAME,
+			       -title => $DBASE,
 			       -encoding => 'utf-8',
 			       -style => { -verbatim => $css },
 			   ), 
@@ -281,7 +283,7 @@ sub PRESENT_MAIN_PAGE{
 
    _http_response($c, { content_type => 'text/html' }, 
 		   start_html(
-		       -title => HOSTNAME,
+		       -title => $DBASE,
 		       -encoding => 'utf-8',
 		       -style => { -verbatim => $css },
 #		       -style => { -code => $css },
@@ -289,6 +291,8 @@ sub PRESENT_MAIN_PAGE{
 		   h1("Database : $DBASE "), hr(),
 		   h3(
 		       a({href => "formpeaks"}, "go to the FORM PEAKS page"),br(),
+#		       a({href => "/"}, "back to MAIN page"),hr(),
+
 		       hr(),
 		  ),
 		  table( { -border=>"3", -text_align=>"center", -width=>"100%" },
@@ -307,6 +311,8 @@ sub PRESENT_MAIN_PAGE{
 
 
 
+
+
 sub PRESENT_FORMPEAKS{
       my $c=shift;
       my $css=shift;
@@ -315,19 +321,47 @@ sub PRESENT_FORMPEAKS{
       my $a;
       my $table="";
       my $i=0;
-      my $selection="<div class=\"inline\">".
+
+      my $CRUN=`cat /tmp/$DBASE/CURRENTRUN`; chop($CRUN);
+      my $CDET=`cat /tmp/$DBASE/CURRENTDETECTOR`; chop($CDET);
+
+      ##### find details about TARGET 
+      $dbh  = DBI->connect($dsn,$username,$password, \%attr);
+      my $sql = "SELECT tgtname FROM $DBASE.runs WHERE run = $CRUN  LIMIT 1";
+      print "SQL= $sql\n";
+      my $sth = $dbh->prepare($sql);     $sth->execute(); 
+      my @row = $sth->fetchrow_array();  $sth->finish();
+      print "TARGET =  /$row[0]/\n\n";
+      $dbh->disconnect();
+      ##### find details about TARGET   END
+
+
+      my $selection;
+      if ( $row[0] eq "alpha"){ ######## TARGET
+      $selection="<div class=\"inline\">".
+      p("Alpha").scrolling_list(-name=>"alpha",
+		     -values=>["none",5700,5704,5780,5804],
+				-default=>"none")."</div>";
+      }else{
+      $selection="<div class=\"inline\">".
       p("27Al").scrolling_list(-name=>"27Al",
-		     -values=>["none",0,840,1020,1234,3213,3245,542,43,23432],
+		     -values=>["none",0,843.8, 1014.6, 2211.1, 2734.9, 2982.0, 3004.2, 3690.4],
 		     -default=>"none")."</div>"."<div class=\"inline\">".p("13N").scrolling_list(-name=>"13N",
-		     -values=>["none",0,840,1020,1234,3213,3245,542,43,23432],
+		     -values=>["none",0, 2364.9, 3502, 3547, 6364, 6886, 7155, 7376, 7900, 8918, 9000],
 		     -default=>"none")."</div>";
-      # prepare different selections #
+      }
+      ############## WHICH TARGET END
+
+      # prepare different selections ##############
       my @selection;
       for ($i=1;$i<5;$i++){
 	  $selection[$i]=$selection; 
-	  $selection[$i]=~s/27Al/27Al$i/g;
-	  $selection[$i]=~s/13N/13N$i/g;
+#	  $selection[$i]=~s/27Al/27Al$i/g;
+#	  $selection[$i]=~s/13N/13N$i/g;
+	  $selection[$i]=~s/(name=\"[\d\w]+:?)\"/\1_$i\"/g;
       }
+
+      # TABLE OF SELECTIONS  #######################
       $i=0;
       foreach $a (@tpeaks){
 	  $i++;
@@ -335,14 +369,17 @@ sub PRESENT_FORMPEAKS{
 	  $a=~s/\s+$//;
 	  my @a=split/\s+/,$a;
 #	  $table.="<div class=\"inline\">$selection[$i] $i.  \&nbsp; $a[0] \&nbsp; $a[2]</div>\n";
-	  $table.="$selection[$i] $i.  \&nbsp; $a[0] \&nbsp; $a[2]\n";
+	  $table.="<div class= \"inline\">
+              $selection[$i] 
+              <div  class=\"static\"> $i.  \&nbsp; $a[0] \&nbsp; $a[2] </div>
+              </div>\n";
       }
-      print "\nSHOWING ACTUAL TABLE\n$table\n\n";
+#      print "\nSHOWING ACTUAL TABLE\n$table\n\n";
       
       
     _http_response($c, { content_type => 'text/html' }, 
 		   start_html(
-		       -title => HOSTNAME,
+		       -title => $DBASE,
 		       -encoding => 'utf-8',
 		       -style => { -verbatim => $css },
 #		       -style => { -code => $css },
@@ -464,10 +501,14 @@ sub PRESENT_INSERTPEAKS{
 	($tn)=($t=~/(\d+)$/);
 	if ($tn){
 	    if ($tn gt $pkn){$pkn=$tn;}
-	    if ($FORM{$t} ne "none"){$pkelev[$tn-1]=$FORM{$t};($pkelem[$tn-1])=($t=~/^(\d+\w+)\d+$/);}
+	    if ($FORM{$t} ne "none"){
+                  $pkelev[$tn-1]=$FORM{$t};
+		  ($pkelem[$tn-1])=($t=~/^([\d\w]+)_\d+$/);  # element from FORM 27Al_1
+#		  if ($pkelem[$tn-1] eq ""){}
+	    }
 	}
     }
-    print "# peaks = $pkn\n @pkelem\n@pkelev\n";
+    print "# n peaks = $pkn\n# element: @pkelem\n# Elevels: @pkelev\n";
     
     my @fields=`cat /tmp/$DBASE/insert_into_mysql`;
 
@@ -501,7 +542,7 @@ sub PRESENT_INSERTPEAKS{
     
     _http_response($c, { content_type => 'text/html' }, 
 		   start_html(
-		       -title => HOSTNAME,
+		       -title => $DBASE,
 		       -encoding => 'utf-8',
 		       -style => { -verbatim => $css },
 		   ),
@@ -512,7 +553,8 @@ sub PRESENT_INSERTPEAKS{
 		   '<META http-equiv="refresh" content="5;URL=http://localhost:9505">',
 		   pre(Data::Dumper->Dump([\%FORM],['FORM'])),hr(),
 
-		   a({href => "formpeaks"}, "go to the FORM page"),br(),
+#		   a({href => "formpeaks"}, "go to the FORM page"),br(),
+		   a({href => "/"}, "back to MAIN page"),hr(),
 
 		   end_html()
 	);
