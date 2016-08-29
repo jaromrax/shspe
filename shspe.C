@@ -1269,10 +1269,10 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
  GPAD->Modified();GPAD->Update();
  GPAD->cd();
- TPad *p=new TPad("Ep","Ep",0.,0.,1.,1.);
- p->Draw();
- p->Modified();p->Update();
- p->cd();
+ TPad *pp=new TPad("Ep","Ep",0.,0.,1.,1.);
+ pp->Draw();
+ pp->Modified();pp->Update();
+ pp->cd();
  printf( "This is gPad /%s/\n", gPad->GetName() );
  // plotting on TPad can help
  // TMarker *l=new TMarker(0.1,0.1, 21);
