@@ -17,6 +17,10 @@
 
 //we move to  gui.h .......to have visibility...#include "kibbler_graphs.C"
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 
 ClassImp(MyMainFrame)  // this is a macro !!!!
 
@@ -1274,15 +1278,36 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  pp->Modified();pp->Update();
  pp->cd();
  printf( "This is gPad /%s/\n", gPad->GetName() );
+ //###################################
+ // is this a new TCANVAS ? ########## yes
  // plotting on TPad can help
  // TMarker *l=new TMarker(0.1,0.1, 21);
    Double_t px[5] = {.1,.3,.1,.2,.2};
    Double_t py[5] = {.1,.1,.3,.2,.5};
    TPolyLine *pline = new TPolyLine(5,px,py);
-   // TLine *l=new TLine(0.1,0.1, 1., 1. );
- pline->Draw();
- 
+   //##########################
+   if (ROOT_VERSION_CODE==ROOT_VERSION(6,6,6) ){
+     TText *t=new TText(0.1,0.8, "Bravo, you compiled 6.06.06");
+     t->Draw();
+   }
+     TText *t1=new TText(0.15,0.65, "... compiled under ...");
+     t1->Draw();
 
+     ifstream ifile("/etc/issue",ifstream::in);
+     string line;
+     getline(ifile,line ); //to skip the first line;
+     //     while( getline(ifile,line.str()) ) {
+     cout<<line;
+     TText *tt=new TText(0.2,0.5,  line.c_str()  );
+     tt->Draw();
+     //     }
+     ifile.close();
+   
+   // TLine *l=new TLine(0.1,0.1, 1., 1. );
+   pline->Draw();
+
+   
+   //########################
  /*
  // I know that 0 is canvas;   1 is TPad
  GPAD->Divide( 1 , 1 ,0.002,0.002, 0);  
