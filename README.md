@@ -220,7 +220,7 @@ To enable TF1H in pyroot:
 
 http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importing-histograms/33363251
 
-and then try:
+and then try (make was 132 minutes on one core):
 ```
  mkdir root.build
 
