@@ -159,6 +159,31 @@ void cutls(){
 
 
 void saveobj2asc(const char *filenam,  TH1* xobj){
+  if ( strlen(filenam)==0){return;}
+  FILE * pFile;
+  int c,i,max;
+  TString newfilename = filenam;
+  newfilename.ReplaceAll(".txt","");
+  newfilename.Append("_");
+  newfilename.Append(xobj->GetName() );
+  newfilename.Append(".txt");
+  pFile=fopen( newfilename.Data()  ,"w" );
+  if (pFile!=NULL) {
+    max=xobj->GetNbinsX();
+    for (i=0;i<max;i++){
+      c=xobj->GetBinContent(i);
+      fprintf(pFile,"%d %d\n",i,c);
+    } //>alfa_run50_de6.txt
+
+    fclose(pFile);
+    printf("file /%s/ saved\n", filenam );
+  }
+  
+}
+
+void saveobj2asc1col(const char *filenam,  TH1* xobj){
+  if ( strlen(filenam)==0){return;}
+
   FILE * pFile;
   int c,i,max;
   TString newfilename = filenam;
@@ -171,7 +196,7 @@ void saveobj2asc(const char *filenam,  TH1* xobj){
     max=xobj->GetNbinsX();
     for (i=0;i<max;i++){
       c=xobj->GetBinContent(i);
-      fprintf(pFile,"%d %d\n",i,c);
+      fprintf(pFile,"%d\n",c);
     } //>alfa_run50_de6.txt
 
     fclose(pFile);
@@ -230,30 +255,61 @@ void savecanvas(const char *filenam, int slot=0){
 
   TString s;
   s.Append(filenam);
+
+
   //  printf("savecanvas: filenam=%s,   s=%s\n", filenam, s.Data());
   if (s.Length()>0){
 
-    if ( s.Length()-s.Index(".root")==5){
-      s.Replace( s.Index(".root")  ,  5 , "");
-    }// remove    .root
-    printf("Canvas name (.root removed) == %s\n", s.Data() );
-    char appcha[15]; 
+  printf("Canvas name (.root not removed) == %s\n", s.Data() );
+  char appcha[15]; 
   TString s_e=s;
   TString s_p=s;
   TString s_r=s;//root file:  but now i want to save spectra there
   TString s_asc=s;//ascii file:  but now i want to save spectra there
+  TString s_asc1=s;//ascii file:  but now i want to save spectra there
   TString s_png=s;
-  if (slot==0){  //  SLOT==0 means   no  slot....
-  sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );
-  sprintf( appcha,".%s", "ps" );    s_p.Append(  appcha  );
-  sprintf( appcha,".%s", "root" );  s_r.Append(  appcha  );
-  sprintf( appcha,".%s", "asc" );  s_asc.Append(  appcha  );
-  sprintf( appcha,".%s", "jpg" );   s_png.Append(appcha );
+    
+    if ( s.Index(".root")>0 ){
+      s_e="";
+      s_p="";
+      s_png="";s_asc="";s_asc1="";
+      s.Replace( s.Index(".root")  ,  5 , "");s_r=s;
+    }
+    if ( s.Index(".ps")>0 ){
+      s_e="";
+      s_r="";
+      s_png="";s_asc="";s_asc1="";
+      s.Replace( s.Index(".ps")  ,  3 , "");s_p=s;
+    }
+    if ( s.Index(".eps")>0 ){
+      s_p="";
+      s_r="";
+      s_png="";s_asc="";s_asc1="";
+      s.Replace( s.Index(".eps")  ,  4 , "");s_e=s;
+    }
+    if ( s.Index(".jpg")>0 ){
+      s_e="";
+      s_p="";
+      s_r="";s_asc="";s_asc1="";
+      s.Replace( s.Index(".jpg")  ,  4 , "");s_png=s;
+    }
+    //    if ( s.Length()-s.Index(".root")==5){
+    //      s.Replace( s.Index(".root")  ,  5 , "");
+    //    }// remove    .root
+
+    if (slot==0){  //  SLOT==0 means   no  slot....
+      if(strlen(s_e)>0){sprintf( appcha,".%s", "eps" );   s_e.Append(  appcha );}
+      if(strlen(s_p)>0){sprintf( appcha,".%s", "ps" );    s_p.Append(  appcha  );}
+      if(strlen(s_r)>0){sprintf( appcha,".%s", "root" );  s_r.Append(  appcha  );}
+      if(strlen(s_asc)>0){sprintf( appcha,".%s", "txt" );   s_asc.Append(  appcha  );}
+      if(strlen(s_asc1)>0){sprintf( appcha,".%s", "asc" );   s_asc1.Append(  appcha  );}
+      if(strlen(s_png)>0){sprintf( appcha,".%s", "jpg" );   s_png.Append(appcha );}
   }else{
   sprintf( appcha,"_%d.%s", slot, "eps" );   s_e.Append(  appcha );
   sprintf( appcha,"_%d.%s", slot, "ps" );    s_p.Append(  appcha  );
   sprintf( appcha,"_%d.%s", slot, "root" );  s_r.Append(  appcha  );
-  sprintf( appcha,"_%d.%s", slot, "asc" );  s_asc.Append(  appcha  );
+  sprintf( appcha,"_%d.%s", slot, "txt" );  s_asc.Append(  appcha  );
+  sprintf( appcha,"_%d.%s", slot, "asc" );  s_asc1.Append(  appcha  );
   sprintf( appcha,"_%d.%s", slot, "jpg" );  s_png.Append(appcha );
   }
  
@@ -361,7 +417,7 @@ void savecanvas(const char *filenam, int slot=0){
   //  printf(".!  cp       %s ~/automatic_print/ \n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_p.Data()   ); 
   printf(".!  lpr      %s\n\n",   s_e.Data()   ); 
-  printf(".!  gqview   %s&\n\n",  s_png.Data()   ); 
+  printf(".!  geeqie   %s&\n\n",  s_png.Data()   ); 
 
 
   //  change canvas name !  to let it open later without destroying new...
@@ -372,9 +428,9 @@ void savecanvas(const char *filenam, int slot=0){
   canna.Append(s.Data() );  // not filenam .... but  s.Data() to avoid  .root
   cmy->SetName( canna.Data() );
  
-  cmy->SaveAs(s_e);
-  cmy->SaveAs(s_p);
-  cmy->SaveAs(s_png);
+  if(strlen(s_e)>0){ cmy->SaveAs(s_e);}
+  if(strlen(s_p)>0){ cmy->SaveAs(s_p);}
+  if(strlen(s_png)>0){cmy->SaveAs(s_png);}
 
    if (slot==0){  //  SLOT==0 means   no  slot....
   // cmy->SaveAs(s_r); // not as TCanvas but :
@@ -392,6 +448,7 @@ void savecanvas(const char *filenam, int slot=0){
 	    //	    printf("DEBUG: saving %d to %s\n", j,  s_r.Data() );
 	    saveobj2file(s_r.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
 	    saveobj2asc(s_asc.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
+	    saveobj2asc1col(s_asc1.Data(),(TH1*)p->GetListOfPrimitives()->At(j) );
 	    //int c; for ((i=0;i<4096;i++)){ c=c022->GetBinContent(i);printf("%d %d\n",i,c);} >alfa_run50_de6.txt
 	  } // strstr
 	} //j paden
@@ -825,7 +882,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
         (strcmp(selected->IsA()->GetName(),"TH2F")==0 )
 	 )
 	 ){  // MIDDLE CLICK - 
-	//	fSELSetMarks; 
+	//	fSELetMarks; 
 
 
        //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
@@ -898,7 +955,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "Logz");               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
    //   sprintf(tmp, "%i_Div,LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
-   sprintf(tmp, "----------",SELbar4 );     fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
+   sprintf(tmp, "----------" );     fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
    sprintf(tmp, "LoadCanvas  " );    fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
    sprintf(tmp, "SaveCanvas  " );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
@@ -911,7 +968,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
    sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
-   sprintf(tmp, "----------", SELbar5  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "----------"  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "Clear    " );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
    sprintf(tmp, "ClearAll " );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
 
@@ -1287,10 +1344,11 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
    TPolyLine *pline = new TPolyLine(5,px,py);
    //##########################
    if (ROOT_VERSION_CODE==ROOT_VERSION(6,6,6) ){
-     TText *t=new TText(0.1,0.8, "Bravo, you compiled 6.06.06");
+     TText *t=new TText(0.02,0.95, "you compiled 6.06.06");
+     t->SetTextSize(0.04);
      t->Draw();
    }
-     TText *t1=new TText(0.15,0.65, "... compiled under ...");
+     TText *t1=new TText(0.02,0.90, "under");t1->SetTextSize(0.03);
      t1->Draw();
 
      ifstream ifile("/etc/issue",ifstream::in);
@@ -1298,12 +1356,31 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
      getline(ifile,line ); //to skip the first line;
      //     while( getline(ifile,line.str()) ) {
      cout<<line;
-     TText *tt=new TText(0.2,0.5,  line.c_str()  );
+     TText *tt=new TText(0.02,0.85,  line.c_str()  );tt->SetTextSize(0.03);
      tt->Draw();
      //     }
      ifile.close();
    
-   // TLine *l=new TLine(0.1,0.1, 1., 1. );
+
+     double posi=0.85;
+     double dposi=0.05;
+     TText *ta1=new TText(0.3,posi, "OPEN FILE:   click <open file> and select from local path");
+             ta1->SetTextSize(0.03);ta1->Draw(); posi=posi-dposi;
+     TText *ta2=new TText(0.3,posi, "- youcan create file .REMOTE_DATA_DIR with remote path");
+             ta2->SetTextSize(0.03);ta2->Draw(); posi=posi-dposi;
+     TText *ta3=new TText(0.3,posi, "SAVE FILE:   click SaveAllSpectra  (saves one root file)");
+             ta3->SetTextSize(0.03);ta3->Draw(); posi=posi-dposi;
+     TText *ta4=new TText(0.3,posi, "- SaveCanvas  with filename saves canvas TO ps,eps,jpg,asc,txt");
+             ta4->SetTextSize(0.03);ta4->Draw(); posi=posi-dposi;
+     TText *ta5=new TText(0.3,posi, "- SaveCanvas  without filename saves canvas TO canvas_x.ps,eps,jpg,asc,txt");
+             ta5->SetTextSize(0.03);ta5->Draw(); posi=posi-dposi;
+     TText *ta6=new TText(0.3,posi, "- Spectrum2Memory - will copy to Rint://, <openfile><Memory> after");
+             ta6->SetTextSize(0.03);ta6->Draw(); posi=posi-dposi;
+
+	  //	  - you define dir in .REMOTE_DATA_DIR file\n SAVE FILE: click SaveAllSpectra\n    - SaveCanvas  with filemane saves current ps,eps,jpg,asc");
+
+     
+     // TLine *l=new TLine(0.1,0.1, 1., 1. );
    pline->Draw();
 
    
