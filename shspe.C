@@ -3080,16 +3080,25 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       case 33:
 	divide_mod_flag=18; break;
 
-      case 43:
+      case 10:
 	divide_mod_flag=19; break;
-      case 34:
+      case 25:
 	divide_mod_flag=20; break;
-      case 44:
+      case 52:
 	divide_mod_flag=21; break;
-      case 54:
+
+	
+      case 43:
 	divide_mod_flag=22; break;
-      case 45:
+      case 34:
 	divide_mod_flag=23; break;
+
+      case 44:
+	divide_mod_flag=24; break;
+      case 54:
+	divide_mod_flag=25; break;
+      case 45:
+	divide_mod_flag=26; break;
       }
 	 switch(divide_mod_flag){
 	 case 0:
@@ -3214,34 +3223,48 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 	 case 18:
 	     divide_mod_flag++;
 	     GPAD->Divide( 3 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
-
 	     break;
 	 case 19:
 	     divide_mod_flag++;
-	     GPAD->Divide( 4 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 10 , 1 ,0.002,0.002, 0);	     GPAD->cd(1);
 
 	     break;
 	 case 20:
 	     divide_mod_flag++;
-	     GPAD->Divide( 3 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
+	     GPAD->Divide( 5 , 2 ,0.002,0.002, 0);	     GPAD->cd(1);
 
 	     break;
 	 case 21:
 	     divide_mod_flag++;
+	     GPAD->Divide( 2 , 5 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 22:
+	     divide_mod_flag++;
+	     GPAD->Divide( 4 , 3 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 23:
+	     divide_mod_flag++;
+	     GPAD->Divide( 3 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
+
+	     break;
+	 case 24:
+	     divide_mod_flag++;
 	     GPAD->Divide( 4 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
 	     break;
 
-	 case 22:
+	 case 25:
 	     divide_mod_flag++;
     	     GPAD->Divide( 5 , 4 ,0.002,0.002, 0);	     GPAD->cd(1);
 	     break;
 
-	 case 23:
+	 case 26:
 	     divide_mod_flag++;
     	     GPAD->Divide( 4 , 5 ,0.002,0.002, 0);	     GPAD->cd(1);
 	     break;
 
-	 case 24:
+	 case 27:
 	     divide_mod_flag=0; 
 	     GPAD->cd(0);
 	     p=new TPad("c1","c",    dxy,    dxy,1.0-dxy, 1.0-dxy,  4);p->Draw();//dolni

@@ -452,6 +452,9 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	    int64_t addr[MAXPRIMITIVES];addr[0]=0;
 	    RecoverTH1fromGPAD2( count, addr);
 	    h2=(TH1*)addr[0];
+	    printf("DEBUG TCutG %ld\n",(long int)h2);
+	    if (h2==NULL){ return;}
+	    if ( strstr(h2->ClassName(),"TH2F")==0){ return;}
 	    
 	    strcpy(xtith,h2->GetXaxis()->GetTitle());
 	    strcpy(ytith,h2->GetYaxis()->GetTitle());

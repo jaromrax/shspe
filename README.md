@@ -216,11 +216,13 @@ searches for a script  *shspe.pk_mysql* setup file on savefit
 7.0   preliminary root 6 compilation on 16.04
 ----------------------
 
-To enable TF1H in pyroot:
+### To enable TF1H in pyroot:
 
 http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importing-histograms/33363251
 
-and then try (make was 132 minutes on one core):
+### never make inside root-6.xx.xx directory!
+
+ and then try (make was 132 minutes on one core):
 ```
  mkdir root.build
 
@@ -236,3 +238,14 @@ source bin/thisroot.sh
 export PYTHONPATH=$HOME/root/lib/
 
 ```
+
+### compile test:
+
+   -  shspe should compile
+   
+   -  gregory mmap.histo should be opened by shspe (mmapfile)
+   
+   -  pyroot - TH1F should be imported into python
+   
+
+
