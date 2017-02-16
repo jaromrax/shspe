@@ -781,6 +781,9 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 
      if ((event==11)&&(g->GetN()==2)){  // LEFTCLICK - SUM DATA
        printf("SUMMING THE REGION OF MARKS \n");
+       TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+       g->Print();
+	
      }//11---------LEFT CLICK 
 
 
@@ -2832,10 +2835,23 @@ void MyMainFrame::fSELDateTime(int id,TString *fentry){
        }//9  
   }//histo !=NULL // TIME FORMAT histo not  NULL
   }// for icount=0 icnout<count
+  //============================================================  CALIBRATE :
        }else{//  calibrating, not doing datetime.......................
+
+
+	 
 	   TString acoef=sr(0,sr.Index(","));
 	   TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
 	   double ac=acoef.Atof(),bc=bcoef.Atof();
+	   TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+	   if ((g->GetN()==2)&&((ac-bc)<0.0)){
+	     printf("Two markers present. I will use %f %f as calibration energies.\n",ac,bc);
+	     double nac=(ac-bc)/(g->GetX()[0]-g->GetX()[1]);
+	     double nbc=ac-nac*g->GetX()[0];
+	     ac=nac;
+	     bc=nbc;
+	   }
+
 	   printf("calibrating with %s = %lf %lf\n", sr.Data() , ac, bc );
   TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
   RecoverTH1fromGPAD( count, addr ,"TH1" ,0 );// I added TH, there was a problem with pads; 0 instd 1 and it works...
@@ -4082,6 +4098,9 @@ void MyMainFrame::HandleEvents(Int_t id)
 	     sprintf(totname,"%s",  pent->d_name ); 
 	     //HERE IS WHAT TO ADD TO LIST2 ????????
 	     //  the funcion fopenfile opens the files
+	     if (TPRegexp("\\.asc1$").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry( totname, next++ );
+	     }
 	     if (TPRegexp("\\.root$").Match(s.Data())!=0){
 	       fListBoxOF->AddEntry( totname, next++ );
 	     }
