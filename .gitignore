@@ -3,3 +3,6 @@
 *C.so
 .root_hist
 *dict.pcm
+CMakeFiles/*
+CMakeCache.txt
+cmake_install.cmake
