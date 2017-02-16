@@ -1,45 +1,82 @@
 #!/bin/bash
 
+
+read -r -d '' MACROC << EOF
+void tmp(){
+  gROOT->ProcessLine(".L shspe.C++g");
+}
+EOF
+
 function COMPILE {
-$ROOTSYS/bin/root -n -b -q  compile.C  >/dev/null
+    echo "$ROOTSYS/bin/root -n -b -q  $1"
+    $ROOTSYS/bin/root -n -b -q  $1  >/dev/null
 }
 
 
 
+#####################################
+TARGET=""  # compile/link
+compfile=""
+echo "$1" | grep "\-I" > /dev/null
+if [ "$?" = "0" ]; then
+    TARGET=compile
+    compfile=`basename "$5"`
+    echo $compfile is C file to compile
+fi
+echo "$1" | grep "CMakeFiles/" | grep ".C.o" >/dev/null
+if [ "$?" = "0" ]; then
+   TARGET=link
+fi
+#####################################
 i=0
 while [ "$1" != "" ]; do
   echo "parameter $i:  $1"
   i=$(( $i + 1 ))
   shift
-done	
+done
 ####################################
 
 
 
-echo "$1" | grep "\-I" > /dev/null
-if [ "$?" = "0" ]; then
+if [ "$TARGET" = "compile" ]; then
     echo ... INCLUDE ... compiling
-    COMPILE
+    File=`mktemp`
+    echo "$MACROC" > $File
+    #echo $File is to compile
+    #cat $File
+    echo $compfile
+    COMPILE $File
     exit
 fi 
 
-echo "$1" | grep "CMakeFiles/" | grep ".C.o" >/dev/null
-if [ "$?" = "0" ]; then
-    echo ... CMake ... linking
+
+if [ "$TARGET" = "link" ]; then
+    echo ... CMake ... linking_________________________________
     ls -l *.so
+    echo ______________________________________________________
     paths=`cat ~/.rootrc | grep -v -e "^\#" | grep Unix | grep DynamicPath | awk '{print $2}'`
-#    echo POSSIBLE DESTINATION: $paths
+    #    echo POSSIBLE DESTINATION: $paths
+    CPIED=0
     IFS=':' read -ra ADDR <<< "$paths"
     for i in "${ADDR[@]}"; do
 	ii=` sed   "s#~#$HOME#" <<< $i`
 	i="$ii"
-	echo "PATH:    " "$i"
+	printf "PATH:    %-30s" $i
 	if [ "$i" != "." ]; then
 	    if [ -d "$i" ]; then
-		echo "      ..  directory $i exists, i copy here"
-		cp *.so $i/
-		break
+		if [ "$CPIED" = "0" ]; then
+		    echo "      .. YES, I copy here"
+		    cp *.so $i/
+		    CPIED=1
+		else
+		    echo "      .. already copied"
+		fi
+		#break
+	    else
+		echo     "      .. not DIR"
 	    fi
+	else
+	    echo "      .. no"
 	fi
     done
     exit
