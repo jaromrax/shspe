@@ -28,7 +28,7 @@ aptitude install libxpm-dev
 aptitude install libxft-dev
 ```
 
-2.3 root compilation
+2.3 root compilation - version 5.x
 -----
   (example for 64bit)
 
@@ -222,6 +222,16 @@ http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importin
 
 ### never make inside root-6.xx.xx directory!
 
+problems
+----------
+
+  *  with 4 cores, it did not compile (6.08.00)
+  *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`
+
+
+  * last test with Pro: 6-08-06
+  * look at the page https://root.cern.ch/building-root#options
+  
  and then try (make was 132 minutes on one core):
 ```
  mkdir root.build
