@@ -225,8 +225,8 @@ http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importin
 problems
 ----------
 
-  *  with 4 cores, it did not compile (6.08.00)
-  *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`
+  *  with 4 cores, it did not compile (pre 6.08.00 versions)
+  *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`.  Remove `anaconda` from from PATH and start a new terminal.
 
 
   * last test with Pro: 6-08-06
@@ -248,6 +248,8 @@ source bin/thisroot.sh
 export PYTHONPATH=$HOME/root/lib/
 
 ```
+
+After, it is possible to return the line with PATH to `.bashrc`
 
 ### compile test:
 
