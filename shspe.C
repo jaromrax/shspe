@@ -1351,6 +1351,11 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
      t->SetTextSize(0.04);
      t->Draw();
    }
+   if (ROOT_VERSION_CODE==ROOT_VERSION(6,8,6) ){
+     TText *t=new TText(0.02,0.95, "you compiled 6.08.06");
+     t->SetTextSize(0.04);
+     t->Draw();
+   }
      TText *t1=new TText(0.02,0.90, "under");t1->SetTextSize(0.03);
      t1->Draw();
 
