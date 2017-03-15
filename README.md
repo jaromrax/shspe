@@ -225,20 +225,42 @@ http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importin
 problems
 ----------
 
-  *  with 4 cores, it did not compile (pre 6.08.00 versions)
+  *  with 4 cores, it did not compile (pre 6.08.00 versions) - **OK** for later
   *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`.  Remove `anaconda` from from PATH and start a new terminal.
 
 
   * last test with Pro: 6-08-06
   * look at the page https://root.cern.ch/building-root#options
   
- and then try (make was 132 minutes on one core):
+  and then try (make was 132 minutes on one core):
+
+
+  1. First probably (still learning though) do:
+	 `export CMAKE_INSTALL_PREFIX=$HOME/root/`
+	 or
+	 `export ROOT_INSTALL_DIR=$HOME/root`
+	 see https://root.cern.ch/building-root
+
+  2. `make root.build` :create extra root.build directory and **go there**
+
+  3. configure with the big line bellow
+
+  4. `time cmake --build -- -j4` :build - prepare for 1:30h with 4 cores
+
+  5. `source bin/thisroot.sh`
+
+  6. `cmake --build . --target install`
+
+
+
 ```
  mkdir root.build
 
- cd root.build
+cd root.build
+
  export ROOT_INSTALL_DIR=$HOME/root
- cmake ../root-6.06.06/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL
+
+cmake ../root-6.06.06/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL
 
 cmake --build . --target install
 
