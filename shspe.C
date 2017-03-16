@@ -1645,7 +1645,9 @@ void  MyMainFrame::RefreshAll(){
 
  //=============== here is a part with mmap
   FILE * pFile;
-  pFile=fopen( "mmap.histo" ,"r" ); 
+  pFile=fopen( "mmap.histo" ,"r" );
+  printf("searching mmap.histo file \n%s","" );
+
   if (pFile!=NULL) {
     TDirectory *now=gDirectory;
     printf("mmap.histo file found \n%s","" );
@@ -1665,18 +1667,18 @@ void  MyMainFrame::RefreshAll(){
      if ( hc==NULL){
        //printf("new histo\n%s","");
        gDirectory->Add( h );
-     }else{
+     }else{ // ---- hc==NULL
        //printf("replay old\n%s","");
        int entries=h->GetEntries();
        for (int i=0;i<h->GetXaxis()->GetNbins(); i++){
 	 hc->SetBinContent(i,h->GetBinContent(i) );
-       }
+       }// --- for
        hc->SetEntries(entries);
        delete h;
-     }
-      }
+     }//------- else ---- hc NULL
+      }//======if ( strcmp(classn.Data(),"TH1F")==0){
    mr   = mr->GetNext();
-    }
+    }// ------- while (mfile->OrgAddress(mr)) {
     
     delete mr;
     now->cd();
@@ -3884,6 +3886,7 @@ void MyMainFrame::HandleEvents(Int_t id)
     printf("decision part %d:\n", OFaction );
     //   sleep(1);
     if (OFaction==0){// cancel //----------------------
+      RefreshAll(); // ==== this will refresh TMapFile histograms
     }
     if (OFaction==1){// OPEN //------------------------------
       if ( gFile!=NULL ){ 
@@ -3931,6 +3934,9 @@ void MyMainFrame::HandleEvents(Int_t id)
   char aaa[500];
   sprintf( aaa,"echo %s > .CURRENTFILE",  fn->Data()    );
   system( aaa );
+
+  //------iwant to putit somewhere....RefreshAll();
+  
  }//1 OPEN  // OFaction==1
 
 
