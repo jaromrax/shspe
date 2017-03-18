@@ -55,7 +55,7 @@ if [ "$TARGET" = "link" ]; then
     ls -l *.so
     echo ______________________________________________________
     paths=`cat ~/.rootrc | grep -v -e "^\#" | grep Unix | grep DynamicPath | awk '{print $2}'`
-    #    echo POSSIBLE DESTINATION: $paths
+    echo POSSIBLE DESTINATION: $paths
     CPIED=0
     IFS=':' read -ra ADDR <<< "$paths"
     for i in "${ADDR[@]}"; do

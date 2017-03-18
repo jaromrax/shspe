@@ -75,18 +75,27 @@ Root should reside in $HOME/root/bin and should be reachable from commandline: *
 3.1 shspe compilation
 -----
 
+
 you may install the *~/.rootrc* and *~/.rootlogon* - it is my choice, you may prefer something differerent
 	init_scripts/install_initscripts 
 ```
 cd 	init_scripts
 ./install_initscripts 
 ```
+
 ...this step can make some problems if you have already tuned these startup scripts, so check it before use.
 
 and then go back to you shspe install directory (*cd ..*) and do
+
+**NEW**
+
+*Now everything should be done with  `cmake `*
+
 ```
-make 
-make install
+cmake .
+cmake --build .
+# make 
+# make install
 ```
 shspe .so library should be installed in root macro directory (verify)
 
