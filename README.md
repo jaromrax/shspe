@@ -225,25 +225,22 @@ http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importin
 problems
 ----------
 
-  *  with 4 cores, it did not compile (pre 6.08.00 versions) - **OK** for later
-  *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`.  Remove `anaconda` from from PATH and start a new terminal.
+  *  with 4 cores, it did not compile (pre 6.08.00 versions) - **OK NOW** for later
+  *  when anaconda is installed, there was a mass with version of *some* `lib so  `/home/ojr/anaconda3/lib/libstdc++.so.6`.  Remove `anaconda` from from PATH and start a new terminal. **DO NOT INSTALL ANACONDA, USE system python3**
 
 
-  * last test with Pro: 6-08-06
+  * last test with Pro: 6-08-06, dev 6-09-02
+  
   * look at the page https://root.cern.ch/building-root#options
   
   and then try (make was 132 minutes on one core):
 
 
-  1. First probably (still learning though) do:
-	 `export CMAKE_INSTALL_PREFIX=$HOME/root/`
-	 or
-	 `export ROOT_INSTALL_DIR=$HOME/root`
-	 see https://root.cern.ch/building-root
+  1. See https://root.cern.ch/building-root
 
-  2. `make root.build` :create extra root.build directory and **go there**
+  2. `mkdir root.build` :create extra root.build directory and **go there**
 
-  3. configure with the big line bellow
+  3. configure with the big line bellow ending with 
 
   4. `time cmake --build -- -j4` :build - prepare for 1:30h with 4 cores
 
