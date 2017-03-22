@@ -241,31 +241,31 @@ problems
   2. `mkdir root.build` :create extra root.build directory and **go there**
 
 
-  3. configure with the big line bellow ending with 
+  3. configure with the big line bellow ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root`
 
   4. `time cmake --build -- -j4` :build - prepare for 1:30h with 4 cores
 
-  5. `source bin/thisroot.sh`
+  5. `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
   6. `cmake --build . --target install`
 
 
 
 ```
- mkdir root.build
+mkdir root.build
 
 cd root.build
 
 # export ROOT_INSTALL_DIR=$HOME/root  # it must be in cmake
 
-cmake ../root-6.06.06/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL -DCMAKE_INSTALL_PREFIX=$HOME/root
+cmake ../root/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL -DCMAKE_INSTALL_PREFIX=$HOME/root
 
 cmake --build . --target install
 
 source bin/thisroot.sh 
 
 
-export PYTHONPATH=$HOME/root/lib/
+#export PYTHONPATH=$HOME/root/lib/
 
 ```
 
