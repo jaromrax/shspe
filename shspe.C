@@ -1712,8 +1712,9 @@ void  MyMainFrame::RefreshAll(){
 	char grname2[200];  
 	
 	sprintf(grname,"%s.dat",  sn2.Data() );
-	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
-		sn2.Data(), 0, atoi(fEntrySIG->GetText()),grname);
+	sprintf(commandrm,"sqmylite -r %s %d %s  >%s", 
+		sn2.Data(), 0, fEntrySIG->GetText(),grname);
+	//		sn2.Data(), 0, atoi(fEntrySIG->GetText()),grname);
 	system(commandrm);
 	printf("going to execute: %s\n", commandrm);
 	sprintf(grname2,"%s.dat.cols",  sn2.Data() );
@@ -1852,9 +1853,11 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	char grname2[200];  
 	
 	sprintf(grname,"%s.dat",  sn.Data() );
-	sprintf(commandrm,"sqmylite -r %s %d %d  >%s", 
-		sn.Data(), direc, atoi(fEntrySIG->GetText()),grname);
+	sprintf(commandrm,"sqmylite -r %s %d %s  >%s", 
+		sn.Data(), direc, fEntrySIG->GetText(),grname);
+	//		sn.Data(), direc, atoi(fEntrySIG->GetText()),grname);
 	system(commandrm);
+	
 	printf("going to run: %s\n", commandrm);
 	sprintf(grname2,"%s.dat.cols",  sn.Data() );
 	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
@@ -1885,13 +1888,14 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 
       if (  (sn.Index("_sqlite_dat")>0) ){
 	printf("SQLITE FOUND\n%s","");
-	sn.ReplaceAll("_sqlite_dat",".mysql");
+	//sn.ReplaceAll("_sqlite_dat",".mysql"); //this is not ok
+	sn.ReplaceAll("_sqlite_dat",".sqlite"); //
  	char commandrm[200];
  	char grname[200];
 	
 	sprintf(grname,"%s.dat",  sn.Data() );
-	sprintf(commandrm,"sqmylite -r %s %d >%s", 
-		sn.Data(), direc ,grname);
+	sprintf(commandrm,"sqmylite -r %s %d %s  >%s", 
+		sn.Data(), direc ,fEntrySIG->GetText(),grname);
 	system(commandrm);
 
 	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 

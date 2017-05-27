@@ -596,6 +596,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 
 
 
+  
   // filename present, proceed with closing an old file
   if ((gFile!=NULL)&&(filename_present==1)){// this closes file, even when we want to read it?
     printf("(fOpenFile:) Closing opened file (%s)\n", gFile->GetName() ); 
@@ -638,6 +639,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	sprintf(commandrm,"sqmylite -r %s 0 %d >%s", 
 		fentry->Data(), npoints, grname);
 	system(commandrm); // the graph generated now
+	
 	sprintf(grname2,"%s.dat.cols",  fentry->Data() );
 	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
 		grname, grname2 );
@@ -651,6 +653,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	 myReadFile.close();
 	 outputCol--;
 	 for (int i=0;i<outputCol;i++){
+	   
 	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
 	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
 	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
@@ -660,16 +663,45 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	 }// for all columns ------ of mysql output
     }// is .mysql file
 
+
+    
     if (fentry->Index(".sqlite")>0){
+	char grname2[200];  
 	char commandrm[200];
 	char grname[200];
+	printf("n points = %d / %s\n", npoints, fentry->Data()  );
 	sprintf(grname,"%s.dat",  fentry->Data() );
-	sprintf(commandrm,"sqmylite -r %s 0 >%s", 
-		fentry->Data(), grname);
+	sprintf(commandrm,"sqmylite -r %s 0 %d >%s", 
+		fentry->Data(), npoints, grname);
 	system(commandrm);
-	TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
-	 gDirectory->Add( res );
-	printf("fileSQLite seems opened CMD:/%s/\n", commandrm);
+
+		
+	sprintf(grname2,"%s.dat.cols",  fentry->Data() );
+	sprintf(commandrm,"cat %s | head -1 | wc -w > %s ", 
+		grname, grname2 );
+	system(commandrm); // # columns
+
+
+	ifstream myReadFile;
+	 int outputCol=2;
+	 myReadFile.open(grname2);
+	 if (myReadFile.is_open()) {myReadFile >> outputCol;}
+	 myReadFile.close();
+	 outputCol--;
+	 for (int i=0;i<outputCol;i++){
+	   printf("sqlite: %d / %d from %s\n", i,  outputCol ,grname );
+	   TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,i+1,-1,-1); 
+	   res->GetHistogram()->GetXaxis()->SetTimeDisplay(1);
+	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+	   gDirectory->Add( res );
+	   printf("fileSQLITE seems opened CMD:/%s/\n",commandrm);
+	   //if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
+	 }// for all columns ------ of mysql output
+
+	
+	 //TGraphErrors *res=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
+	 //gDirectory->Add( res );
+	 //printf("fileSQLite seems opened CMD:/%s/\n", commandrm);
     }// is .sqlite file
 
     if (fentry->Index(".asc1")>0){
