@@ -17,58 +17,6 @@ this is a standard procedure, (make and) go to some directory and then:
 
 
 
-2.2 prerequisites for compilation of root: 
-----------
-basically, better check root.cern.ch website.
-
-```
-aptitude install dpkg-cross
-aptitude install libxext-dev
-aptitude install libxpm-dev
-aptitude install libxft-dev
-```
-
-2.3 root compilation - version 5.x
------
-  (example for 64bit)
-
-
-I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
-and the last for macros and compiled .so files:
-```
-mkdir ~/root
-mkdir ~/root.inst
-mkdir ~/root_macros
-```
-
-
-
-Append to your  ```$HOME/.bashrc``` paths to your ~/root/:  
-```
-export ROOTSYS=$HOME/root
-export PATH=$ROOTSYS/bin:~/root_macros:$PATH
-export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
-```
-
-Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
-
-Unpack to ~/root.inst and enter there
-
-First you need to *configure* the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
-
-
-
-```
- ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
-
-make
-
-make install
-```
-Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
-
-**Comment for Ubuntu xenial 16.04:**
-*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem as of 2016/05*
 
 
 
@@ -101,7 +49,7 @@ shspe .so library should be installed in root macro directory (verify)
 
 
 
-4.1 run root
+4.1 run root and shspe()
 ----------
 ```
 root
@@ -217,8 +165,6 @@ checks .REMOTE_DATA_DIR on open
 searches for a script  *shspe.pk_mysql* setup file on savefit
 
 
-
-*edited in http://dillinger.io/   and elpa-markup-more*
 
 
 
