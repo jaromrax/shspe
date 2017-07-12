@@ -1,5 +1,5 @@
 
-**shspe**
+SHSPE - SHow SPEctra
 =====
 
 root macro to SHow SPEctra
@@ -222,55 +222,89 @@ searches for a script  *shspe.pk_mysql* setup file on savefit
 
 
 
-7.0   preliminary root 6 compilation on 16.04
+7.0   root 6 compilation
 ----------------------
 
-### To enable TF1H in pyroot:
+- Good on 16.04 Ubuntu Xenial[^1]
+
+- tests on Debian 8 jessie:[^2]
+  *  v6.06.06 - worked
+  *  v6.09.02 - had to get backports `cmake` : `deb http://ftp.debian.org/debian jessie-backports main; aptitude -t jessie-backports upgrade cmake, aptitude install libglew-dev (i think)` compilation CRASHED, but root worked anyway
+
+- tests on Debian 9 Stretch - `None`
+
+
+#### To enable TF1H in pyroot (v6.09.02):
 
 http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importing-histograms/33363251
 
-### never make inside root-6.xx.xx directory!
+#### never make / cmake inside root-6.xx.xx directory!
 
-problems
+
+7.1  commands to compile/install
+----------------
+
+  1. `mkdir ~/root` and `mkdir root.build` :create extra root.build directory, `cd root.build`
+
+  2. configure:  ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root` and  `-Dpython3="ON"` to set the installation dir and python3 for jupyter
+
+```
+cmake ../root-v6-10-02/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dpython3="ON"  -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL   -DCMAKE_INSTALL_PREFIX=$HOME/root
+```
+
+  3. `time cmake --build . -- -j4` :build - prepare for 1:30h with 4 cores laptop
+
+    4. `source bin/thisroot.sh` - it could/should/may be included in `.zshrc` `.bashrc`
+
+    5. `cmake --build . --target install` - install to ~/root/ directory
+  
+
+
+```
+#export PYTHONPATH=$HOME/root/lib/
+```
+
+After, it is possible to return the line with PATH to `.bashrc` but most probably it puts thisroot.sh there.
+
+
+
+7.2 problems
 ----------
 
-  *  with 4 cores, it did not compile (pre 6.08.00 versions) - **OK NOW** for later
+  *  with 4 cores, it did not compile (before 6.08.00 versions) - **OK NOW** for later
   *  when anaconda is installed, there was a mess Update: anaconda3 is UNTESTED
 
 
-  * last test with Pro: 6-08-06, 6-09-02
+  * last tests with Pro: 6-08-06, 6-09-02
   
   * look at the page https://root.cern.ch/building-root#options
   
   and then try (make was 132 minutes on one core):
 
 
-  1. See https://root.cern.ch/building-root
+  * See https://root.cern.ch/building-root
 
-	this must be in `cmake` -DCMAKE-INSTALL_PATH=$HOME/root
 
-  2. `mkdir root.build` :create extra root.build directory and **go there**
+	*this must be in `cmake` -DCMAKE-INSTALL_PATH=$HOME/root*
 
-  3. configure with the big line bellow ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root` and  `-Dpython3="ON"` to set the installation dir and python3 for jupyter
 
-  4. `time cmake --build . -- -j4` :build - prepare for 1:30h with 4 cores laptop; j4=9730s user - 43m total; 
-     8cores -9973s - 45:19total; 2cores - 6499s - 55:58 total
 
-  5. `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
-  6. `cmake --build . --target install`
+### Statistics:
 
+```
+v6.09.02 laptop
+j4=9730s user - 43m total; 
+8cores -9973s - 45:19total;
+2cores - 6499s - 55:58 total
+
+6.09.02 on aaron - 4 cores: crashed at 95%; but root worked
+real	30m22.488s
+user	112m15.488s
+sys	3m55.304s
 
 
 ```
-cmake ../root/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dpython3="ON"  -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL -DCMAKE_INSTALL_PREFIX=$HOME/root
-```
-
-#export PYTHONPATH=$HOME/root/lib/
-```
-```
-
-After, it is possible to return the line with PATH to `.bashrc` but most probably it puts thisroot.sh there.
 
 ### compile test:
 
@@ -282,3 +316,6 @@ After, it is possible to return the line with PATH to `.bashrc` but most probabl
    
 
 
+[^1]: Ubuntu 16.04 is LTS version until 2018/04
+
+[^2]: 2017/06 - debian Stretch is out
