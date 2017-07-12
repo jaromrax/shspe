@@ -423,6 +423,14 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	      printf("mean     = %9.1f\n",  h->GetMean()   );
 	      printf("RMS      = %9.1f\n",  h->GetRMS()   );
 	      printf("integral = %9.1f\n",  h->Integral()   );
+	      int nmax=h->GetListOfFunctions()->GetEntries();
+	      for (int i=0;i<nmax;i++){
+		TString trida2=h->GetListOfFunctions()->At(i)->ClassName();
+		if (  strstr(trida2.Data(),"TNamed")!=0 ){
+		  printf( "%10s : %s\n",h->GetListOfFunctions()->At(i)->GetName(),
+			    h->GetListOfFunctions()->At(i)->GetTitle()    );
+		}//it is TNamed
+	      }// for all functions
           }
 	  if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
 	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
