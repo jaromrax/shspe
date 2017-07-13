@@ -2822,10 +2822,52 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
  *
  */
 void MyMainFrame::fSELDateTime(int id,TString *fentry){ 
-  printf("item %2d:%s\n",id,fentry->Data());    
+  printf("item %2d:%s\n",id,fentry->Data());
+  TString sr=fEntry->GetText(); // will contain calibration
   // DECIDE IF CALIBRATE OR DATE?TIME................
-       TString sr=fEntry->GetText(); 
-       if  (sr.CompareTo("")==0) {// DATETIME.......
+
+  
+  int  calibrateme=0;
+  // i suggest a test:============
+  TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
+  RecoverTH1fromGPAD( count, addr ,"TH1" ,0 );// I added TH, there was a problem with pads; 0 instd 1 and it works...
+  histo=(TH1*)addr[0];
+  if (histo!=NULL){
+  // calibrate with default TNamed values: if no override calib
+    if ((sr.CompareTo("")==0)&&(histo->GetListOfFunctions()->FindObject("calib0")!=NULL)){
+    printf("!... calib0 coef. found: calibrating%s\n","");
+    calibrateme=1;
+    sr="";
+    sr.Append(histo->GetListOfFunctions()->FindObject("calib1")->GetTitle());
+    sr.Append(",");
+    sr.Append(histo->GetListOfFunctions()->FindObject("calib0")->GetTitle());
+    histo->GetXaxis()->SetTitle("E");
+  }
+  //-- decalibrate 3x
+  if (histo->GetXaxis()->GetXmin()!=0){ // BUT WHAT ABOUT time?
+    printf("!... not from zero=already calibrated : decalibrate\n%s","");
+    calibrateme=1;
+    sr="1.0,0.0";
+    histo->GetXaxis()->SetTitle("k");
+  }
+  if (histo->GetXaxis()->GetXmin()!=0){
+    printf("!... already calibrated : decalibrate\n%s","");
+    calibrateme=1;
+    sr="1.0,0.0";
+    histo->GetXaxis()->SetTitle("k");
+  }
+  if (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()!=histo->GetNbinsX()){
+    printf("!... bins/dX coefficient != 1.0 : decalibrate\n%s","");
+    calibrateme=1;
+    sr="1.0,0.0";
+    histo->GetXaxis()->SetTitle("k");
+  }
+  }//histo!=NULL maybe TGraph from MySQL
+  else{sr="";} // always date if no HISTO
+  
+  //============================================ DATETIME
+  if  ( (calibrateme==0)&&(sr.CompareTo("")==0) ) {// DATETIME.......
+	 printf("i... datetime\n%s","");
        TString dtform[10];
        dtform[3]="#splitline{%d.%m}{%H:%M}";
   TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
@@ -2897,29 +2939,39 @@ void MyMainFrame::fSELDateTime(int id,TString *fentry){
   }// for icount=0 icnout<count
   //============================================================  CALIBRATE :
        }else{//  calibrating, not doing datetime.......................
-
-
+	 // 1) - I can put MARKS and calibrate 2 peaks
+	 // 2) - I can get directly two numbers from the txtfield
+	 // 3) - I can read two coefficients from TNamed of GetListOfF of TH
+	 // THERE IS A TEST in the start! - if calibrated - go here
 	 
-	   TString acoef=sr(0,sr.Index(","));
-	   TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
-	   double ac=acoef.Atof(),bc=bcoef.Atof();
+	 printf("i... Calibrating:\n%s","");
+	 TString acoef=sr(0,sr.Index(","));
+	 TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
+	 double ac=acoef.Atof(),bc=bcoef.Atof();
+	 printf("i... coefficients extracted: %f %f\n", ac, bc );
+	   
 	   TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+	   if (g!=NULL){
+	     printf("i... MARKS present\n%s","");
 	   if ((g->GetN()==2)&&((ac-bc)<0.0)){
-	     printf("Two markers present. I will use %f %f as calibration energies.\n",ac,bc);
+	     printf("i... Two markers present. I will use %f and %f as calibration energies.\n",ac,bc);
 	     double nac=(ac-bc)/(g->GetX()[0]-g->GetX()[1]);
 	     double nbc=ac-nac*g->GetX()[0];
 	     ac=nac;
 	     bc=nbc;
-	   }
-
+	   }}
+	   
 	   printf("calibrating with %s = %lf %lf\n", sr.Data() , ac, bc );
-  TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
-  RecoverTH1fromGPAD( count, addr ,"TH1" ,0 );// I added TH, there was a problem with pads; 0 instd 1 and it works...
-  histo=(TH1*)addr[0];
   //  printf("from tpad %d recovered %ld histo addresses\n", count,  (int64_t)addr[0] );
   if (histo!=NULL){  
 	   int nbins=histo->GetNbinsX();
 	   histo->SetBins( nbins, bc, ac*nbins+bc  );
+	   if ( (ac==1.0)&&(bc==0.0)){
+	     histo->GetXaxis()->SetTitle("k");
+	   }else{
+	     histo->GetXaxis()->SetTitle("E");
+	   }
+
   }
 	   fEntry->SetText("");
        }
