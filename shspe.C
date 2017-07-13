@@ -22,6 +22,11 @@
 #include <string>
 
 
+//====   i want to look at $HOME for rt2.PID
+//#include <unistd.h>
+//#include <sys/types.h>
+#include <pwd.h>
+
 ClassImp(MyMainFrame)  // this is a macro !!!!
 
 
@@ -1011,7 +1016,7 @@ void  MyMainFrame::FillMainMenu(){
 
 
 
-MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page) :
+MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int startstop=0) :
    TGMainFrame(p, w, h)
 {
   //   defaultsigma=5; ///   ???   FIRST GUESS TO SIGMA   Tbroomfit uses this 
@@ -1189,7 +1194,7 @@ AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
 
    
-//========== new hframe 
+   //========== new hframe    << >> 
    // Create a horizontal frame containing button(s)
    TGHorizontalFrame *hframe2 = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
    //button2
@@ -1217,8 +1222,10 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
 
 //========== new hframe_zoom_up   .... center?
-   TGHorizontalFrame *hframe_3a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
+/*
+  TGHorizontalFrame *hframe_3a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
 
+      
    //button      W  up
    TGTextButton *show9 = new TGTextButton(hframe_3a, "&E(UnzoomY)",5);
    show9->SetToolTipText("Unzoom Y");
@@ -1226,33 +1233,59 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
    //   hframe_a->AddFrame(show, new TGLayoutHints( kFixedWidth, 5, 5, 3, 4));
    hframe_3a->AddFrame(show9, new TGLayoutHints( kLHintsCenterX, 0,0,0,0));
    AddFrame(hframe_3a, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
-
+   */
 
 //========== new hframe          ZOOM UNZOOM
    // Create a horizontal frame containing button(s)
-   TGHorizontalFrame *hframe3 = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
+   TGHorizontalFrame *hframe3 = new TGHorizontalFrame(this, 150, 20, kChildFrame|kFixedWidth );
+
+
    //button6
-  TGTextButton *show6 = new TGTextButton(hframe3, "&ZooX",6);
+  TGTextButton *show6 = new TGTextButton(hframe3, "&ZoomX",6);
    show6->SetToolTipText("ZOOM");
    show6->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
-   hframe3->AddFrame(show6, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
+   hframe3->AddFrame(show6, new TGLayoutHints(kLHintsExpandX , 2,0,2,2));
 
+   /*
    //button6
      TGTextButton *show8 = new TGTextButton(hframe3, "ZoomY &C",8);
       show8->SetToolTipText("ZOOMY");
       show8->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
-      hframe3->AddFrame(show8, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
-
+         hframe3->AddFrame(show8, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
+   */
+   
    //button7
-  TGTextButton *show7 = new TGTextButton(hframe3, "UnZ&X",7);
+  TGTextButton *show7 = new TGTextButton(hframe3, "UnZoom&X",7);
    show7->SetToolTipText("Unzoom");
    show7->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframe3->AddFrame(show7, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
 
   //finalize
   AddFrame(hframe3, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
-  //--------------------------------------------------------------------
+  //-------------------------------------------------------------------- NEW FRAME SART STOP
+  if (startstop!=0){
 
+  
+   // Create a STARTSTOP horizontal frame containing button(s)
+   TGHorizontalFrame *hframeStartStop = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
+   //TGHorizontalFrame *hframeStartStop = new TGHorizontalFrame(this, 150, 10, kFixedWidth | kFixedHeight );
+   
+   //button11
+   show11 = new TGTextButton(hframeStartStop, "Start",11);
+   show11->SetToolTipText("START");
+   show11->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
+   hframeStartStop->AddFrame(show11, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
+   
+   show12 = new TGTextButton(hframeStartStop, "Stop",12);
+   show12->SetToolTipText("STOP");
+   show12->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
+   hframeStartStop->AddFrame(show12, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
+   
+   AddFrame(hframeStartStop, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+  } // startstop !=0
+   //-------------------------------------------------------------------------------
+
+  
    // Set a name to the main frame   
    SetWindowName("List Box");  
    MapSubwindows();
@@ -1377,6 +1410,7 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
      double posi=0.85;
      double dposi=0.05;
+     /*
      TText *ta1=new TText(0.3,posi, "OPEN FILE:   click <open file> and select from local path");
              ta1->SetTextSize(0.03);ta1->Draw(); posi=posi-dposi;
      TText *ta2=new TText(0.3,posi, "- youcan create file .REMOTE_DATA_DIR with remote path");
@@ -1389,7 +1423,7 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
              ta5->SetTextSize(0.03);ta5->Draw(); posi=posi-dposi;
      TText *ta6=new TText(0.3,posi, "- Spectrum2Memory - will copy to Rint://, <openfile><Memory> after");
              ta6->SetTextSize(0.03);ta6->Draw(); posi=posi-dposi;
-
+     */
 	  //	  - you define dir in .REMOTE_DATA_DIR file\n SAVE FILE: click SaveAllSpectra\n    - SaveCanvas  with filemane saves current ps,eps,jpg,asc");
 
      
@@ -1443,7 +1477,7 @@ void  MyMainFrame::TimerRefresh(){
 */
 
 
-MyMainFrame*  shspe(int page=2){
+MyMainFrame*  shspe(int startstop=0){
    // Popup the GUI...
   //   new MyMainFrame(0, 200, 200);
   //     MyMainFrame *m= new MyMainFrame(0,100,100);
@@ -1453,8 +1487,10 @@ MyMainFrame*  shspe(int page=2){
 
   //  printf( "%s\n",  da.GetTimeOffset() );
   printf(" trying to start  shspe - mmframe %s\n","");
-  //  mmframe= new MyMainFrame(0,120,180);  // TGWindow==0,  w,   h 
-  mmframe= new MyMainFrame(0,mmframe_w,mmframe_h, page  );  // TGWindow==0,  w,   h 
+  //  mmframe= new MyMainFrame(0,120,180);  // TGWindow==0,  w,   h
+  // always start with page 2
+  int page=2;
+  mmframe= new MyMainFrame(0,mmframe_w,mmframe_h, page , startstop );  // TGWindow==0,  w,   h 
 
   cutload();
          mmframe->RefreshAll();
@@ -1468,7 +1504,15 @@ MyMainFrame*  shspe(int page=2){
 
 MyMainFrame*  shspe(const char* name, int page=1){
   //  TFile *f=new TFile( name ); //UNUSED VARIABLE
-  new TFile( name );
+  TString pure=name;
+  // remove leading and trailing ' : for AUTOMATIC open
+  // Exec=/home/ojr/root/bin/root -l -e "{shspe(\"%U\");}" 
+  //
+  //       sudo xdg-mime default root.desktop application/octet-stream
+  if (pure.BeginsWith('\'') ){
+    pure.Remove( TString::kBoth,'\'');
+  }
+  new TFile( pure.Data() );
   shspe( page );
   return NULL;
 }
@@ -1646,8 +1690,8 @@ void  MyMainFrame::RefreshAll(){
  //=============== here is a part with mmap
   FILE * pFile;
   pFile=fopen( "mmap.histo" ,"r" );
-  printf("searching mmap.histo file \n%s","" );
-
+  //printf("searching mmap.histo file \n%s","" );
+  // IF IT FINDS MMAP HISTO: LOADS TH1F
   if (pFile!=NULL) {
     TDirectory *now=gDirectory;
     printf("mmap.histo file found \n%s","" );
@@ -3936,7 +3980,7 @@ void MyMainFrame::HandleEvents(Int_t id)
   fOpenFile(fn,fListBox2,atoi(fEntrySIG->GetText() ) ); //2nd fopenfile<< click in id=122 listboxOF
   printf("File OPENED  <%s> (OFaction)\n",  fn->Data()    );
   char aaa[500];
-  sprintf( aaa,"echo %s > .CURRENTFILE",  fn->Data()    );
+  sprintf( aaa,"echo \"%s\" > .CURRENTFILE",  fn->Data()    );
   system( aaa );
 
   //------iwant to putit somewhere....RefreshAll();
@@ -4267,6 +4311,65 @@ void MyMainFrame::HandleEvents(Int_t id)
    if (id==9){ //   NO 9 
      //        Movexy("Y", -0.25, -1.0 );
    }
+   if (id==11){ //   NO 11
+     //        Movexy("Y", -0.25, -1.0 );
+     printf("START\n%s","");
+     ULong_t green;
+     gClient->GetColorByName("green", green);
+     show11->ChangeBackground(green);
+     ULong_t lightgrey;
+     gClient->GetColorByName("lightgrey", lightgrey);
+     show12->ChangeBackground(lightgrey);
+     // prepare signal
+     ifstream myReadFile;
+     char cmdls[250]; char output[300];char output1[300];
+     struct passwd *pw = getpwuid(getuid());
+     const char *homedir = pw->pw_dir;
+     char pidfile[300];
+     sprintf( pidfile, "%s/rt2.PID", homedir );
+     myReadFile.open( pidfile );
+     if (myReadFile.is_open()) {
+       while (!myReadFile.eof()) {
+	 myReadFile >> output1;
+       }
+       myReadFile.close();
+       cout<<output1<<endl;
+       // shell need 10: sprintf( cmdls,"kill -s SIGUSR1 %s", output1 );
+       sprintf( cmdls,"kill -s 10 %s", output1 );
+       printf("X... I want to run /%s/\n", cmdls);
+       system(cmdls); 
+     } // opened 
+   } // START = 11
+   if (id==12){ //   NO 12
+     //        Movexy("Y", -0.25, -1.0 );
+     printf("STOP\n%s","");
+     ULong_t red;
+     gClient->GetColorByName("red", red);
+     show12->ChangeBackground(red);
+     ULong_t lightgrey;
+     gClient->GetColorByName("lightgrey", lightgrey);
+     show11->ChangeBackground(lightgrey);
+          // prepare signal
+     ifstream myReadFile;
+     char cmdls[250]; char output[300];char output1[300];
+     struct passwd *pw = getpwuid(getuid());
+     const char *homedir = pw->pw_dir;
+     char pidfile[300];
+     sprintf( pidfile, "%s/rt2.PID", homedir );
+     myReadFile.open( pidfile );
+     if (myReadFile.is_open()) {
+       while (!myReadFile.eof()) {
+	 myReadFile >> output1;
+       }
+       myReadFile.close();
+       cout<<output1<<endl;
+       // shell need 10: sprintf( cmdls,"kill -s SIGUSR1 %s", output1 );
+       sprintf( cmdls,"kill -s 12 %s", output1 );
+       printf("X... I want to run /%s/\n", cmdls);
+       system(cmdls); 
+     } // opened 
+
+   }// START = 12 
   
 
    //     printf("exited handle events %s\n","");

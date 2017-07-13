@@ -236,7 +236,7 @@ After, it is possible to return the line with PATH to `.bashrc` but most probabl
 
 
 
-### Statistics:
+#### Statistics:
 
 ```
 v6.09.02 laptop
@@ -252,7 +252,7 @@ sys	3m55.304s
 
 ```
 
-### compile test:
+#### compile test:
 
    -  shspe should compile
    
@@ -261,7 +261,23 @@ sys	3m55.304s
    -  pyroot - TH1F should be imported into python
    
 
+#### mime type - automatic open
 
+Mostly unsuccessfull, look at
+`https://askubuntu.com/questions/525953/use-custom-command-to-open-files`
+and this `root.desktop` in `/usr/share/applications` could help
+```
+[Desktop Entry]
+Name=ROOT
+GenericName=root
+TryExec=/home/ojr/root/bin/root
+Exec=/home/ojr/root/bin/root -e "{shspe();}" %U
+Terminal=true
+Type=Application
+Categories=GTK;Utility;TerminalEmulator;System;
+```
+
+and update with `sudo xdg-mime default root.desktop application/octet-stream`
 [^1]: Ubuntu 16.04 is LTS version until 2018/04
 
 [^2]: 2017/06 - debian Stretch is out

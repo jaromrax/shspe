@@ -217,6 +217,8 @@ class MyMainFrame : public TGMainFrame {
 
   //private:
 public:
+  TGTextButton *show11, *show12; //startstop
+  
   int PAGE;  //  menu is in pages:   1(peaks) 2(grid,div) ?
   int flistbox_selected,flistbox2_selected, 
     flistbox_selected_when;// what was selected in fListBox. enables 2 page
@@ -285,7 +287,7 @@ public:
   Tbroomfit *fit;
 
   //   MyMainFrame();
-  MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page);
+  MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int startstop);
     ~MyMainFrame();
 
 
