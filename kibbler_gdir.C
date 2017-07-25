@@ -203,9 +203,9 @@ TMultiGraph *mg;
        ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
    mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
    if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
-   printf("TMultiGraph %s found...\n",myname2.Data() );
+   printf("JG...TMultiGraph %s found...\n",myname2.Data() );
  }else{
-   printf("TMultiGraph %s created\n",myname2.Data() );
+   printf("JG...TMultiGraph %s created\n",myname2.Data() );
   mg=new TMultiGraph();
   mg->SetNameTitle(myname2.Data(),myname2.Data());
   gROOT->GetListOfSpecials()->Add( mg );
@@ -214,7 +214,7 @@ TMultiGraph *mg;
  o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
  if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
 if (o==NULL){
-  printf("graph %ld NOT found...\n", (int64_t)g1 );
+  printf("JG...graph %ld NOT found...\n", (int64_t)g1 );
  }else{
 
   int ent=0;
@@ -222,7 +222,7 @@ if (o==NULL){
     ent=mg->GetListOfGraphs()->GetEntries();
   }
   //  ent=1;
-  printf("multigraph entries =%d\n", ent);
+  printf("JG...multigraph entries =%d\n", ent);
 
 
   //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
@@ -230,16 +230,17 @@ if (o==NULL){
   TList *glog= mg->GetListOfGraphs();
   if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
 
-  printf("TEST1 Graph name %s  ---------------\n", 
+  printf("JG...TEST1 Graph name %s  ---------------\n", 
 	 o->GetName() );
   if (grexi!=NULL){
     int col=grexi->GetLineColor();
-    //     printf("Graph name %s , color=%d doing nothing\n", o->GetName() ,  col );
-     //     printf("");
-    //    mg->RecursiveRemove(grexi);
-    //    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
-    //    o->SetLineColor(col);
-    //    o->SetMarkerColor(col);
+    printf("JG...Graph name %s exists, color=%d doing nothing\n", o->GetName() ,  col );
+    printf("%s\n","JG   removing");
+    mg->RecursiveRemove(grexi);
+    printf("%s\n","JG  adding");
+    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+    o->SetLineColor(col);
+    o->SetMarkerColor(col);
   }else{
     //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
     if (autocolors==1){ // for new
@@ -249,11 +250,28 @@ if (o==NULL){
     }else{
       //      printf("NO autocolor (graphs=%d)\n",  ent);
     }
+    // char oname[100];
+    // sprintf(oname,"%s",o->GetName());
+    // printf("%s /%s/\n", "JG...  looking for duplicity", oname );
+
+    // TObject *dupl=NULL;
+    // if ( (o!=NULL)&&(mg->GetListOfGraphs()!=NULL)){ dupl=(TObject*)mg->GetListOfGraphs()->FindObject( oname ); }
+    // printf("%s\n", "JG...  looking for duplicity" );
+    // if (dupl!=NULL){
+    //   printf("%s\n", "JG...    duplicite  found" );
+    //   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+    // 	if (mg->GetListOfGraphs()->At(i)==dupl){
+    // 	  mg->GetListOfGraphs()->RemoveAt(i);
+    // 	  break;
+    // 	}
+    //   }
+    // }
+    printf("%s\n", "JG...  adding the object" );
     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
   }//=========else NEW
   double ttmax=0.,ttmin=0.;
   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
-    printf("%d. %s,  total=%d\n", i, 
+    printf("JG...  %d. %10s,  total=%d\n", i, 
 	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
     TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
     int n = ge->GetN();
@@ -284,7 +302,8 @@ if (o==NULL){
  //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
  //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
 
-}////========== void joingraphs(const char* myname, const char* g1 ){ ================
+}////========== void joingraphsX(const char* myname, const char* g1 ){ ================
+//  special for mysql  "X"
 
 
 
@@ -667,7 +686,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	   res->GetHistogram()->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
 	   gDirectory->Add( res );
 	   printf("fileMYSQL seems opened CMD:/%s/\n",commandrm);
-	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
+	   if (outputCol>1){ joingraphsX(grname, res->GetTitle() );}
 	 }// for all columns ------ of mysql output
     }// is .mysql file
 
@@ -771,7 +790,7 @@ int max;
 	 gDirectory->Add( hih2 );
 	}//if htemp
     }//TH class
-
+    //  HERE is  TPad parsing.....
     /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY ********************
     // ======================= TGraph ====================
     if ( sn.Index("TGraph")==0 ){
@@ -876,6 +895,31 @@ if (gDirectory->GetListOfKeys()){
 	    printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
 	    gDirectory->Add( (TCutG*)o ); 
 	  }
+	  // this should load TGraph into the list2
+	  if ((sa2.Index("TGraph")==0)&&(gDirectory->FindObject(o)==NULL)) {
+	    printf("adding explicitely %s -----------\n", sa1.Data()  );
+	    /*TString sn_hih=o->GetName();
+	    if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
+	      sn_hih.Append("_g");TGraph *ggo=(TGraph*)o;
+	      ggo->SetName(sn_hih);
+	      }*/
+	    // add to gdir later - what if they erase in joingraphs NONO
+	    printf("adding to gDirectory %s\n", ""); gSystem->Sleep(20);
+	    gDirectory->Add( (TGraph*)o );
+	    TGraph *ggo=(TGraph*)o;
+	    ggo->SetMarkerStyle(6);  // dot  7=biger dot
+	    //ggo->GetListOfFunctions()->ls();
+	    printf("D... look for function with TNamed...%s\n","");
+	    if ( (ggo->GetListOfFunctions()->GetEntries()>0)&& (strstr(ggo->GetListOfFunctions()->At(0)->ClassName(),"TNamed")!=NULL)  ){
+	      TNamed *n=(TNamed*)ggo->GetListOfFunctions()->At(0);
+	      printf("i... Class was TNamed, checking 1st element:  /%s/\n",n->GetTitle() );
+	      joingraphsX( n->GetTitle(), ggo->GetName() ); // JOINGRAPHS  (X for mysql version; char *g1 !!)
+	    }
+
+	  }// IF  is TGraph.......
+    
+
+	  //===================}// TGraph.....+
 
 	  //  gDirectory->Add( (TCanvas*)o ); // problematic
 	  //	  o=gDirectory->FindKey( hinu.Data() );
@@ -884,7 +928,7 @@ if (gDirectory->GetListOfKeys()){
 	  //	  ntit.Append( "_{   " );ntit.Append( fentry->Data() );ntit.Append( "}" );
 	  //	  o->SetTitle( ntit.Data() );
 	}//iii < max
- }//if list of KEYS
+}//if list of KEYS
  else{  printf(" NO KEYS in gDirectory  %d   ..........  \n", 0); }
 
 

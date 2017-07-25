@@ -1638,7 +1638,7 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
         TMultiGraph* m=(TMultiGraph*)primbar->At(ii);
         tp=(TH1*)m->GetHistogram();
 	if ( strstr(onlyclass,"TH")!=0){ sn="TH2"; } // I do the same trick as in TgraphErrors to get TH
-	printf("     ...tmultigraph - histo ==%ld\n", (int64_t)tp );
+	//printf("     ...tmultigraph - histo ==%ld\n", (int64_t)tp );
       }//TMultiGraph
       if ( (sn.Index("TGraphErrors")==0)&&(sn.Index(exclude)!=0) ) {
         TGraphErrors* m=(TGraphErrors*)primbar->At(ii);
@@ -1744,7 +1744,7 @@ void  MyMainFrame::RefreshAll(){
 	      tpod->GetListOfPrimitives()->At(j)->ClassName()
 	      );*/
 	if ( strcmp("TMultiGraph",tpod->GetListOfPrimitives()->At(j)->ClassName()) ==0){
-	  printf("found tmultigraph in  sub tpad===================%s\n", "" );
+	  //printf("found tmultigraph in  sub tpad===================%s\n", "" );
 	  
       TString sn2=tpod->GetListOfPrimitives()->At(j)->GetName();
       // MG====================START
@@ -1786,6 +1786,8 @@ void  MyMainFrame::RefreshAll(){
 	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
        //	 return;
       }// contains _mysql_MG
+      // gPad->BuildLegend(); === it makes it multiple times....
+      printf("%s", "gPad->BuildLegend();\n");
 	}//it was tmultigraph under tpad
 	
       }//for all subobjects---looking for tmultigraph
@@ -2863,7 +2865,7 @@ void MyMainFrame::fSELDateTime(int id,TString *fentry){
     histo->GetXaxis()->SetTitle("k");
   }
   }//histo!=NULL maybe TGraph from MySQL
-  else{sr="";} // always date if no HISTO
+  else{sr="";} // always date if no HISTO ====== end of initial test
   
   //============================================ DATETIME
   if  ( (calibrateme==0)&&(sr.CompareTo("")==0) ) {// DATETIME.......
@@ -3153,7 +3155,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       fEntry->SetText(""); // I want to clear
       switch( targetpads ){
       case 1:
-	divide_mod_flag=24; break;
+	divide_mod_flag=27; break; // LAST FLAG this must be (i guess)
       case 2:
 	divide_mod_flag=0; break;
       case 21:
