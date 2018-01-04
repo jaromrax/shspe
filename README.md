@@ -19,7 +19,7 @@ this is a standard procedure, (make and) go to some directory and then:
 
 2.2 prerequisites for compilation of root: 
 ----------
-basically, better check root.cern.ch website.
+basically, better check root.cern.ch website https://root.cern.ch/build-prerequisites
 
 ```
 aptitude install dpkg-cross
@@ -28,47 +28,65 @@ aptitude install libxpm-dev
 aptitude install libxft-dev
 ```
 
-2.3 root compilation - version 5.x
------
-  (example for 64bit)
 
 
-I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
-and the last for macros and compiled .so files:
+2.3. root compilation - version 6.x
+---------------------------------
+ Remarks:
+ -  *Avoid Anaconda*
+ - *pre 6.08.00 version had problems with 4 cores compilations*
+ - *look at the page https://root.cern.ch/building-root#options*
+ - * See https://root.cern.ch/building-root*
+ 
+Download and checkout the last pro version:
 ```
-mkdir ~/root
-mkdir ~/root.inst
-mkdir ~/root_macros
-```
-
-
-
-Append to your  ```$HOME/.bashrc``` paths to your ~/root/:  
-```
-export ROOTSYS=$HOME/root
-export PATH=$ROOTSYS/bin:~/root_macros:$PATH
-export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
+  git clone https://github.com/root-project/root.git
+  cd root
+  git tag
+  git checkout -b v6-12-04 v6-12-04
+  cd ../
 ```
 
-Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
-
-Unpack to ~/root.inst and enter there
-
-First you need to *configure* the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
-
-
+Go to build directory and build with :**Python ON, RooFit ON, Parallel Minuit?(see RMatrix), DIR ~/root**:
 
 ```
- ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
-
-make
-
-make install
+  mkdir ~/root; mkdir ~/root_macros
+  mkdir root.build
+  cd root.build
+  cmake ../root -Dfftw3=OFF -Dmathmore=OFF  -Dpython3="ON"   -Dminuit2=ON  -Dbuiltin-freetype=ON   -Dmysql=ON  -Droofit=ON  -DCMAKE_INSTALL_PREFIX=$HOME/root
+  cmake --build . -- -j8
+  
 ```
-Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
 
-**Comment for Ubuntu xenial 16.04:**
-*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem as of 2016/05*
+Prepare for times:
+| v6.12.04      | user | real |
+|---------------|------|-------|
+|4cores laptop  | 9730s | 43m  |
+|  8cores       |  9973s |  45:19 |
+|  2cores       | 6499s  | 55:58 |
+|--|--|--|
+| Core i7 8 threads | 203m | 62m26s |
+| Core i7 4 cores   | | |
+
+
+ `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
+
+ `cmake --build . --target install`
+
+
+
+### compile test:
+
+   - shspe should compile
+   
+   - pytest.py 
+	   - Tgraph + file
+	   - TH1 + file
+	   - mmap file test read
+   
+   -  gregory mmap.histo should be opened by shspe (mmapfile)
+   -  pyroot - TH1F should be imported into python
+   
 
 
 
@@ -218,11 +236,9 @@ searches for a script  *shspe.pk_mysql* setup file on savefit
 
 
 
-*edited in http://dillinger.io/   and elpa-markup-more*
 
 
-
-7.0   preliminary root 6 compilation on 16.04
+11.0.0 /OLD NOW/   preliminary root 6 compilation on 16.04
 ----------------------
 
 ### To enable TF1H in pyroot:
@@ -281,4 +297,46 @@ After, it is possible to return the line with PATH to `.bashrc` but most probabl
    -  pyroot - TH1F should be imported into python
    
 
+
+12.3 root compilation - version 5.x
+-----
+  (example for 64bit)
+
+
+I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
+and the last for macros and compiled .so files:
+```
+mkdir ~/root
+mkdir ~/root.inst
+mkdir ~/root_macros
+```
+
+
+
+Append to your  ```$HOME/.bashrc``` paths to your ~/root/:  
+```
+export ROOTSYS=$HOME/root
+export PATH=$ROOTSYS/bin:~/root_macros:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
+```
+
+Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
+
+Unpack to ~/root.inst and enter there
+
+First you need to *configure* the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
+
+
+
+```
+ ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
+
+make
+
+make install
+```
+Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
+
+**Comment for Ubuntu xenial 16.04:**
+*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem as of 2016/05*
 
