@@ -55,7 +55,7 @@ cd ..
   mkdir root.build
   cd root.build
   cmake ../root -Dfftw3=OFF -Dmathmore=OFF  -Dpython3="ON"   -Dminuit2=ON  -Dbuiltin-freetype=ON   -Dmysql=ON  -Droofit=ON  -DCMAKE_INSTALL_PREFIX=$HOME/root
-  cmake --build . -- -j8
+ time  cmake --build . -- -j8
   
 ```
 
@@ -68,11 +68,11 @@ v6.09.02 laptop   | user | real |
 |4cores laptop  | 9730s | 43m  |
 |  8cores       |  9973s |  45:19 |
 |  2cores       | 6499s  | 55:58 |
-| v6.09.02 |--|--|
+| v6.09.02 | Debian 8 |--|
 | aaron 3 cores |  112m |  30 m |
-| v6.12.04 |--|--|
+| v6.12.04 | Ubuntu 1604|--|
 | Core i7 8 threads | 203m | 62m26s |
-| Core i7 4 cores   | | |
+| Core i7 4 cores   | 3:15:00 |  57m   |
 
 
 
