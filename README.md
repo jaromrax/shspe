@@ -1,8 +1,226 @@
 
-**shspe**
+SHSPE - SHow SPEctra
 =====
 
-root macro to SHow SPEctra
+**root macro to SHow SPEctra**
+
+
+0.0 Installation of root
+----------------------
+
+
+0.0.1 Prerequisites:
+-------------------
+
+basically, better check root.cern.ch website https://root.cern.ch/build-prerequisites
+
+
+```
+aptitude install dpkg-cross
+aptitude install libxext-dev
+aptitude install libxpm-dev
+aptitude install libxft-dev
+```
+
+
+
+0.0.2 GIT
+--------------
+
+**follow** https://root.cern.ch/content/release-61006 **and**
+https://root.cern.ch/building-root
+
+```git clone http://github.com/root-project/root.git```
+
+The release specific tag can be obtained using:
+```
+cd root
+git checkout -b v6-10-06 v6-10-06
+```
+
+Later ... 
+
+```
+  git clone https://github.com/root-project/root.git
+  cd root
+  git tag
+git checkout -b v6-12-04 v6-12-04
+cd ..
+```
+
+0.0.3 Prepare directories and compile:
+--------------------
+```
+  mkdir ~/root; mkdir ~/root_macros
+  mkdir root.build
+  cd root.build
+  cmake ../root -Dfftw3=OFF -Dmathmore=OFF  -Dpython3="ON"   -Dminuit2=ON  -Dbuiltin-freetype=ON   -Dmysql=ON  -Droofit=ON  -DCMAKE_INSTALL_PREFIX=$HOME/root
+  cmake --build . -- -j8
+  
+```
+
+0.0.4 Times and results
+-------------------------
+
+
+v6.09.02 laptop   | user | real |
+|---------------|------|-------|
+|4cores laptop  | 9730s | 43m  |
+|  8cores       |  9973s |  45:19 |
+|  2cores       | 6499s  | 55:58 |
+| v6.09.02 |--|--|
+| aaron 3 cores |  112m |  30 m |
+| v6.12.04 |--|--|
+| Core i7 8 threads | 203m | 62m26s |
+| Core i7 4 cores   | | |
+
+
+
+ `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
+
+ `cmake --build . --target install`
+
+
+0.0.5 Tests
+--------------------
+
+   - shspe should compile
+   
+   - pytest.py 
+	   - Tgraph + file
+	   - TH1 + file
+	   - mmap file test read
+   
+   -  gregory mmap.histo should be opened by shspe (mmapfile)
+   -  pyroot - TH1F should be imported into python
+
+
+   
+
+0.1
+---------------
+
+
+- Good on 16.04 Ubuntu Xenial[^1]
+
+- tests on Debian 8 jessie:[^2]
+  *  v6.06.06 - worked
+  *  v6.09.02 - had to get backports `cmake` : `deb http://ftp.debian.org/debian jessie-backports main; aptitude -t jessie-backports upgrade cmake, aptitude install libglew-dev (i think)` compilation CRASHED, but root worked anyway
+
+- tests on Debian 9 Stretch - **two did not finish the compilation**, root worked
+
+- tests on ZOTAC celeron 4 cores - Ubuntu 1604 compiled v6.09.02 with 1 core only
+
+#### To enable TF1H in pyroot (v6.09.02):
+
+http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importing-histograms/33363251
+
+#### never make / cmake inside root-6.xx.xx directory!
+
+
+
+0.2  commands to build - compile/install
+----------------
+
+  1. `mkdir ~/root` and `mkdir root.build` :create extra root.build directory, `cd root.build`
+
+  2. configure:  ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root` and  `-Dpython3="ON"` to set the installation dir and python3 for jupyter
+
+```
+cmake ../root/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dpython3="ON"  -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL   -DCMAKE_INSTALL_PREFIX=$HOME/root
+```
+
+  3. `time cmake --build . -- -j4` :build - prepare for 1:30h with 4 cores laptop
+
+    4. `source bin/thisroot.sh` - it could/should/may be included in `.zshrc` `.bashrc`
+
+    5. `cmake --build . --target install` - install to ~/root/ directory
+  
+
+
+```
+#export PYTHONPATH=$HOME/root/lib/
+```
+
+After, it is advisable to put the line with `source $HOME/root/bin/thisroot.sh` to `~/.bashrc` and `~/.zshrc`.
+
+
+
+7.2 problems
+----------
+
+  *  with 4 cores, it did not compile (before 6.08.00 versions) - **OK NOW** for later
+  *  when anaconda is installed, there was a mess Update: anaconda3 is UNTESTED
+
+
+  * last tests with Pro: 6-08-06, 6-09-02, 6-10-06
+  
+  * look at the page https://root.cern.ch/building-root#options
+  
+  and then try (make was 132 minutes on one core):
+
+
+  * See https://root.cern.ch/building-root
+
+
+	*this must be in `cmake` -DCMAKE-INSTALL_PATH=$HOME/root*
+
+
+
+
+#### Statistics:
+
+```
+v6.09.02 laptop
+j4=9730s user - 43m total; 
+8cores -9973s - 45:19total;
+2cores - 6499s - 55:58 total
+
+6.09.02 on aaron - 4 cores: crashed at 95%; but root worked
+real	30m22.488s
+user	112m15.488s
+sys	3m55.304s
+
+6.10.06 on  zotac - 4 cores  65% CRASH segfault
+real	69m3.554s
+user	245m27.216s
+sys	13m51.892s
+
+```
+
+#### compile test:
+
+   -  shspe should compile
+   
+   -  gregory mmap.histo should be opened by shspe (mmapfile)
+   
+   -  pyroot - TH1F should be imported into python
+   
+
+#### mime type - automatic open
+
+Mostly unsuccessfull, look at
+`https://askubuntu.com/questions/525953/use-custom-command-to-open-files`
+and this `root.desktop` in `/usr/share/applications` could help
+```
+[Desktop Entry]
+Name=ROOT
+GenericName=root
+TryExec=/home/ojr/root/bin/root
+Exec=/home/ojr/root/bin/root -e "{shspe();}" %U
+Terminal=true
+Type=Application
+Categories=GTK;Utility;TerminalEmulator;System;
+```
+
+and update with `sudo xdg-mime default root.desktop application/octet-stream`
+
+
+
+
+
+
+
 
 1.1 download shspe from git
 -------
@@ -17,76 +235,6 @@ this is a standard procedure, (make and) go to some directory and then:
 
 
 
-2.2 prerequisites for compilation of root: 
-----------
-basically, better check root.cern.ch website https://root.cern.ch/build-prerequisites
-
-```
-aptitude install dpkg-cross
-aptitude install libxext-dev
-aptitude install libxpm-dev
-aptitude install libxft-dev
-```
-
-
-
-2.3. root compilation - version 6.x
----------------------------------
- Remarks:
- -  *Avoid Anaconda*
- - *pre 6.08.00 version had problems with 4 cores compilations*
- - *look at the page https://root.cern.ch/building-root#options*
- - * See https://root.cern.ch/building-root*
- 
-Download and checkout the last pro version:
-```
-  git clone https://github.com/root-project/root.git
-  cd root
-  git tag
-  git checkout -b v6-12-04 v6-12-04
-  cd ../
-```
-
-Go to build directory and build with :**Python ON, RooFit ON, Parallel Minuit?(see RMatrix), DIR ~/root**:
-
-```
-  mkdir ~/root; mkdir ~/root_macros
-  mkdir root.build
-  cd root.build
-  cmake ../root -Dfftw3=OFF -Dmathmore=OFF  -Dpython3="ON"   -Dminuit2=ON  -Dbuiltin-freetype=ON   -Dmysql=ON  -Droofit=ON  -DCMAKE_INSTALL_PREFIX=$HOME/root
-  cmake --build . -- -j8
-  
-```
-
-Prepare for times:
-| v6.12.04      | user | real |
-|---------------|------|-------|
-|4cores laptop  | 9730s | 43m  |
-|  8cores       |  9973s |  45:19 |
-|  2cores       | 6499s  | 55:58 |
-|--|--|--|
-| Core i7 8 threads | 203m | 62m26s |
-| Core i7 4 cores   | | |
-
-
- `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
-
- `cmake --build . --target install`
-
-
-
-### compile test:
-
-   - shspe should compile
-   
-   - pytest.py 
-	   - Tgraph + file
-	   - TH1 + file
-	   - mmap file test read
-   
-   -  gregory mmap.histo should be opened by shspe (mmapfile)
-   -  pyroot - TH1F should be imported into python
-   
 
 
 
@@ -119,7 +267,7 @@ shspe .so library should be installed in root macro directory (verify)
 
 
 
-4.1 run root
+4.1 run root and shspe()
 ----------
 ```
 root
@@ -238,57 +386,91 @@ searches for a script  *shspe.pk_mysql* setup file on savefit
 
 
 
-11.0.0 /OLD NOW/   preliminary root 6 compilation on 16.04
+7.0   root 6 compilation
 ----------------------
 
-### To enable TF1H in pyroot:
+- Good on 16.04 Ubuntu Xenial[^1]
+
+- tests on Debian 8 jessie:[^2]
+  *  v6.06.06 - worked
+  *  v6.09.02 - had to get backports `cmake` : `deb http://ftp.debian.org/debian jessie-backports main; aptitude -t jessie-backports upgrade cmake, aptitude install libglew-dev (i think)` compilation CRASHED, but root worked anyway
+
+- tests on Debian 9 Stretch - `None`
+
+
+#### To enable TF1H in pyroot (v6.09.02):
 
 http://stackoverflow.com/questions/33361998/pyroot-attributeerror-while-importing-histograms/33363251
 
-### never make inside root-6.xx.xx directory!
+#### never make / cmake inside root-6.xx.xx directory!
 
-problems
+
+7.1  commands to compile/install
+----------------
+
+  1. `mkdir ~/root` and `mkdir root.build` :create extra root.build directory, `cd root.build`
+
+  2. configure:  ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root` and  `-Dpython3="ON"` to set the installation dir and python3 for jupyter
+
+```
+cmake ../root-v6-10-02/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dpython3="ON"  -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL   -DCMAKE_INSTALL_PREFIX=$HOME/root
+```
+
+  3. `time cmake --build . -- -j4` :build - prepare for 1:30h with 4 cores laptop
+
+    4. `source bin/thisroot.sh` - it could/should/may be included in `.zshrc` `.bashrc`
+
+    5. `cmake --build . --target install` - install to ~/root/ directory
+  
+
+
+```
+#export PYTHONPATH=$HOME/root/lib/
+```
+
+After, it is possible to return the line with PATH to `.bashrc` but most probably it puts thisroot.sh there.
+
+
+
+7.2 problems
 ----------
 
-  *  with 4 cores, it did not compile (pre 6.08.00 versions) - **OK NOW** for later
+  *  with 4 cores, it did not compile (before 6.08.00 versions) - **OK NOW** for later
   *  when anaconda is installed, there was a mess Update: anaconda3 is UNTESTED
 
 
-  * last test with Pro: 6-08-06, 6-09-02
+  * last tests with Pro: 6-08-06, 6-09-02
   
   * look at the page https://root.cern.ch/building-root#options
   
   and then try (make was 132 minutes on one core):
 
 
-  1. See https://root.cern.ch/building-root
+  * See https://root.cern.ch/building-root
 
-	this must be in `cmake` -DCMAKE-INSTALL_PATH=$HOME/root
 
-  2. `mkdir root.build` :create extra root.build directory and **go there**
+	*this must be in `cmake` -DCMAKE-INSTALL_PATH=$HOME/root*
 
-  3. configure with the big line bellow ending with `-DCMAKE_INSTALL_PREFIX=$HOME/root` and  `-Dpython3="ON"` to set the installation dir and python3 for jupyter
 
-  4. `time cmake --build . -- -j4` :build - prepare for 1:30h with 4 cores laptop; j4=9730s user - 43m total; 
-     8cores -9973s - 45:19total; 2cores - 6499s - 55:58 total
 
-  5. `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
-  6. `cmake --build . --target install`
+#### Statistics:
 
+```
+v6.09.02 laptop
+j4=9730s user - 43m total; 
+8cores -9973s - 45:19total;
+2cores - 6499s - 55:58 total
+
+6.09.02 on aaron - 4 cores: crashed at 95%; but root worked
+real	30m22.488s
+user	112m15.488s
+sys	3m55.304s
 
 
 ```
-cmake ../root/    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" -Dcxx14="ON" -Dall="ON" -Ddavix="OFF"   -Dr="OFF" -Dpythia8="OFF" -Dpython3="ON"  -Dgeocad="ON" -Dbuiltin_ftgl="OFF" -Dbuiltin_glew="OFF"  $ROOFIT  -Dminuit2=ON -Dgdml=ON -Dxml=ON -Dbuiltin-ftgl=ON -Dbuiltin-glew=ON  -Dbuiltin-freetype=ON  $OPENGL  -Dmysql=ON -Dpgsql=ON  -Dasimage=ON   -DPYTHIA6_DIR=$SIMPATH_INSTALL  -DPYTHIA8_DIR=$SIMPATH_INSTALL  -Dglobus=OFF  -Dreflex=OFF  -Dcintex=OFF   $VC  -Dhttp=ON  -DGSL_DIR=$SIMPATH_INSTALL -DCMAKE_INSTALL_PREFIX=$HOME/root
-```
 
-#export PYTHONPATH=$HOME/root/lib/
-```
-```
-
-After, it is possible to return the line with PATH to `.bashrc` but most probably it puts thisroot.sh there.
-
-### compile test:
+#### compile test:
 
    -  shspe should compile
    
@@ -297,46 +479,23 @@ After, it is possible to return the line with PATH to `.bashrc` but most probabl
    -  pyroot - TH1F should be imported into python
    
 
+#### mime type - automatic open
 
-12.3 root compilation - version 5.x
------
-  (example for 64bit)
-
-
-I recommend to create three directories in $HOME - one containing root, the other for source files + compilation 
-and the last for macros and compiled .so files:
+Mostly unsuccessfull, look at
+`https://askubuntu.com/questions/525953/use-custom-command-to-open-files`
+and this `root.desktop` in `/usr/share/applications` could help
 ```
-mkdir ~/root
-mkdir ~/root.inst
-mkdir ~/root_macros
-```
-
-
-
-Append to your  ```$HOME/.bashrc``` paths to your ~/root/:  
-```
-export ROOTSYS=$HOME/root
-export PATH=$ROOTSYS/bin:~/root_macros:$PATH
-export LD_LIBRARY_PATH=$ROOTSYS/lib:$ROOTSYS/lib/root:$LD_LIBRARY_PATH
+[Desktop Entry]
+Name=ROOT
+GenericName=root
+TryExec=/home/ojr/root/bin/root
+Exec=/home/ojr/root/bin/root -e "{shspe();}" %U
+Terminal=true
+Type=Application
+Categories=GTK;Utility;TerminalEmulator;System;
 ```
 
-Download root:  wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz
+and update with `sudo xdg-mime default root.desktop application/octet-stream`
+[^1]: Ubuntu 16.04 is LTS version until 2018/04
 
-Unpack to ~/root.inst and enter there
-
-First you need to *configure* the Makefiles, if this is successful, use *make* and *make install*. To use more CPU cores and compare times you can do e.g. *time make -j4*
-
-
-
-```
- ./configure linuxx8664gcc  --prefix=$HOME/root --etcdir=$HOME/root/etc --enable-opengl --enable-mysql --enable-minuit2 --enable-xml --enable-python --enable-roofit --enable-fftw3 --enable-gsl-shared --enable-mathmore --enable-c++11 
-
-make
-
-make install
-```
-Root should reside in $HOME/root/bin and should be reachable from commandline: *root*.
-
-**Comment for Ubuntu xenial 16.04:**
-*use root 5.34.36, edit ./root/tmva/src/RuleFitParams.cxx and change isnan(fstarVal) to std::isnan(fstarVal);  root6 has still problem as of 2016/05*
-
+[^2]: 2017/06 - debian Stretch is out
