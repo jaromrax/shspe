@@ -71,15 +71,16 @@ v6.09.02 laptop   | user | real |
 | v6.09.02 | Debian 8 |--|
 | aaron 3 cores |  112m |  30 m |
 | v6.12.04 | Ubuntu 1604|--|
-| Core i7 8 threads | 203m | 62m26s |
-| Core i7 4 cores   | 3:15:00 |  57m   |
-
+| Core i7 giga 8 threads | 203m | 62m26s |
+| Core i7 4 giga cores   | 3:15:00 |  57m   |
+| corei5 dell ntb 4cores| 200m   |   57m  | 
 
 
  `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
  `cmake --build . --target install`
 
+PUT TO .zshrc or .bashrc or both
 
 0.0.5 Tests
 --------------------
