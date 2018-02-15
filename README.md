@@ -64,17 +64,18 @@ cd ..
 
 
 v6.09.02 laptop   | user | real |
-|---------------|------|-------|
-|4cores laptop  | 9730s | 43m  |
-|  8cores       |  9973s |  45:19 |
-|  2cores       | 6499s  | 55:58 |
+|--------------- |------|-------|
+|4cores laptop   | 9730s | 43m  |
+|  8cores        |  9973s |  45:19 |
+|  2cores        | 6499s  | 55:58 |
 | v6.09.02 | Debian 8 |--|
 | aaron 3 cores |  112m |  30 m |
 | v6.12.04 | Ubuntu 1604|--|
 | Core i7 giga 8 threads | 203m | 62m26s |
 | Core i7 4 giga cores   | 3:15:00 |  57m   |
 | corei5 dell ntb 4cores| 200m   |   57m  | 
-
+| --------------------  | ---------| -----|
+|  aaron 4c xeon v 6.12.6/ deb9    |   |   |
 
  `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
