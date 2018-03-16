@@ -117,7 +117,7 @@
  */
 //#include "kibbler_graphs.h"
 
-static const int MAXPNTS=15000;
+//static const int MAXPNTS=15000;
 
 
 static const int MAXPRIMITIVES=26; // in all multi things (selclear, logy, spider...movexy)
