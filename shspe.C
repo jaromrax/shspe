@@ -567,9 +567,9 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "SaveCanvas  " );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
    sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
-
+   //MenuItemDivCanvas
    sprintf(tmp, "DivCanvas,SetRangeAll");fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
-   sprintf(tmp, "Unzoom/  " );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   sprintf(tmp, "Unzoom/  " );           fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
    //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
@@ -2652,8 +2652,9 @@ void MyMainFrame::fSELLogy(int id,TString *fentry){
 
 
 
-
-void MyMainFrame::fSELUnzoom(int id,TString *fentry){  
+//=================  SEPARATE FUNCTION FOR SUB OPTION
+void MyMainFrame::fUnzoom(int id,TString *fentry){
+  printf("subitem %2d:%s....Unzoom  \n",id,fentry->Data());  
   TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
   RecoverTH1fromGPAD( count, addr ,"TH" );// this is sensitive to checkbox....multi
   //  printf("from tpad %d histos recovered \n", count );
@@ -2670,36 +2671,50 @@ void MyMainFrame::fSELUnzoom(int id,TString *fentry){
   }//histo != null
   }//for all addr[]
   RefreshAll();
-}
+}//----------------------fUnzoom  subitem
 
 
 
 
 
 
-/*           DivCanv,RangeAll
- *           1/  range all (if text)            
- *           2/  divide
- */
 
-//void MyMainFrame::fSELUnzoomAll(int id,TString *fentry){ 
-void MyMainFrame::fSELDivCanv(int id,TString *fentry){ 
-  printf("item %2d:%s.... fSELDivCanv\n",id,fentry->Data());  
-  // Zrejme variantni moznost vyhledani TH1 vsude............... NEVER USE UNZOOMALL
+
+//=================  MENU ITEM
+void MyMainFrame::fMenuItemUnzoom(int id,TString *fentry){
+  printf("item %2d:%s.... fMenuItemUnzoom \n",id,fentry->Data());  
+  // === decision :
+  if ( (strlen(fEntry->GetText()) >0)&&( strstr(fEntry->GetText(),"-")!=NULL)   ){// RANGE ALL
+    printf("'-' inside the text  =>  SET RANGE \n%s" , "");
+    fSetRangeAll(id,fentry);
+  }else{
+    printf(" no '-' : => UNZOOM \n%s" , "");
+    fUnzoom(id,fentry);
+  }
+  RefreshAll();           /////  /////////
+}//----------------_ MENU ITEM
+
+
+
+
+
+
+
+//void MyMainFrame::fSELUnzoom(int id,TString *fentry){  
+//}
+
+
+
+
+//=================  SEPARATE FUNCTION FOR SUB OPTION
+void MyMainFrame::fSetRangeAll(int id,TString *fentry){
+  printf("subitem %2d:%s....  \n",id,fentry->Data());  
   
-  int count=MAXPRIMITIVES;  int64_t addr[MAXPRIMITIVES];
+  int count=MAXPRIMITIVES;
+  int64_t addr[MAXPRIMITIVES];
   SpiderAllTPADs( count, addr );  // AFTER THIS I HAVE ALL TPADs
   // nevim proc allth1s  SpiderAllTH1s( count, addr );   //  SPIDER ALL THE  TREE DOWN FROM THE MAIN  GPAD
   printf("count =  %d \n", count );
-  //  TPad* tempo=(TPad*)gPad;
-
-  //  if (strlen(fEntry->GetText()) >0 ){// RANGE ALL
-  //    printf("TEXT MEANS RANGE ALL\n%s" , "");
-
-  if ( (strlen(fEntry->GetText()) >0)&&( strstr(fEntry->GetText(),"-")!=NULL)   ){// RANGE ALL
-    printf("'-' inside text  MEANS RANGE ALL\n%s" , "");
-
-
 
   ///////////////////////////////////////////////////////////RANGEALL START
   char sr[100];  int range_ok=0;
@@ -2707,7 +2722,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
   int Range=0, Range0=0; //UNUSED VAR, posmin=0;
       char *pch;
       if ( (strlen(sr)!=0)  ){
-         printf("sent text is  ../%s/.. we expect range like 500-1200\n",  sr  );
+	//printf("sent text is  ../%s/.. we expect range like 500-1200\n",  sr  );
        if (  strstr(sr,"-")!=NULL  ){
 	 //         printf("set text to ""  ../%s/\n",  sr  );
 	 fEntry->SetText("");
@@ -2720,7 +2735,7 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
 	 printf("  range  from %d  to  %d  ( 0 forces unzoom )  pch=%s\n",  Range0, Range, pch );
 	 if (  (Range>Range0)&&(Range0>=0) ){ range_ok=1;}
        }//  "-"  is inside, good news
-       else{printf("...Problem....%s\n","");return;}
+       else{printf("...Problem with SetRangeAll....%s\n","");return;}
       }//  strlen > 0
 
 
@@ -2730,29 +2745,40 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       TH1* histo;  int64_t addr2[MAXPRIMITIVES];addr2[0]=0;  int count2=1;
       RecoverTH1fromGPAD( count2, addr2 ,"TH" ,0);// restrict==1  means current pad only.HERE 0
       histo=(TH1*)addr2[0];
-      //      printf("from tpad %d recovered %ld histo addresses\n", count2,  (int64_t)addr2[0] );
+      //printf("| .... from tpad %d recovered %ld histo addresses\n", count2,  (int64_t)addr2[0] );
 
       for (int ii=0;ii<count2;ii++){
 	TH1 *tp=((TH1*)addr2[ii]);
-	//	tp->Print();
+	//tp->Print();
 	if (range_ok==0){//UNZOOM
-	tp->GetXaxis()->UnZoom();
-	//Y also
-	TString cl=tp->ClassName();
-	if (cl.Contains("TH2")>0){
-	  printf("making also Y unzoom%s\n","");
-	  tp->GetYaxis()->UnZoom(); 
-	}// i<count  
+	  tp->GetXaxis()->UnZoom();
+	  //Y also
+	  TString cl=tp->ClassName();
+	  if (cl.Contains("TH2")>0){
+	    printf("making also Y unzoom%s\n","");
+	    tp->GetYaxis()->UnZoom(); 
+	  }// i<count  
 	}//UNZOOM;   RANGE
 	else{
+	  //printf("D... SetRangeUser X  %f   %f\n" , Range0,Range );
 	  tp->GetXaxis()->SetRangeUser(Range0,Range);
 	}//RANGE
       }//for ii ---- all histos in one pad
   }//all pads   for i
   ///////////////////////////////////////////////////////////RANGEALL END
-  }// if (strlen(fEntry->GetText()) >0 )
-  else{// IF NOT RANGE ALL===>>  PUT selDIVIDE =============
-    //not divide anymore....    fSELDivide(id, fentry );
+  RefreshAll();
+
+} //----------------------------------- SetRangeAll-------------
+
+
+
+
+
+
+//=================  SEPARATE FUNCTION FOR SUB OPTION
+void MyMainFrame::fDivCanvas(int id,TString *fentry){
+    printf("subitem %2d:%s.... fDivCanvas \n",id,fentry->Data());  
+
     int targetpads=0;
     if (  (strlen(fEntry->GetText())>0) && (atoi(fEntry->GetText())>0) ){
       targetpads= atoi(fEntry->GetText()) ;
@@ -3044,14 +3070,27 @@ void MyMainFrame::fSELDivCanv(int id,TString *fentry){
       }// while pad exist      
 
       //	printf("leaving if else %s\n", ""   );
+}//---------------------------------------------fDivCanvas
 
+
+
+
+
+
+//=================  MENU ITEM
+void MyMainFrame::fMenuItemDivCanvas(int id,TString *fentry){
+  printf("item %2d:%s.... fMenuItemDivCanvas \n",id,fentry->Data());  
+  // === 
+  if ( (strlen(fEntry->GetText()) >0)&&( strstr(fEntry->GetText(),"-")!=NULL)   ){// RANGE ALL
+    printf("'-' inside the text  =>  SET RANGE \n%s" , "NOT ANYMORE - MENU MOVED");
+    //fSetRangeAll(id,fentry);
+  }else{
+    printf("  => DIV CANVAS \n%s" , "");
+    fDivCanvas(id,fentry);
   }
-  //  if (tempo!=NULL)tempo->cd();
-  //	printf("refreshall %s\n", ""   );
-
   RefreshAll();           /////  /////////
+}//--------------------------- subitem  SetRangeAll
 
-}// fSELDivCanv//fSELUnzoomAll - but now does Divide Canvas   DivCanv,RangeAll
 
 
 
@@ -3087,6 +3126,8 @@ void MyMainFrame::fSELLogz(int id,TString *fentry){
 
 
 
+
+
 void BlinkCanvasMessage( const char* message ){
   //-------------------SHOW #
   //	 TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, kGray ,?);
@@ -3108,7 +3149,7 @@ void BlinkCanvasMessage( const char* message ){
   t->Draw();
   p->Modified();p->Update();
   
-  gSystem->Sleep(1150);
+  gSystem->Sleep(850);
   
   b1->Delete();	 b2->Delete();
   t->Delete();
@@ -3225,6 +3266,8 @@ void MyMainFrame::fSELSaveSpectra(int id,TString *fentry){
    }//TH*
  }//for i
  printf("****file %s *********\n", ch );// DONE
+  BlinkCanvasMessage( ch  );
+  RefreshAll();
 }//--------save spectra--------------------
 
 
@@ -3290,12 +3333,16 @@ void MyMainFrame::fSELSaveCanvas(int id,TString *fentry){
 	 }// was a number 
 	 else{ // is not a number => filename
 	   savecanvas(  xfentry->Data() );
+	   BlinkCanvasMessage( xfentry->Data() );
 	 }// it was filename
 	 fEntry->SetText("");   //CLEAN
   }// there was something in fEntry ======
   else{ // there is NOTHING  in fEntry ======
      i=get_free_slot("canvas");
      if (i==0){ printf("ALL SLOTS <canvas_i.root> ARE FULL - REMOVE SOME PLEASE%s\n",""); return;}
+     char ch[100];
+     sprintf( ch,"saving canvas to the slot #%d", i );
+     BlinkCanvasMessage( ch );
      savecanvas( "canvas.root" , i );
   }// there was nothing i fentry
 
@@ -3779,12 +3826,18 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected== SELDivide     ){ fSELDivide(flistbox_selected,fentry);  }
   if (flistbox_selected== SELClear      ){ fSELClear(flistbox_selected,fentry);  }
   if (flistbox_selected== SELRefresh    ){ fSELRefresh(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELUnzoom     ){ fSELUnzoom(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELUnzoom     ){
+    //fSELUnzoom(flistbox_selected,fentry);
+    fMenuItemUnzoom(flistbox_selected,fentry);
+  }
   if (flistbox_selected==SELSaveSpectra ){ fSELSaveSpectra(flistbox_selected,fentry);  }
   if (flistbox_selected== SELSaveCanvas ){ fSELSaveCanvas(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELClearAll   ){ fSELClearAll(flistbox_selected,fentry);  }
   //  if (flistbox_selected== SELUnzoomAll  ){ fSELUnzoomAll(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELDivCanv  ){ fSELDivCanv(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELDivCanv  ){
+    // fSELDivCanv(flistbox_selected,fentry);
+    fMenuItemDivCanvas( flistbox_selected, fentry );
+  }
   if (flistbox_selected== SELClone2Rint2     ){ fSELClone2Rint(flistbox_selected,fentry);  }       
 
   }// TLIST    1   id==89

@@ -342,10 +342,28 @@ public:
   void fSELGrid(int id,TString *fentry);
   void fSELLogy(int id,TString *fentry);
   void fSELLogz(int id,TString *fentry);
-  void fSELUnzoom(int id,TString *fentry);
-  void fSELDivCanv(int id,TString *fentry);
-  //  void fSELUnzoomAll(int id,TString *fentry);
+  
 
+
+
+  // =========REMOVE THESE
+  // void fSELUnzoom(int id,TString *fentry);
+  //void fSELDivCanv(int id,TString *fentry);
+  //////  void fSELUnzoomAll(int id,TString *fentry);
+
+
+  //================ NEW NAMING SCHEME =======
+  void fMenuItemUnzoom(int id,TString *fentry);
+  void fUnzoom(int id,TString *fentry);
+
+
+  void fSetRangeAll(int id,TString *fentry);
+  void fDivCanvas(int id,TString *fentry);
+  void fMenuItemDivCanvas(int id,TString *fentry);
+
+
+
+  
   void fSELFindPks(int id,TString *fentry);
   void fSELDelPks(int id,TString *fentry);
   void fSELFindBg(int id,TString *fentry);
