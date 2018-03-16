@@ -1,155 +1,7 @@
 #include "TSystem.h"
 
-
-
-
-//=================================== VERY DIRTY==COPY OF GRENG
-// but it knows to replace the specials;!!
-int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
-{
- double x[64000],y[64000],dy[64000],dx[64000],  bu;
- int i,j;
- FILE * pFile;
- int MAXLINES=64000;
- // char mystring[1500];// one line
- TString oneline, title=name, token;
-
- //  printf("gr_engineX: going to open filename=%s\n", name );
-
-  pFile=fopen( name ,"r" ); 
-  if (pFile==NULL) {
-    printf("cannot open %s,STOPping\n", name ); 
-    return 0;
-  } // error
-  //  printf("file opened\n%s","");
-  //.......................readout HERE.......i
-  i=0;
-  int lastlen;// remove spaces
-  while ((i<MAXLINES)&&( feof(pFile)==0) ){
-    //    printf("  reading line %d...\n", i );
-    if ( oneline.Gets (pFile, kTRUE) ){//chop true ... continue if not eof
-      //      printf("     string==%s\n",  oneline.Data() ); 
-
-    //purify .................. start
-    do {
-      lastlen=oneline.Length();
-      if (oneline.Index(" ")==0){oneline=oneline(1,oneline.Length()-1);}
-      lastlen=oneline.Length();
-      if (oneline.Index(" ")==lastlen){oneline=oneline(0,oneline.Length()-1);}
-       oneline.ReplaceAll("\t"," ");
-       oneline.ReplaceAll("  "," ");
-       oneline.ReplaceAll("  "," ");
-       //       printf(" ---    string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
-    }while( lastlen!=oneline.Length());
-    //    printf("     string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
-    //purify .................. stop
-    //printf("S=%s\n", oneline.Data() );
-   //........ parse oneline
-    if (  (oneline.Index("#")==0) || 
-	  (oneline.Index("@")==0) ||
-	  (oneline.Index("END")==0) 
- ){ // starts with # - COMMENT HERE
-      //       printf( "COMM:%s\n", oneline.Data() );
-      if (title.Length()==0){ title=oneline( 1,oneline.Length()-1  );}
-     //     title=oneline( oneline.Length(),oneline.Length()-1  );
-  }else{// DATA HERE
-      TObjArray *tar; 
-     if (oneline.Length()>1){
-       if (oneline.Index("#")>0){oneline.Remove(oneline.Index("#") );}// #
-       if (oneline.Index("@")>0){oneline.Remove(oneline.Index("@") );}// #
-       if (oneline.Index("END")>0){oneline.Remove(oneline.Index("END") );}// #
-       //       oneline.ReplaceAll(oneline.Index("\t"),1," ");
-       oneline.ReplaceAll("\t"," ");
-      x[i]=0; y[i] =0;dx[i]=0;dy[i]=0; j=0;  //  go through the columns 
-      // printf( "NotCM:%s\n", oneline.Data() );
-
-      /*
-       * r?? contains a column to use for x,dx,y,dy:
-       */
-      tar= oneline.Tokenize(" ");
-      //      printf("entries==%d\n", tar->GetEntries() );
-      while( (j<=rx && rx>=0) || (j<=ry && ry>=0) || (j<=rdy && rdy>=0)|| (j<=rdx && rdx>=0)){  
-	if (j<tar->GetEntries()){
-         token= ((TObjString*)(tar->At(j)))->GetString();
-	 //	 printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
-	 bu= token.Atof(); 
-	 //	 if (i<5){ 	 printf("  token <%s> = %f\n", token.Data(), bu ); }
-         if (rx==j)  { x[i] =bu;}
-         if (ry==j)  { y[i] =bu;}
-         if (rdx==j) { dx[i] =bu;}
-         if (rdy==j) { dy[i] =bu;} 
-	}//j<entries
-         j++;
-      }//small while 
-
-     //tar->Delete();  // abandon tar 
-      i++;// skip to a next datum if point
-     }// if oneline  lenght>1 go thru all
-     //back the loop
-   }//DATA HERE end
-    //     printf("%s","data line ended\n");
-
-
-    }//if oneline.Gets false
-   
-   //........ parse oneline
-  }//while
-  //.......................readout HERE end....i
-  //.......................close, create the TGraphErrors
-  fclose( pFile);
-  // TITLE HERE----------------
-  //  title=name; DONE earlier
-  title.ReplaceAll(".","_"); 
-  title.ReplaceAll(" ","_"); 
-  if (ry>1){title.Append( char(96+ry) ); } // multigraphs from mysql:columns
-  printf("%d elements read. title= /%s/\n", i-1, title.Data() );
-
-  //
-  //
-  //IF ALREADY THE GRAPH EXISTS============+>
- if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
-   TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
-   printf("  ... same name already exists in specials tidis=%d\n",
-	  oldg->GetXaxis()->GetTimeDisplay() );
-   //   printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
-   int timdis=oldg->GetXaxis()->GetTimeDisplay();
-   int lcol=oldg->GetLineColor();
-   char timc[100]; strcpy(timc,oldg->GetXaxis()->GetTimeFormat() );
-	for (int jj=0;jj<i;jj++){
-	  //I believe that set 'new' point doesnot crash...
-	  oldg->SetPoint(jj,x[jj],y[jj]);
-	  oldg->SetPointError(jj,dx[jj],dy[jj]);
-	}//for all jj
-	//however if jj<graph points, it looks nasty
-	while(i<oldg->GetN() ){
-	  //printf("remove point %d < %d\n", i, oldg->GetN() );
-	  oldg->RemovePoint(oldg->GetN()-1);//last?
-	}
-	//	printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
-	oldg->GetXaxis()->SetTimeDisplay( timdis);
-	oldg->GetXaxis()->SetTimeFormat(timc);
-	//if this is already exists:
-	oldg->SetLineColor( lcol) ;
-
-    return (int64_t)oldg;
-
- }else{//if not exists in groot specials :
-   TGraphErrors *g=new TGraphErrors(i,x,y,dx,dy);
-   g->SetMarkerStyle(22);
-   g->SetTitle( title.Data()  );
-   g->SetName( title.Data()  ); 
-   gROOT->GetListOfSpecials()->Add( g );
-   printf("added to GetListOfSpecials:   %s \n",  g->GetName()  );
- return (int64_t)g;
- }//if exists already in gROOT Specials
-
-// g->Print();// DONT PRINT TABLES
-
-
-
- //-----------------------------------------------------
-}// end of the new 201004 version of gr_engine
-//=================================== VERY DIRTY==COPY OF GRENG
+//#include "sh_graph.C" // I have this in main... SO :
+// 
 
 
 
@@ -159,7 +11,6 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
 
 
 void shspe_ls(){ 
-  
   TString sr=".";
   if (gFile!=NULL){ sr=gFile->GetName() ;}
 }
@@ -375,6 +226,10 @@ TH1F* extract_next(TH1F* h){
 }
 
 
+
+
+//
+// used by displ from list2
 void ro_getnext(TH1F* h){
   int mx,mn;
   int mx1=h->GetMaximum();
@@ -423,12 +278,14 @@ void ro_getnext(TH1F* h){
 
 
 
+//==============================================================
+//  Display From List2 =====   Click and Display HISTO
 //
 //  GetTitle... vybiram podle title???
 //
 //  fchk1state  == Multi:checkbox
 //
-//   Nechapu 2015/11/13 proc  gettitle uplne staci...aha... title je vrealite name!
+//   Nechapu 2015/11/13 proc gettitle uplne staci...aha.. title je vrealite name!
 //
 void fDisplayFromList2(int id, const char* title, int fchk1state=0){
   //  printf("...displaying from list2 #%d:<%s>\n", id, title );
@@ -601,10 +458,17 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 
 
 
-/*
- *
- *    fOPENFILE ------------------------------------------------------------------------------
+/*=======================================================================
+ *=======================================================================
+ *    fOPENFILE ---------------------------------------------------------
  *           reacts on click on  ***openfile***
+ *
+ *    .mysql / sqlite   file also
+ *
+ *  3 sections:
+ *      primitives (canvas?)
+ *      keys
+ *      objects
  */
 //                  npints is the result of fentrySIG - to say # graph points
 void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
@@ -782,6 +646,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
    *   legalize primitives from gpad (htemp)
    *   ???  I assume that all graphs should be at    specials
    */
+  printf("============== PRIMITIVES  SECTION ==============%s","\n");
   TList *prim=gPad->GetListOfPrimitives();
   //---------------- PRMITIVES------------------
   for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
@@ -800,15 +665,42 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
       }//if htemp
     }//TH class
 
+    
+    // printf("D....    checking non  TH classes...................%s\n",sn.Data());
+    // //--- new attempt to open graphs and stuff
+    // if ( sn.Index("TGraph")==0 ){
+    //   TGraph *hih=(TGraph*)prim->At(ii);
+    //   TString sn_hih=hih->GetName();
+    //   hih->SetName(sn_hih);
+    //   if ( gROOT->GetListOfSpecials()->FindObject(hih)==NULL ){
+    // 	gROOT->GetListOfSpecials()->Add( hih );
+    // 	printf("%s added to GLiOSpecia\n", hih->GetName());
+    //   }else{printf("%s NOT added\n", hih->GetName());}
+    // }
 
-    if ( sn.Index("TGraph")==0 ){
-      TGraph *hih=(TGraph*)prim->At(ii);
-      TString sn_hih=hih->GetName();
-      hih->SetName(sn_hih);
-      if ( gROOT->GetListOfSpecials()->FindObject(hih)==NULL ){
-	gROOT->GetListOfSpecials()->Add( hih );
-	printf("%s added to GLiOSpecia\n", hih->GetName());
-      }}
+    // if ( sn.Index("TGraphErrors")==0 ){
+    //   TGraphErrors *hih=(TGraphErrors*)prim->At(ii);
+    //   TString sn_hih=hih->GetName();
+    //   hih->SetName(sn_hih);
+    //   if ( gROOT->GetListOfSpecials()->FindObject(hih)==NULL ){
+    // 	gROOT->GetListOfSpecials()->Add( hih );
+    // 	printf("%s added to GLiOSpecia\n", hih->GetName());
+    //   }else{printf("%s NOT added\n", hih->GetName());}
+    // }
+
+    // if ( sn.Index("TMultiGraph")==0 ){
+    //   TMultiGraph *hih=(TMultiGraph*)prim->At(ii);
+    //   TString sn_hih=hih->GetName();
+    //   hih->SetName(sn_hih);
+    //   if ( gROOT->GetListOfSpecials()->FindObject(hih)==NULL ){
+    // 	gROOT->GetListOfSpecials()->Add( hih );
+    // 	printf("%s added to GLiOSpecia\n", hih->GetName());
+    //   }else{printf("%s NOT added\n", hih->GetName());}
+    // }
+
+
+
+
     /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY *****
      // ======================= TGraph ====================
     if ( sn.Index("TGraph")==0 ){
@@ -885,155 +777,166 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
    ******************************************************************************
    *
    */
+  
+  TObject *o;
+  printf("============== KEYS  SECTION ==============%s","\n");
+  // KEYS: if KEYS ==> what happens if I copy to memory?
+  max=0;
+  if (gDirectory->GetListOfKeys()){
+    max=gDirectory->GetList()->GetEntries();
+    printf(" items in gDirectory = %d  ..........  \n", max);
+    max=gDirectory->GetListOfKeys()->GetEntries();
+    printf(" KEYS in gDirectory = %d  ..........  \n", max);
+    for (int iii=0 ; iii<max ; iii++ ){
+      TString sa1=gDirectory->GetListOfKeys()->At(iii)->GetName();
+      gDirectory->GetObject( sa1.Data() , o );
+      TString sa2=o->ClassName();
+      //	  printf( "KEY: name-class:    %15s %15s(object)\n" ,  sa1.Data(),  sa2.Data()   );
+      /*     Get  da cokoli,  GetKey..only key, find object...only object
+       *
+       */
+      if ((sa2.Index("TH1F")==0)&&(gDirectory->FindObject(o)==NULL)) {
+	printf("adding explicitely %s\n", sa1.Data()  );
+	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
+	gDirectory->Add( (TH1F*)o ); 
+      }
+      // this loaded TCutG into the list2
+      if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
+	printf("adding explicitely %s\n", sa1.Data()  );
+	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
+	gDirectory->Add( (TCutG*)o ); 
+      }
+      // this should load TGraph into the list2
+      if ((sa2.Index("TGraph")==0)&&(gDirectory->FindObject(o)==NULL)) {
+	/*TString sn_hih=o->GetName();
+	  if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
+	  sn_hih.Append("_g");TGraph *ggo=(TGraph*)o;
+	  ggo->SetName(sn_hih);
+	  }*/
+	// add to gdir later - what if they erase in joingraphs NONO
+	printf("adding to gDirectory %s\n", ""); gSystem->Sleep(20);
+	gDirectory->Add( (TGraph*)o );
+	TGraph *ggo=(TGraph*)o;
+	ggo->SetMarkerStyle(6);  // dot  7=biger dot
+	printf("adding explicitely %s -----------to GetListOfSpecials\n",
+	       sa1.Data()  );
+	if ( gROOT->GetListOfSpecials()->FindObject(ggo)==NULL ){
+	  gROOT->GetListOfSpecials()->Add( ggo );
+	  printf("%s added to GLiOSpecia\n", ggo->GetName());
+	}else{printf("%s NOT added\n", ggo->GetName());}
+	
+	// GET LIS OF FUNCTIONS ?????????????
+	//ggo->GetListOfFunctions()->ls();
+	printf("D... look for function with TNamed...%s\n","");
+	if ( (ggo->GetListOfFunctions()->GetEntries()>0)&& (strstr(ggo->GetListOfFunctions()->At(0)->ClassName(),"TNamed")!=NULL)  ){
+	  TNamed *n=(TNamed*)ggo->GetListOfFunctions()->At(0);
+	  printf("i... Class was TNamed, checking 1st element:  /%s/\n",n->GetTitle() );
+	  joingraphsX( n->GetTitle(), ggo->GetName() ); // JOINGRAPHS  (X for mysql version; char *g1 !!)
+	}
+	
+      }// IF  is TGraph.......
+      
+      
 
-TObject *o;
-// KEYS: if KEYS ==> what happens if I copy to memory?
- max=0;
-if (gDirectory->GetListOfKeys()){
-             max=gDirectory->GetList()->GetEntries();
-  printf(" items in gDirectory = %d  ..........  \n", max);
-  max=gDirectory->GetListOfKeys()->GetEntries();
-  printf(" KEYS in gDirectory = %d  ..........  \n", max);
-  	for (int iii=0 ; iii<max ; iii++ ){
-	  TString sa1=gDirectory->GetListOfKeys()->At(iii)->GetName();
-	  gDirectory->GetObject( sa1.Data() , o );
-	  TString sa2=o->ClassName();
-	  //	  printf( "KEY: name-class:    %15s %15s(object)\n" ,  sa1.Data(),  sa2.Data()   );
-	  /*     Get  da cokoli,  GetKey..only key, find object...only object
-	   *
-	   */
-	  if ((sa2.Index("TH1F")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	    printf("adding explicitely %s\n", sa1.Data()  );
-	    printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
-	    gDirectory->Add( (TH1F*)o ); 
-	  }
-	  // this loaded TCutG into the list2
-	  if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	    printf("adding explicitely %s\n", sa1.Data()  );
-	    printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
-	    gDirectory->Add( (TCutG*)o ); 
-	  }
-	  // this should load TGraph into the list2
-	  if ((sa2.Index("TGraph")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	    printf("adding explicitely %s -----------\n", sa1.Data()  );
-	    /*TString sn_hih=o->GetName();
-	    if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
-	      sn_hih.Append("_g");TGraph *ggo=(TGraph*)o;
-	      ggo->SetName(sn_hih);
-	      }*/
-	    // add to gdir later - what if they erase in joingraphs NONO
-	    printf("adding to gDirectory %s\n", ""); gSystem->Sleep(20);
-	    gDirectory->Add( (TGraph*)o );
-	    TGraph *ggo=(TGraph*)o;
-	    ggo->SetMarkerStyle(6);  // dot  7=biger dot
-	    //ggo->GetListOfFunctions()->ls();
-	    printf("D... look for function with TNamed...%s\n","");
-	    if ( (ggo->GetListOfFunctions()->GetEntries()>0)&& (strstr(ggo->GetListOfFunctions()->At(0)->ClassName(),"TNamed")!=NULL)  ){
-	      TNamed *n=(TNamed*)ggo->GetListOfFunctions()->At(0);
-	      printf("i... Class was TNamed, checking 1st element:  /%s/\n",n->GetTitle() );
-	      joingraphsX( n->GetTitle(), ggo->GetName() ); // JOINGRAPHS  (X for mysql version; char *g1 !!)
-	    }
+      //===================}// TGraph.....+
 
-	  }// IF  is TGraph.......
-    
-
-	  //===================}// TGraph.....+
-
-	  //  gDirectory->Add( (TCanvas*)o ); // problematic
-	  //	  o=gDirectory->FindKey( hinu.Data() );
-	  //gDirectory->Get(  sa1.Data() );
-	  //	  TString ntit=o->GetTitle();
-	  //	  ntit.Append( "_{   " );ntit.Append( fentry->Data() );ntit.Append( "}" );
-	  //	  o->SetTitle( ntit.Data() );
-	}//iii < max
-}//if list of KEYS
- else{  printf(" NO KEYS in gDirectory  %d   ..........  \n", 0); }
+      //  gDirectory->Add( (TCanvas*)o ); // problematic
+      //	  o=gDirectory->FindKey( hinu.Data() );
+      //gDirectory->Get(  sa1.Data() );
+      //	  TString ntit=o->GetTitle();
+      //	  ntit.Append( "_{   " );ntit.Append( fentry->Data() );ntit.Append( "}" );
+      //	  o->SetTitle( ntit.Data() );
+    }//iii < max
+  } else{     //if list of KEYS
+    printf(" NO KEYS in gDirectory  %d   ..........  \n", 0);
+  }
+  
 
 
 
 
-
-/*
+/* =========================================================
  *   all from gdirectory goes hereto flist2.................
- *
  *
  */
 //printf(" keys in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", max);
-max=gDirectory->GetList()->GetEntries();
- int newmax=max;
- if (max > 1000 ){
-   printf("max entries is limited to 100 (in plae of %d)\n", max);
+  printf("============== OBJECTS  SECTION ==============%s","\n");
+
+  max=gDirectory->GetList()->GetEntries();
+  int newmax=max;
+  if (max > 1000 ){
+    printf("max entries is limited to 100 (in plae of %d)\n", max);
     newmax=1000;
- } // LIMIT ENTRIES 
-printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", max);
- int activentry=2; // this is entry number in the listbox2 .. 
- //             . ...not correlated with the displayed position in the box..
- for (int iii=0 ; iii<newmax ; iii++ ){
- TString sa1=gDirectory->GetList()->At(iii)->GetName();
- if (sa1.Contains("/")>0){ printf("PROBLEM, I CANNOT HANDLE SLASH / in %s\n",sa1.Data() );}
- // printf("  %03d/  object: %s\n",  iii, sa1.Data()   );
- o=gDirectory->FindObject( sa1.Data() );
- TString sa2=o->ClassName();
- 
-
- // printf("  %03d/  object: %s/%s\n",  iii, sa1.Data(), sa2.Data()   );
-   if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
-   || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
-
-
-     if (fListBox2->FindEntry( sa1.Data()) ==NULL ) {
-         fListBox2->AddEntry(  sa1.Data() , activentry );  // from 2 ++	 //
-	    printf("Entry added %15s, entry#%2d\n", sa1.Data(),activentry );
-            activentry++;  
-     }else{
-            printf("....entry %15s already exists in the list\n",sa1.Data() );
-     }
-	//	fileentr[nfileentr]= sa1.Data();  
-       //nfileentr++;	
-   }//is TH1 th2 tgraph tcutg.....
- }//iii all entries gdir
- if (max > newmax ){
-   printf("max entries is limited to 1000 (in place of %d)\n", max);
- } // LIMITED ENTRIES 
-
-
-
-
-
- max=gROOT->GetListOfSpecials()->GetEntries();
- printf("List of specials - entries == %d\n",max);
- for (int iii=0 ; iii<max ; iii++ ){
-   //   printf("making iii==%d <  max==%d\n", iii,  max );
-  TString sa1=gROOT->GetListOfSpecials()->At(iii)->GetName();
-   printf("NAME      === %s\n", sa1.Data()  );
-  //??  o=gDirectory->FindObject( sa1.Data() );// nesmysl,uz to preci mam.
-  //  o=gROOT->GetListOfSpecials()->FindObject( sa1.Data() ); // nesmysl,uz to preci mam.
-  o=(TObject*)gROOT->GetListOfSpecials()->At(iii);
-  TString sa2=o->ClassName();
-  //  printf("CLASSNAME === %s\n", sa2.Data()  );
-
-  // Now I have a class
+  } // LIMIT ENTRIES 
+  printf("OBJECTS in gDirectory = %d  ..........  loading MEMory -> fListBox2\n", max);
+  int activentry=2; // this is entry number in the listbox2 .. 
+  //             . ...not correlated with the displayed position in the box..
+  for (int iii=0 ; iii<newmax ; iii++ ){
+    TString sa1=gDirectory->GetList()->At(iii)->GetName();
+    if (sa1.Contains("/")>0){ printf("PROBLEM, I CANNOT HANDLE SLASH / in %s\n",sa1.Data() );}
+    // printf("  %03d/  object: %s\n",  iii, sa1.Data()   );
+    o=gDirectory->FindObject( sa1.Data() );
+    TString sa2=o->ClassName();
+    
+    
+    // printf("  %03d/  object: %s/%s\n",  iii, sa1.Data(), sa2.Data()   );
     if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
-   || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
+	  || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
+      
+      
+      if (fListBox2->FindEntry( sa1.Data()) ==NULL ) {
+	fListBox2->AddEntry(  sa1.Data() , activentry );  // from 2 ++	 //
+	printf("Entry added %15s, entry#%2d\n", sa1.Data(),activentry );
+	activentry++;  
+      }else{
+	printf("....entry %15s already exists in the list\n",sa1.Data() );
+      }
+      //	fileentr[nfileentr]= sa1.Data();  
+      //nfileentr++;	
+    }//is TH1 th2 tgraph tcutg.....
+  }//iii all entries gdir
+  if (max > newmax ){
+    printf("max entries is limited to 1000 (in place of %d)\n", max);
+  } // LIMITED ENTRIES 
+  
+  
 
 
-     if (fListBox2->FindEntry( sa1.Data()) ==NULL ) {
-       	   printf("adding entry %15s, entry#%2d\n", sa1.Data(),activentry );
-           fListBox2->AddEntry(  sa1.Data() , activentry );  // from 2 ++	 //
-           activentry++;  
-     }else{
-       //           printf("....entry %15s already exists in the list\n",sa1.Data() );
-     }
-	//	fileentr[nfileentr]= sa1.Data();  
-       //nfileentr++;	
+
+  max=gROOT->GetListOfSpecials()->GetEntries();
+  printf("List of specials - entries == %d\n",max);
+  for (int iii=0 ; iii<max ; iii++ ){
+    //   printf("making iii==%d <  max==%d\n", iii,  max );
+    TString sa1=gROOT->GetListOfSpecials()->At(iii)->GetName();
+    printf("NAME      === %s\n", sa1.Data()  );
+    //??  o=gDirectory->FindObject( sa1.Data() );// nesmysl,uz to preci mam.
+    //  o=gROOT->GetListOfSpecials()->FindObject( sa1.Data() ); // nesmysl,uz to preci mam.
+    o=(TObject*)gROOT->GetListOfSpecials()->At(iii);
+    TString sa2=o->ClassName();
+    //  printf("CLASSNAME === %s\n", sa2.Data()  );
+    
+    // Now I have a class
+    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
+	  || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
+      
+      
+      if (fListBox2->FindEntry( sa1.Data()) ==NULL ) {
+	printf("adding entry %15s, entry#%2d\n", sa1.Data(),activentry );
+	fListBox2->AddEntry(  sa1.Data() , activentry );  // from 2 ++	 //
+	activentry++;  
+      }else{
+	//           printf("....entry %15s already exists in the list\n",sa1.Data() );
+      }
+      //	fileentr[nfileentr]= sa1.Data();  
+      //nfileentr++;	
     }//check classes..........
     //    printf("next iii=%d\n", iii);
- }//iii ----------  all specials -------
-
-
-   printf("sorting %s\n", "");
- fListBox2->SortByName( kTRUE );
- printf("########## MEM is loaded %s ################end of openfile\n" , ""  );
-
-}//---------------------------------END OF OPENFILE ##########################################
-//############################################################################################
+  }//iii ----------  all specials -------
+  
+  
+  printf("sorting %s\n", "");
+  fListBox2->SortByName( kTRUE );
+  printf("########## MEM is loaded %s ################end of openfile\n" , ""  );
+  
+}//---------------------------------END OF OPENFILE ############################
+//##############################################################################

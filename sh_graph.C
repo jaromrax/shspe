@@ -248,6 +248,174 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
 
 
 
+
+
+
+
+
+//=================================== VERY DIRTY==COPY OF GRENG
+// but it knows to replace the specials;!!
+int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
+{
+ double x[64000],y[64000],dy[64000],dx[64000],  bu;
+ int i,j;
+ FILE * pFile;
+ int MAXLINES=64000;
+ // char mystring[1500];// one line
+ TString oneline, title=name, token;
+
+ //  printf("gr_engineX: going to open filename=%s\n", name );
+
+  pFile=fopen( name ,"r" ); 
+  if (pFile==NULL) {
+    printf("cannot open %s,STOPping\n", name ); 
+    return 0;
+  } // error
+  //  printf("file opened\n%s","");
+  //.......................readout HERE.......i
+  i=0;
+  int lastlen;// remove spaces
+  while ((i<MAXLINES)&&( feof(pFile)==0) ){
+    //    printf("  reading line %d...\n", i );
+    if ( oneline.Gets (pFile, kTRUE) ){//chop true ... continue if not eof
+      //      printf("     string==%s\n",  oneline.Data() ); 
+
+    //purify .................. start
+    do {
+      lastlen=oneline.Length();
+      if (oneline.Index(" ")==0){oneline=oneline(1,oneline.Length()-1);}
+      lastlen=oneline.Length();
+      if (oneline.Index(" ")==lastlen){oneline=oneline(0,oneline.Length()-1);}
+       oneline.ReplaceAll("\t"," ");
+       oneline.ReplaceAll("  "," ");
+       oneline.ReplaceAll("  "," ");
+       //       printf(" ---    string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
+    }while( lastlen!=oneline.Length());
+    //    printf("     string==<%s> (%d)\n",  oneline.Data(), lastlen ); 
+    //purify .................. stop
+    //printf("S=%s\n", oneline.Data() );
+   //........ parse oneline
+    if (  (oneline.Index("#")==0) || 
+	  (oneline.Index("@")==0) ||
+	  (oneline.Index("END")==0) 
+ ){ // starts with # - COMMENT HERE
+      //       printf( "COMM:%s\n", oneline.Data() );
+      if (title.Length()==0){ title=oneline( 1,oneline.Length()-1  );}
+     //     title=oneline( oneline.Length(),oneline.Length()-1  );
+  }else{// DATA HERE
+      TObjArray *tar; 
+     if (oneline.Length()>1){
+       if (oneline.Index("#")>0){oneline.Remove(oneline.Index("#") );}// #
+       if (oneline.Index("@")>0){oneline.Remove(oneline.Index("@") );}// #
+       if (oneline.Index("END")>0){oneline.Remove(oneline.Index("END") );}// #
+       //       oneline.ReplaceAll(oneline.Index("\t"),1," ");
+       oneline.ReplaceAll("\t"," ");
+      x[i]=0; y[i] =0;dx[i]=0;dy[i]=0; j=0;  //  go through the columns 
+      // printf( "NotCM:%s\n", oneline.Data() );
+
+      /*
+       * r?? contains a column to use for x,dx,y,dy:
+       */
+      tar= oneline.Tokenize(" ");
+      //      printf("entries==%d\n", tar->GetEntries() );
+      while( (j<=rx && rx>=0) || (j<=ry && ry>=0) || (j<=rdy && rdy>=0)|| (j<=rdx && rdx>=0)){  
+	if (j<tar->GetEntries()){
+         token= ((TObjString*)(tar->At(j)))->GetString();
+	 //	 printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
+	 bu= token.Atof(); 
+	 //	 if (i<5){ 	 printf("  token <%s> = %f\n", token.Data(), bu ); }
+         if (rx==j)  { x[i] =bu;}
+         if (ry==j)  { y[i] =bu;}
+         if (rdx==j) { dx[i] =bu;}
+         if (rdy==j) { dy[i] =bu;} 
+	}//j<entries
+         j++;
+      }//small while 
+
+     //tar->Delete();  // abandon tar 
+      i++;// skip to a next datum if point
+     }// if oneline  lenght>1 go thru all
+     //back the loop
+   }//DATA HERE end
+    //     printf("%s","data line ended\n");
+
+
+    }//if oneline.Gets false
+   
+   //........ parse oneline
+  }//while
+  //.......................readout HERE end....i
+  //.......................close, create the TGraphErrors
+  fclose( pFile);
+  // TITLE HERE----------------
+  //  title=name; DONE earlier
+  title.ReplaceAll(".","_"); 
+  title.ReplaceAll(" ","_"); 
+  if (ry>1){title.Append( char(96+ry) ); } // multigraphs from mysql:columns
+  printf("%d elements read. title= /%s/\n", i-1, title.Data() );
+
+  //
+  //
+  //IF ALREADY THE GRAPH EXISTS============+>
+ if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
+   TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
+   printf("  ... same name already exists in specials tidis=%d\n",
+	  oldg->GetXaxis()->GetTimeDisplay() );
+   //   printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
+   int timdis=oldg->GetXaxis()->GetTimeDisplay();
+   int lcol=oldg->GetLineColor();
+   char timc[100]; strcpy(timc,oldg->GetXaxis()->GetTimeFormat() );
+	for (int jj=0;jj<i;jj++){
+	  //I believe that set 'new' point doesnot crash...
+	  oldg->SetPoint(jj,x[jj],y[jj]);
+	  oldg->SetPointError(jj,dx[jj],dy[jj]);
+	}//for all jj
+	//however if jj<graph points, it looks nasty
+	while(i<oldg->GetN() ){
+	  //printf("remove point %d < %d\n", i, oldg->GetN() );
+	  oldg->RemovePoint(oldg->GetN()-1);//last?
+	}
+	//	printf("TIMEDISP %d\n",oldg->GetXaxis()->GetTimeDisplay() );
+	oldg->GetXaxis()->SetTimeDisplay( timdis);
+	oldg->GetXaxis()->SetTimeFormat(timc);
+	//if this is already exists:
+	oldg->SetLineColor( lcol) ;
+
+    return (int64_t)oldg;
+
+ }else{//if not exists in groot specials :
+   TGraphErrors *g=new TGraphErrors(i,x,y,dx,dy);
+   g->SetMarkerStyle(22);
+   g->SetTitle( title.Data()  );
+   g->SetName( title.Data()  ); 
+   gROOT->GetListOfSpecials()->Add( g );
+   printf("added to GetListOfSpecials:   %s \n",  g->GetName()  );
+ return (int64_t)g;
+ }//if exists already in gROOT Specials
+
+// g->Print();// DONT PRINT TABLES
+
+
+
+ //-----------------------------------------------------
+}// end of the new 201004 version of gr_engine
+//=================================== VERY DIRTY==COPY OF GRENG
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //=============================================================
 //            print  Graph, cutg   values
 //=============================================================
@@ -598,67 +766,70 @@ void  gr_stdcalproc(const char *fname){
 
 
 
-/*****************************************************************************
- *  USEFUL FOR JOINING TGRAPHS INTO MULTIGRAPH........................
- *
- */
-//========================================================================
+// /*****************************************************************************
+//  *  USEFUL FOR JOINING TGRAPHS INTO MULTIGRAPH........................
+//  *
+//  */
+// //========================================================================
+// void joingraphs(const char* myname, const char* g1 , int autocolors=1 ){
+
+// TMultiGraph *mg;
+
+//  if (  ( gROOT->GetListOfSpecials()->FindObject(myname) )  ||
+//        ((gPad!=NULL)&&(gPad->FindObject(myname) ))  ){
+//    mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname );
+//    if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname );}
+//    printf("TMultiGraph %s found...\n",myname );
+//  }else{
+//    printf("TMultiGraph %s created\n",myname );
+//   mg=new TMultiGraph();
+//   mg->SetNameTitle(myname,myname);
+//   gROOT->GetListOfSpecials()->Add( mg );
+//  }
+//  TGraphErrors *o;
+//  o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
+//  if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
+// if (o==NULL){
+//   printf("graph %ld NOT found...\n", (int64_t)g1 );
+//  }else{
+
+//   printf("gettin entries %s\n", "");
+//   int ent=0;
+//   if ( mg->GetListOfGraphs()!=NULL){
+//   ent=mg->GetListOfGraphs()->GetEntries();
+//   }
+//   //  ent=1;
+//   printf("gettin entries %d\n", ent);
+
+//   if (autocolors==1){
+//     printf("setting autocolor %d\n",  ent);
+//     o->SetLineColor(ent+1);
+//     o->SetMarkerColor(ent+1);
+//   }else{
+//     printf("NO autocolor (graphs=%d)\n",  ent);
+//   }
+//   printf("Graph %s added\n", o->GetName()  );
+//   mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+//  }//graph found?
+
+//  //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
+//  //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
+
+// }////========== void joingraphs(const char* myname, const char* g1 ){ ================
+
+
+
+
+
+
+
+
+
+
+
 void joingraphs(const char* myname, const char* g1 , int autocolors=1 ){
-
-TMultiGraph *mg;
-
- if (  ( gROOT->GetListOfSpecials()->FindObject(myname) )  ||
-       ((gPad!=NULL)&&(gPad->FindObject(myname) ))  ){
-   mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname );
-   if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname );}
-   printf("TMultiGraph %s found...\n",myname );
- }else{
-   printf("TMultiGraph %s created\n",myname );
-  mg=new TMultiGraph();
-  mg->SetNameTitle(myname,myname);
-  gROOT->GetListOfSpecials()->Add( mg );
- }
- TGraphErrors *o;
- o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
- if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
-if (o==NULL){
-  printf("graph %ld NOT found...\n", (int64_t)g1 );
- }else{
-
-  printf("gettin entries %s\n", "");
-  int ent=0;
-  if ( mg->GetListOfGraphs()!=NULL){
-  ent=mg->GetListOfGraphs()->GetEntries();
-  }
-  //  ent=1;
-  printf("gettin entries %d\n", ent);
-
-  if (autocolors==1){
-    printf("setting autocolor %d\n",  ent);
-    o->SetLineColor(ent+1);
-    o->SetMarkerColor(ent+1);
-  }else{
-    printf("NO autocolor (graphs=%d)\n",  ent);
-  }
-  printf("Graph %s added\n", o->GetName()  );
-  mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
- }//graph found?
-
- //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
- //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
-
-}////========== void joingraphs(const char* myname, const char* g1 ){ ================
-
-
-
-
-
-
-
-
-
-
-
+  joingraphsX(myname, g1 , autocolors );
+}
 
 
 /*****************************************************************************

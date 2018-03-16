@@ -43,9 +43,8 @@ TGraphErrors* gr_fitpol (TGraphErrors *gg, const char *cpol, Float_t x1, Float_t
 
 void  gr_stdcalproc(const char *fname);
 
+// COPY - they are the same now
 void joingraphs(const char* myname, const char* g1 , int autocolors );
-
-// --- 
 void joingraphsX(const char* myname, const char* g1 , int autocolors );
 
   

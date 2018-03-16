@@ -1565,30 +1565,46 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
      if (x1<h->GetXaxis()->GetXmin() ){ x1=h->GetXaxis()->GetXmin(); }
      //     f1=h->GetXaxis()->GetFirst(); l1=h->GetXaxis()->GetLast();
      predbin=h->GetXaxis()->FindBin( x2 ) - h->GetXaxis()->FindBin( x1 );
- }
-   if (ss.CompareTo("Y")==0){
+   }
+   
+
+   // DOWN BUTTON - NNOT FOR TH1F
+   //printf("D...   getting to DOWN BUTTON ... ss==Y\n%s","");
+   if (  (ss.CompareTo("Y")==0)&&(strcmp(h->ClassName(),"TH1F")!=0)  ) {  // DOWN BUTTON
+     //printf("D...   IN  to DOWN BUTTON\n%s","");
      // ox1=x1;ox2=x2;
      x1=h->GetYaxis()->GetBinCenter( h->GetYaxis()->GetFirst() );
      x2=h->GetYaxis()->GetBinCenter( h->GetYaxis()->GetLast() );
-      ox1=x1;ox2=x2;
-      //    nowbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
+     ox1=x1;ox2=x2;
+     //    nowbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
     //debug
     //            printf("\n movexy...Orig: %f  %f       fac=%f   mvzm=%f\n", x1,x2,  factorl, mvzm);
-	    //	    if ((nowbin<4) && (x2-x1>ox2-ox1) ){factorl=factorl*2;}
+     //	    if ((nowbin<4) && (x2-x1>ox2-ox1) ){factorl=factorl*2;}
      dx=(x2-x1)*factorl;   x1=x1+dx; x2=x2+mvzm*dx;
-       if (x2>h->GetYaxis()->GetXmax() ){ x2=h->GetYaxis()->GetXmax(); }
+     if (x2>h->GetYaxis()->GetXmax() ){ x2=h->GetYaxis()->GetXmax(); }
      if (x1<h->GetYaxis()->GetXmin() ){ x1=h->GetYaxis()->GetXmin(); }
      //     f1=h->GetYaxis()->GetFirst(); l1=h->GetYaxis()->GetLast();
      predbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
-   }
+   } //================= Y ==== DOWN BUTTON
+   //printf("D...   OUT  DOWN BUTTON\n%s","");
 
+
+
+   
    //   if (f2-f1<=64 && l2-l1<=64){
    //   printf( "Wange %s :  %f : %f      %d bins\n"  , XY, x1,x2 ,  l1-f1);
    
 
    //if ( (factorl>0.) && (mvzm<0.) && (l1-f1<15)  ){}else{
-   if (predbin<05 &&  (x2-x1 < ox2-ox1) ){}else{ // MUST BE move by 15%
-     h->SetAxisRange(x1,x2, XY);
+   if (predbin<05 &&  (x2-x1 < ox2-ox1) ){
+     //printf("D...  some axis range IF \n%s","");
+   }else{ // MUST BE move by 15%
+     //printf("D...  some axis range ELSE   XY= %s / %s\n", XY, ss.Data() );
+     //    XY musntnot be Y and TH1F
+     if (  (ss.CompareTo("Y")!=0)||(strcmp(h->ClassName(),"TH1F")!=0)  ) {
+       h->SetAxisRange(x1,x2, XY); // 
+     }
+     
      //     finbin=h->GetYaxis()->FindBin( x2 ) - h->GetYaxis()->FindBin( x1 );
      /* if (  (finbin<5) && (finbin<nowbin) ){//BACK
        h->SetAxisRange(ox1,ox2, XY);
@@ -1634,6 +1650,10 @@ void MyMainFrame::SpiderAllTPADs(int &count, int64_t addr[]){
  }// for   ii (prim
 
 }//  SpiderAllTPADs
+
+
+
+
 
 
 
