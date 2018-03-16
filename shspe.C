@@ -5,6 +5,9 @@
 //--    logy
 //      gcut - crashes...
 //
+
+#include "sh_ver.h"    // version number header created by cmake 
+
 #include "TMapFile.h"
 
 #include "kibbler_fit.C"
@@ -970,8 +973,8 @@ void  MyMainFrame::FillMainMenu(){
 
    sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
 
-   sprintf(tmp, "DivCanvas,RangeAll");fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
-   sprintf(tmp, "Unzoom  " );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   sprintf(tmp, "DivCanvas,SetRangeAll");fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "Unzoom/  " );         fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
    //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
@@ -1086,7 +1089,14 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 
    ////  (fListBoxOF  nema expandX
     hBframe->AddFrame(fListBox2 ,  new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+
     hBframe->AddFrame(fListBoxOF,  new TGLayoutHints(kLHintsRight                 | kLHintsExpandY, 0, 0, 0, 0));
+
+
+
+
+   
+    
     //    hBframe->AddFrame(fListBox2 ,  new TGLayoutHints(kLHintsLeft | kLHintsExpandX , 0, 0, 0, 0));
     //    hBframe->AddFrame(fListBoxOF,  new TGLayoutHints(kLHintsRight                 , 0, 0, 0, 0));
 
@@ -1101,6 +1111,18 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
                                             5, 5, 5, 5));
     // |  kLHintsExpandY
 
+    
+    // ORIGINAL HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS
+   TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);  //textentry
+   fEntry = new TGTextEntry( hframe, ""  ); //default text...
+   hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
+   fEntry->SetToolTipText("Options for MENU items. Each item (almost) has an option");
+   //---- finalize HFRAME
+   AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+
+
+   
+    
     fListBoxOF->Connect("Selected(Int_t, Int_t)", "MyMainFrame", this, "ClickResponse(Int_t, Int_t)");
     //   AddFrame(fListBoxOF, new TGLayoutHints(kLHintsTop | kLHintsLeft |
     //                                        kLHintsExpandX | kLHintsExpandY, 
@@ -1123,7 +1145,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 
    //  fListBox2->RemoveEntries( 0, fListBox2->GetNumberOfEntries-1 );
 
-      fListBox2->AddEntry("***Open File***", 1);
+      fListBox2->AddEntry("***OPEN File***", 1);
       //     for (int  ii=2;ii<=19;ii++){ sprintf(tmp, "%d", ii  ); fListBox2->AddEntry(tmp, ii); }
       nfileentr=0; // zero histos in file
 
@@ -1152,16 +1174,9 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 
                               
 
-
-   TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
-
-   //textentry
-   fEntry = new TGTextEntry( hframe, ""  );
-   hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
-
-   //---- finalize HFRAME
-AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+      // ORIGINAL HORI FRAME ====================
  
+   
 //========== new hframe_a   .... center?
    TGHorizontalFrame *hframe_a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
 
@@ -1379,33 +1394,18 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
    Double_t py[5] = {.1,.1,.3,.2,.5};
    TPolyLine *pline = new TPolyLine(5,px,py);
    //##########################
-   if (ROOT_VERSION_CODE==ROOT_VERSION(6,6,6) ){
-     TText *t=new TText(0.02,0.95, "you compiled 6.06.06");
-     t->SetTextSize(0.04);
-     t->Draw();
-   }
-   if (ROOT_VERSION_CODE==ROOT_VERSION(6,8,6) ){
-     TText *t=new TText(0.02,0.95, "you compiled 6.08.06");
-     t->SetTextSize(0.04);
-     t->Draw();
-   }
-   if (ROOT_VERSION_CODE==ROOT_VERSION(6,9,2) ){
+   TText *t6=new TText(0.02,0.95, "compile time info:");t6->SetTextSize(0.06);t6->Draw();
+   TText *t5=new TText(0.02,0.85, ver_issue);t5->SetTextSize(0.04);t5->Draw();
+   TText *t2=new TText(0.02,0.80, ver_gittag);t2->SetTextSize(0.04);t2->Draw();
+   TText *t3=new TText(0.02,0.75, ver_root);t3->SetTextSize(0.04);t3->Draw();
+   TText *t4=new TText(0.02,0.70, ver_compdate);t4->SetTextSize(0.04);t4->Draw();
+   TText *t7=new TText(0.02,0.65, "compile with:  cmake --build .");t7->SetTextSize(0.03);t7->Draw();
+
+   /*   if (ROOT_VERSION_CODE==ROOT_VERSION(6,9,2) ){
      TText *t=new TText(0.02,0.95, "you compiled 6.09.02");
      t->SetTextSize(0.04);
      t->Draw();
-   }
-     TText *t1=new TText(0.02,0.90, "under");t1->SetTextSize(0.03);
-     t1->Draw();
-
-     ifstream ifile("/etc/issue",ifstream::in);
-     string line;
-     getline(ifile,line ); //to skip the first line;
-     //     while( getline(ifile,line.str()) ) {
-     cout<<line;
-     TText *tt=new TText(0.02,0.85,  line.c_str()  );tt->SetTextSize(0.03);
-     tt->Draw();
-     //     }
-     ifile.close();
+     }*/
    
 
      double posi=0.85;

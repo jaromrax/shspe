@@ -1,5 +1,19 @@
 #!/bin/bash
+#
+#  bash script to compile shspe with cmake
+# ---------------------------------------------
+#
+#  Typical calls are 2   and are like this:
+#
+# -I/home/ojr/root/include -o CMakeFiles/shspe.dir/shspe.C.o -c /home/ojr/02_GIT/ALLMYGITS/ALL/shspe/shspe.C
+#
+# CMakeFiles/shspe.dir/shspe.C.o -o shspe -rdynamic
 
+
+
+
+##############################
+#   $MACROC - contains compilation  function
 
 read -r -d '' MACROC << EOF
 void tmp(){
@@ -7,6 +21,8 @@ void tmp(){
 }
 EOF
 
+##################################
+#   I COMPILE BY LOADING to root. quiet. batch. 
 function COMPILE {
     echo "$ROOTSYS/bin/root -n -b -q  $1"
     $ROOTSYS/bin/root -n -b -q  $1  >/dev/null
@@ -15,19 +31,31 @@ function COMPILE {
 
 
 #####################################
+#   parameter parsing:
+#         #1  target (compile)
+#         #5  C filename
+#
+#
 TARGET=""  # compile/link
 compfile=""
+echo ======================= arguments obtained =============
+echo $@
+echo "----------------------- arguments obtained -------------"
+sleep 2
 echo "$1" | grep "\-I" > /dev/null
-if [ "$?" = "0" ]; then
+if [ "$?" = "0" ]; then   ### 1st CALL
     TARGET=compile
     compfile=`basename "$5"`
     echo $compfile is C file to compile
 fi
 echo "$1" | grep "CMakeFiles/" | grep ".C.o" >/dev/null
-if [ "$?" = "0" ]; then
+if [ "$?" = "0" ]; then  ### 2nd CALL
    TARGET=link
 fi
+
+
 #####################################
+#    print parameters - for fun....
 i=0
 while [ "$1" != "" ]; do
   echo "parameter $i:  $1"
@@ -38,6 +66,9 @@ done
 
 
 
+
+
+#### #  1st call of cmake --build .     ....  load to root.exe
 if [ "$TARGET" = "compile" ]; then
     echo ... INCLUDE ... compiling
     File=`mktemp`
@@ -50,10 +81,12 @@ if [ "$TARGET" = "compile" ]; then
 fi 
 
 
+###  # 2nd call of cmake --build .      ... copy to somewhere
 if [ "$TARGET" = "link" ]; then
     echo ... CMake ... linking_________________________________
     ls -l *.so
     echo ______________________________________________________
+    echo " "
     paths=`cat ~/.rootrc | grep -v -e "^\#" | grep Unix | grep DynamicPath | awk '{print $2}'`
     echo POSSIBLE DESTINATION: $paths
     CPIED=0
