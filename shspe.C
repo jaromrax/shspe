@@ -6,8 +6,13 @@
 //      gcut - crashes...
 //
 
+//-------- new rewrite - with sh_....
 #include "sh_ver.h"    // version number header created by cmake 
+#include "sh_menu.h"
+#include "sh_cuts.C"
+#include "sh_saveobj.C"
 
+//------------- all previous ......
 #include "TMapFile.h"
 
 #include "kibbler_fit.C"
@@ -55,107 +60,107 @@ int CURRENT_SLOT=1;  //   get_free_slot ....
 //================================================
 //=============================================================
 
-const char* CUTFILE_GLOBAL="cuts.root";
+// const char* CUTFILE_GLOBAL="cuts.root";
 
-/*
- *      save the defined cut into    cuts.root
- */
-void cutsave(TCutG *cut, const char* name){
-  TDirectory *dir=gDirectory;
-  TCutG *newcut=(TCutG*)cut->Clone( name ); // better to clone before (other dir...)
-  TFile *nf=new TFile( CUTFILE_GLOBAL , "UPDATE");
-  newcut->Write();                         
-  nf->ls();
-  nf->Close();
-  dir->cd();
-  //  dir->ls();
-}//cutsave--------------
-
-
-
-
-
-
-void cutload(){
-  gROOT->GetListOfSpecials()->ls();// ORIGINAL
-  TDirectory *dir=gDirectory;
-  TFile *nf=new TFile( CUTFILE_GLOBAL, "READ"); // WAS UPDATE, touched cuts.root..
-  // UNUSED int n=gDirectory->GetNkeys();
-  if (gDirectory->GetListOfKeys()){
-      TObject *o;
-      int max=gDirectory->GetList()->GetEntries();
-      max=gDirectory->GetListOfKeys()->GetEntries();
-      for (int iii=0 ; iii<max ; iii++ ){
-	TString sa1=gDirectory->GetListOfKeys()->At(iii)->GetName();
-	  gDirectory->GetObject( sa1.Data() , o );
-	  TString sa2=o->ClassName();
-	  // important check - else it makes double entries...
-	  if ((sa2.Index("TCutG")==0)&&(gROOT->GetListOfSpecials()->FindObject(o)==NULL)) {
-	    //	  if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	    //	    gDirectory->Add( (TH1F*)o );
-	    gROOT->GetListOfSpecials()->Add( (TCutG*)o );
-	  }// TCutG
-      }
-  }//gDirectory->GetListOfKeys()
-
-  nf->ls();
-  nf->Close();
-  dir->cd();
-  gROOT->GetListOfSpecials()->ls();
-}//cutload--------------
-/*  remove   rename.............
- * gDirectory->rmdir("cutt7d") !!!
- *  cutt7p->Clone("cutt7pV");cutt7pV->Write()
- */
+// /*
+//  *      save the defined cut into    cuts.root
+//  */
+// void cutsave(TCutG *cut, const char* name){
+//   TDirectory *dir=gDirectory;
+//   TCutG *newcut=(TCutG*)cut->Clone( name ); // better to clone before (other dir...)
+//   TFile *nf=new TFile( CUTFILE_GLOBAL , "UPDATE");
+//   newcut->Write();                         
+//   nf->ls();
+//   nf->Close();
+//   dir->cd();
+//   //  dir->ls();
+// }//cutsave--------------
 
 
 
 
 
 
-void cutrm(const char* name, int version=0){
-  if (version==0){
-    printf("make a backup and use the version number  ;1 ;2%s\n","");
-    return;
-  }
-  TDirectory *dir=gDirectory;
-    TFile *nf=new TFile(CUTFILE_GLOBAL, "UPDATE");
-    char name2[100];
-    sprintf( name2 , "%s;%d", name, version );
-    printf("deleting  %s\n", name2  );
-    gDirectory->rmdir( name2 );
-    nf->ls();
-    nf->Close();
-  dir->cd();
-}
+// void cutload(){
+//   gROOT->GetListOfSpecials()->ls();// ORIGINAL
+//   TDirectory *dir=gDirectory;
+//   TFile *nf=new TFile( CUTFILE_GLOBAL, "READ"); // WAS UPDATE, touched cuts.root..
+//   // UNUSED int n=gDirectory->GetNkeys();
+//   if (gDirectory->GetListOfKeys()){
+//       TObject *o;
+//       int max=gDirectory->GetList()->GetEntries();
+//       max=gDirectory->GetListOfKeys()->GetEntries();
+//       for (int iii=0 ; iii<max ; iii++ ){
+// 	TString sa1=gDirectory->GetListOfKeys()->At(iii)->GetName();
+// 	  gDirectory->GetObject( sa1.Data() , o );
+// 	  TString sa2=o->ClassName();
+// 	  // important check - else it makes double entries...
+// 	  if ((sa2.Index("TCutG")==0)&&(gROOT->GetListOfSpecials()->FindObject(o)==NULL)) {
+// 	    //	  if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
+// 	    //	    gDirectory->Add( (TH1F*)o );
+// 	    gROOT->GetListOfSpecials()->Add( (TCutG*)o );
+// 	  }// TCutG
+//       }
+//   }//gDirectory->GetListOfKeys()
+
+//   nf->ls();
+//   nf->Close();
+//   dir->cd();
+//   gROOT->GetListOfSpecials()->ls();
+// }//cutload--------------
+// /*  remove   rename.............
+//  * gDirectory->rmdir("cutt7d") !!!
+//  *  cutt7p->Clone("cutt7pV");cutt7pV->Write()
+//  */
 
 
-void cutcp(const char* name, const char* newname){
-  TDirectory *dir=gDirectory;
-
-  TFile *nf=new TFile(CUTFILE_GLOBAL, "UPDATE");
-  TObject *o;
-  gDirectory->GetObject( name , o );
-  TCutG* cut=(TCutG*)o;
-  TCutG* newcut=(TCutG*)cut->Clone( newname );
-  newcut->Write();
-    //  newcut->Print();  newcut->Draw("pawl");
-  nf->ls();
-  nf->Close();
-  dir->cd();
-
-}
 
 
-void cutls(){
-  TDirectory *dir=gDirectory;
 
-  TFile *nf=new TFile(CUTFILE_GLOBAL, "");
-  nf->ls();
-  nf->Close();
-  dir->cd();
 
-}
+// void cutrm(const char* name, int version=0){
+//   if (version==0){
+//     printf("make a backup and use the version number  ;1 ;2%s\n","");
+//     return;
+//   }
+//   TDirectory *dir=gDirectory;
+//     TFile *nf=new TFile(CUTFILE_GLOBAL, "UPDATE");
+//     char name2[100];
+//     sprintf( name2 , "%s;%d", name, version );
+//     printf("deleting  %s\n", name2  );
+//     gDirectory->rmdir( name2 );
+//     nf->ls();
+//     nf->Close();
+//   dir->cd();
+// }
+
+
+// void cutcp(const char* name, const char* newname){
+//   TDirectory *dir=gDirectory;
+
+//   TFile *nf=new TFile(CUTFILE_GLOBAL, "UPDATE");
+//   TObject *o;
+//   gDirectory->GetObject( name , o );
+//   TCutG* cut=(TCutG*)o;
+//   TCutG* newcut=(TCutG*)cut->Clone( newname );
+//   newcut->Write();
+//     //  newcut->Print();  newcut->Draw("pawl");
+//   nf->ls();
+//   nf->Close();
+//   dir->cd();
+
+// }
+
+
+// void cutls(){
+//   TDirectory *dir=gDirectory;
+
+//   TFile *nf=new TFile(CUTFILE_GLOBAL, "");
+//   nf->ls();
+//   nf->Close();
+//   dir->cd();
+
+// }
 
 
 
@@ -165,80 +170,79 @@ void cutls(){
 //               save obj to file 
 //==============================================================
 
+// void saveobj2asc(const char *filenam,  TH1* xobj){
+//   if ( strlen(filenam)==0){return;}
+//   FILE * pFile;
+//   int c,i,max;
+//   TString newfilename = filenam;
+//   newfilename.ReplaceAll(".txt","");
+//   newfilename.Append("_");
+//   newfilename.Append(xobj->GetName() );
+//   newfilename.Append(".txt");
+//   pFile=fopen( newfilename.Data()  ,"w" );
+//   if (pFile!=NULL) {
+//     max=xobj->GetNbinsX();
+//     for (i=0;i<max;i++){
+//       c=xobj->GetBinContent(i);
+//       fprintf(pFile,"%d %d\n",i,c);
+//     } //>alfa_run50_de6.txt
 
-void saveobj2asc(const char *filenam,  TH1* xobj){
-  if ( strlen(filenam)==0){return;}
-  FILE * pFile;
-  int c,i,max;
-  TString newfilename = filenam;
-  newfilename.ReplaceAll(".txt","");
-  newfilename.Append("_");
-  newfilename.Append(xobj->GetName() );
-  newfilename.Append(".txt");
-  pFile=fopen( newfilename.Data()  ,"w" );
-  if (pFile!=NULL) {
-    max=xobj->GetNbinsX();
-    for (i=0;i<max;i++){
-      c=xobj->GetBinContent(i);
-      fprintf(pFile,"%d %d\n",i,c);
-    } //>alfa_run50_de6.txt
-
-    fclose(pFile);
-    printf("file /%s/ saved\n", filenam );
-  }
+//     fclose(pFile);
+//     printf("file /%s/ saved\n", filenam );
+//   }
   
-}
+// }
 
-void saveobj2asc1col(const char *filenam,  TH1* xobj){
-  if ( strlen(filenam)==0){return;}
+// void saveobj2asc1col(const char *filenam,  TH1* xobj){
+//   if ( strlen(filenam)==0){return;}
 
-  FILE * pFile;
-  int c,i,max;
-  TString newfilename = filenam;
-  newfilename.ReplaceAll(".asc","");
-  newfilename.Append("_");
-  newfilename.Append(xobj->GetName() );
-  newfilename.Append(".asc");
-  pFile=fopen( newfilename.Data()  ,"w" );
-  if (pFile!=NULL) {
-    max=xobj->GetNbinsX();
-    for (i=0;i<max;i++){
-      c=xobj->GetBinContent(i);
-      fprintf(pFile,"%d\n",c);
-    } //>alfa_run50_de6.txt
+//   FILE * pFile;
+//   int c,i,max;
+//   TString newfilename = filenam;
+//   newfilename.ReplaceAll(".asc","");
+//   newfilename.Append("_");
+//   newfilename.Append(xobj->GetName() );
+//   newfilename.Append(".asc");
+//   pFile=fopen( newfilename.Data()  ,"w" );
+//   if (pFile!=NULL) {
+//     max=xobj->GetNbinsX();
+//     for (i=0;i<max;i++){
+//       c=xobj->GetBinContent(i);
+//       fprintf(pFile,"%d\n",c);
+//     } //>alfa_run50_de6.txt
 
-    fclose(pFile);
-    printf("file /%s/ saved\n", filenam );
-  }
+//     fclose(pFile);
+//     printf("file /%s/ saved\n", filenam );
+//   }
   
-}
+// }
 
-void saveobj2file(const char *filenam,  TH1* xobj, int bkup=0){
-  //  printf("obj 2 file ###########\n",1);
-  TDirectory *oldir=gDirectory;
-  TString s,nn;
-  s.Append(filenam);
-  nn.Append( xobj->GetName() );
-  if( (bkup==1)&& (nn.Index("_")!=nn.Length()-1)){  nn.Append( "_" ); }
-  printf("obj 2 file:   file=%s  ,  newname=%s\n", s.Data() , nn.Data() );
-  //  printf("obj 2 file:   filenam=%s,   s=%s\n", filenam, s.Data());
-  TH1 *htm=(TH1*)xobj->Clone( nn.Data() );
-  htm->SetDirectory(0);//rm from the directory.see http://root.cern.ch/root/html/TH1.html
-  if (s.Length()>0){
-  TFile *f=new TFile(s.Data(),"update");
-  if (f==NULL){
-    printf("manualy:\n TFile *fxxx=new TFile( \"%s\", \"recreate\") \n", filenam);
-    printf("      ->Write() \n");
-    return;
-  }
-  htm->Write();
-  printf("   %s ...written\n", htm->GetName() );
-  //  f->ls();
-  f->Close();
-  oldir->cd();
-  return;
-  }
-}// saveobj2file
+// void saveobj2file(const char *filenam,  TH1* xobj, int bkup=0){
+//   //  printf("obj 2 file ###########\n",1);
+//   TDirectory *oldir=gDirectory;
+//   TString s,nn;
+//   s.Append(filenam);
+//   nn.Append( xobj->GetName() );
+//   if( (bkup==1)&& (nn.Index("_")!=nn.Length()-1)){  nn.Append( "_" ); }
+//   printf("obj 2 file:   file=%s  ,  newname=%s\n", s.Data() , nn.Data() );
+//   //  printf("obj 2 file:   filenam=%s,   s=%s\n", filenam, s.Data());
+//   TH1 *htm=(TH1*)xobj->Clone( nn.Data() );
+//   htm->SetDirectory(0);//rm from the directory.see http://root.cern.ch/root/html/TH1.html
+//   if (s.Length()>0){
+//   TFile *f=new TFile(s.Data(),"update");
+//   if (f==NULL){
+//     printf("manualy:\n TFile *fxxx=new TFile( \"%s\", \"recreate\") \n", filenam);
+//     printf("      ->Write() \n");
+//     return;
+//   }
+//   htm->Write();
+//   printf("   %s ...written\n", htm->GetName() );
+//   //  f->ls();
+//   f->Close();
+//   oldir->cd();
+//   return;
+//   }
+// }// saveobj2file
 
 
 
