@@ -563,13 +563,13 @@ void  MyMainFrame::FillMainMenu(){
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    sprintf(tmp, "----------" );     fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
-   sprintf(tmp, "LoadCanvas  " );    fListBox->AddEntry(tmp,   SELDivide    -SELGrid+2  );
+   sprintf(tmp, "LoadCanvas  " );    fListBox->AddEntry(tmp,   SELLoadCanvas    -SELGrid+2  );
    sprintf(tmp, "SaveCanvas  " );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
    sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
    //MenuItemDivCanvas
-   sprintf(tmp, "DivCanvas,SetRangeAll");fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
-   sprintf(tmp, "Unzoom/  " );           fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   sprintf(tmp, "DivCanvas");                fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "Unzoom/Rng x1-x2" );   fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
    //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
@@ -3168,7 +3168,11 @@ void BlinkCanvasMessage( const char* message ){
 // loadcanvas  -   seldivide
 //                   divide is deprecated, loadcanvas remains
 //
-void MyMainFrame::fSELDivide(int id,TString *fentry){ 
+//void MyMainFrame::fSELDivide(int id,TString *fentry){
+//
+//# ===============================  MENU ITEM
+//
+void MyMainFrame::fMenuItemLoadcanvas(int id,TString *fentry){ 
    printf("item %2d:%s=fentry  - divide ... deprecated, loadcanvas NOW\n",id,fentry->Data());
    //   char sr[100];sprintf( sr, "%s", fEntry->GetText() );
    // no    TString sr=fEntry->GetText();  
@@ -3321,7 +3325,11 @@ int get_free_slot(const char* name){
 
 
 
-void MyMainFrame::fSELSaveCanvas(int id,TString *fentry){ 
+//void MyMainFrame::fSELSaveCanvas(int id,TString *fentry){
+//
+// =================================== MENU ITEM
+//
+void MyMainFrame::fMenuItemSavecanvas(int id,TString *fentry){ 
   printf("item %2d:%s - savecanvas\n",id,fentry->Data());  
   //  here I check the filename.................................................
   int i;
@@ -3823,20 +3831,14 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected== SELDateTime   ){ fSELDateTime(flistbox_selected,fentry);  }  
   if (flistbox_selected== SELLogy       ){ fSELLogy(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELLogz       ){ fSELLogz(flistbox_selected,fentry);  } 
-  if (flistbox_selected== SELDivide     ){ fSELDivide(flistbox_selected,fentry);  }
+  if (flistbox_selected== SELLoadCanvas ){ fMenuItemLoadcanvas(flistbox_selected,fentry);  }
   if (flistbox_selected== SELClear      ){ fSELClear(flistbox_selected,fentry);  }
   if (flistbox_selected== SELRefresh    ){ fSELRefresh(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELUnzoom     ){
-    //fSELUnzoom(flistbox_selected,fentry);
-    fMenuItemUnzoom(flistbox_selected,fentry);
-  }
+  if (flistbox_selected== SELUnzoom     ){ fMenuItemUnzoom(flistbox_selected,fentry);  }
   if (flistbox_selected==SELSaveSpectra ){ fSELSaveSpectra(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELSaveCanvas ){ fSELSaveCanvas(flistbox_selected,fentry);  } 
+  if (flistbox_selected== SELSaveCanvas ){ fMenuItemSavecanvas(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELClearAll   ){ fSELClearAll(flistbox_selected,fentry);  }
-  //  if (flistbox_selected== SELUnzoomAll  ){ fSELUnzoomAll(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELDivCanv  ){
-    // fSELDivCanv(flistbox_selected,fentry);
-    fMenuItemDivCanvas( flistbox_selected, fentry );
+  if (flistbox_selected== SELDivCanv    ){ fMenuItemDivCanvas( flistbox_selected, fentry );
   }
   if (flistbox_selected== SELClone2Rint2     ){ fSELClone2Rint(flistbox_selected,fentry);  }       
 

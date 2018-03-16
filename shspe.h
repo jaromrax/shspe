@@ -185,7 +185,7 @@ int
   SELDateTime=   19,
   SELLogy=       20,
   SELLogz=       21,
-  SELDivide=     22,
+  SELLoadCanvas= 22,
   SELbar4=       23,
   SELClear=      24,
   SELRefresh=    25,
@@ -335,8 +335,9 @@ public:
 
   // GUI FUNCTIONS 
 
-  void fSELDivide(int id,TString *fentry);  
-  void fSELSaveCanvas(int id,TString *fentry);
+  //  void fSELDivide(int id,TString *fentry);
+  void fMenuItemLoadcanvas(int id,TString *fentry);  
+  void fMenuItemSavecanvas(int id,TString *fentry);
 
 
   void fSELGrid(int id,TString *fentry);
