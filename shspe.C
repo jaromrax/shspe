@@ -323,6 +323,8 @@ int  Desktop_setup_savecanvas(const char *filenam){
 
 
 
+
+
 //---------------------- BEGIN OF MOUSE CONNECT- ----------- MARKKS???
 
 
@@ -344,102 +346,115 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
     *  2,12,62,12 == doubleclick middle
     *  3,63,13 == doubleclick right
     */
-   if ( (event!=51)&&(event!=52)&&(event!=53)&&(event!=21)   ){  //  21=pull
+  if ( (event!=51)&&(event!=52)&&(event!=53)&&(event!=21)   ){  //  21=pull
      //          printf("Canvas %s: event=%d, x=%d, y=%d, selected=%s\n", 
      //		 c->GetName(),  event, x, y, selected->IsA()->GetName() );
-   TString ss= selected->IsA()->GetName();
+    TString ss= selected->IsA()->GetName();
+    if (event==11){
+      //  printf("left click (show energy)%s\n", "");
+    }// event 11
 
+    // When you click on a TGraphError MARKS point:
+    if (ss.CompareTo("TGraphErrors")==0){//======ONLY ON TGraphErrors ===
+      TGraphErrors *g=(TGraphErrors*)selected;//  g->Print();
+      if (strcmp(g->GetName(),"MARKS")==0){//=====ONLY MARKS =====
 
-   if (event==11){
-     //  printf("left click (show energy)%s\n", "");
-   }// event 11
+	// 2: sum peak
+	// 4: fit background around peak
+	if ((event==11)&&( (g->GetN()==2) || (g->GetN()==4) )  ){  // if LEFTCLICK - SUM DATA = TODO
+	  printf("SUMMING THE REGION OF MARKS \n");
+	  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
+	  RecoverTH1fromGPAD( count, addr ,"TH");
+	  histo=(TH1*)addr[0];
+	  TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+	  if ((g!=NULL)&&(g->GetN()>=2)){ //======== fit BG ==== TODO
+	    printf(" bg fit around a peak.....%s" , "\n" );
+	  }
+	  if ((g!=NULL)&&(g->GetN()==2)){ //======== say bg and histo SUM
+	    double xlow=g->GetX()[0]; double xhi=g->GetX()[1];
+	    double ylow=g->GetY()[0]; double yhi=g->GetY()[1];
+	    if (xlow>xhi){ double aa=xlow; xlow=xhi;xhi=aa;}
+	    double bg=(xhi-xlow)*(ylow+yhi)/2.0;
+	    double inte=histo->Integral( xlow, xhi );
+	    double net=inte-bg;
+	    printf("  %s(%.3f, %.3f)  SUM==%10.3f   BG==%10.3f   NET==%10.3f\n",
+		   histo->GetName(),xlow,xhi,inte , bg, net);
+	  }
+	  //g->Print();
+	}//11---------LEFT CLICK 
 
-   if (ss.CompareTo("TGraphErrors")==0){//==============ONLY ON TGraph  MARKS=============
-
-     TGraphErrors *g=(TGraphErrors*)selected;//  g->Print();
-     if (strcmp(g->GetName(),"MARKS")==0){//=====ONLY MARKS =======================
-
-
-     if ((event==11)&&(g->GetN()==2)){  // LEFTCLICK - SUM DATA
-       printf("SUMMING THE REGION OF MARKS \n");
-       TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-       g->Print();
 	
-     }//11---------LEFT CLICK 
+	if (event==12){  // middle click => remove the point  MIDDLE CLICK 
+	  Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
+	  Double_t yp  = gPad->PadtoY(gPad->AbsPixeltoY(y));
+	  int npoints=g->GetN();  int closest=0; 
+	  double clo=sqrt( pow(xp-g->GetX()[0],2)+pow(yp-g->GetY()[0],2) );
+	  double clomax=clo; int i;
+	  for  (i=0;i<npoints;i++){
+	    clo=sqrt( pow(xp-g->GetX()[i],2)+pow(yp-g->GetY()[i],2) );
+	    if (clo<clomax) { clomax=clo; closest=i;}
+	  }
+	  printf("removing point #%d  near: %f : %f\n", closest, xp,yp );
+	  //       if (closest==0){ g-}
+	  if (g->GetN()>1){ 
+	    g->RemovePoint( closest ); 
+	    g->Sort(); // WE MUST SORT HERE but not when 2D!!
+	  }else{ 
+	    g->Delete();
+	  }
+	  RefreshAll();
+	}//12----------MIDDLECLICK
 
+	
+	//----- no tgraph can be after.....
+      }//it is MARKS   tgrapherrors
+    }//it is TGraphErrors--------------===============================================
 
-
-     if (event==12){  // middle click => remove the point    (if TGraph) ******  MIDDLE CLICK REMOVE
-       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
-       Double_t yp  = gPad->PadtoY(gPad->AbsPixeltoY(y));
-       int npoints=g->GetN();  int closest=0; 
-       double clo=sqrt( pow(xp-g->GetX()[0],2)+pow(yp-g->GetY()[0],2) );
-       double clomax=clo; int i;
-       for  (i=0;i<npoints;i++){
-	 clo=sqrt( pow(xp-g->GetX()[i],2)+pow(yp-g->GetY()[i],2) );
-	 if (clo<clomax) { clomax=clo; closest=i;}
-       }
-       printf("removing point #%d  near: %f : %f\n", closest, xp,yp );
-       //       if (closest==0){ g-}
-       if (g->GetN()>1){ 
-	 g->RemovePoint( closest ); 
-	 g->Sort(); // WE MUST SORT HERE but not when 2D!!
-       }else{ 
-	 g->Delete();
-       }
-       
-       RefreshAll();
-     }//12----------MIDDLECLICK
-
-     //----- no tgraph can be after.....
-     }//it is MARKS   tgraph
-   }//it is TGraph--------------===============================================
-
-   else if(gPad->FindObject("MARKS")!=NULL ){   // *******************************  MIDDLE CLICK INSERT
-   /*
-    *   IF NOT on TGraph... but MARKS still exist
-    */  // normaly  11
-     if ((event==12)&&(  
-        (strcmp(selected->IsA()->GetName(),"TFrame")==0 )||
-        (strcmp(selected->IsA()->GetName(),"TH1F")==0 )||
-        (strcmp(selected->IsA()->GetName(),"TH1D")==0 )||
-        (strcmp(selected->IsA()->GetName(),"TH2F")==0 )
-	 )
-	 ){  // LEFT CLICK - SUM DATA
-       TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-       if (  gROOT->GetListOfSpecials()->FindObject("MARKS")==NULL){
-	 gROOT->GetListOfSpecials()->Add( g);
-       }
-       printf("ADDING TO MARKS, now GetN() will = %d \n",
-          g->GetN()+1 );
+    // NOT TGraphErrors ==>  Must Want to create (new/next) MARKS...
+    else if(gPad->FindObject("MARKS")!=NULL ){   // 
+      /*
+       *   IF NOT on TGraph... but MARKS still exist
+       */  // Middle12 + goodOBJECT
+      if ((event==12)&&(  //*******************  MIDDLE CLICK INSERT
+			(strcmp(selected->IsA()->GetName(),"TFrame")==0 )||
+			(strcmp(selected->IsA()->GetName(),"TH1F")==0 )||
+			(strcmp(selected->IsA()->GetName(),"TH1D")==0 )||
+			(strcmp(selected->IsA()->GetName(),"TH2F")==0 )
+			  )
+	  ){  // LEFT CLICK - SUM DATA
+	TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+	if (  gROOT->GetListOfSpecials()->FindObject("MARKS")==NULL){
+	  gROOT->GetListOfSpecials()->Add( g);
+	}// find MARKS==NULL in GetLiOSpecial  => get it to GlisOSpecial
+	printf("ADDING TO MARKS, GetN() will == %d \n", g->GetN()+1 );
        //       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
        //       Double_t yp  = gPad->PadtoY(gPad->AbsPixeltoY(y));
        //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma
        /*
-       TString *fentry=new TString( fEntry->GetText() );  // DEPRECIATED:---------
-       if ( fentry->CompareTo("")!=0 ){ 
+	 TString *fentry=new TString( fEntry->GetText() );  // DEPRECIATED:---------
+	 if ( fentry->CompareTo("")!=0 ){ 
 	 if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
-	   defaultsigma=atoi( fentry->Data() );
+	 defaultsigma=atoi( fentry->Data() );
 	 }// is a number
-       }//fentry  exists---------------possibility to change defaultsigma
+	 }//fentry  exists---------------possibility to change defaultsigma
        */
-       TString *fentry=new TString( fEntrySIG->GetText() );  // DEPRECIATED:---------
-       if ( fentry->CompareTo("")!=0 ){ 
-	 if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
-	   defaultsigma=atoi( fentry->Data() );
-	 }// is a number
-       }//fentry  exists---------------possibility to change defaultsigma
+	TString *fentry=new TString( fEntrySIG->GetText() );  // DEPRECIATED:---------
+	if ( fentry->CompareTo("")!=0 ){ 
+	  if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
+	    defaultsigma=atoi( fentry->Data() );
+	  }// is a number
+	}//fentry  exists---------------possibility to change defaultsigma
+	
+	//g->Print();
+	g->InsertPoint();
+	//g->Print();
+	g->GetEX()[ g->GetN()-1 ] = defaultsigma;
+	g->GetEY()[ g->GetN()-1 ] = 0.0;
+	g->Draw("PL");
+	//       g->Sort(&TGraph::CompareRadius); // Sort will be extra
+	//  g->Sort();
 
-       //g->Print();
-       g->InsertPoint();
-       //g->Print();
-       g->GetEX()[ g->GetN()-1 ] = defaultsigma;
-       g->GetEY()[ g->GetN()-1 ] = 0.0;
-       g->Draw("PL");
-       //       g->Sort(&TGraph::CompareRadius); // Sort will be extra
-       //  g->Sort();
-
-       //=================listpoints
+       //=================listpoints === =PRINTOUT==== 
        for (int i=0; i<g->GetN(); i++){
 	 printf("%2d   %7.3f  %7.3f\n",
 		i,
@@ -447,51 +462,53 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 		g->GetY()[i]
 		);
        }
-       if (g->GetN()==2){
-	  printf("&& (sum>%7.3f) && (sum<%7.3f)    %7.3f  %7.3f \n",
+       if (g->GetN()==2){   //       === =PRINTOUT====
+	 double lowy,hiy;
+	 if (g->GetY()[0]<g->GetY()[1]){ lowy=g->GetY()[0]; hiy=g->GetY()[1];}else{
+	   lowy=g->GetY()[1]; hiy=g->GetY()[0];
+	 }
+	  printf("&& (x>%10.3f) && (x<%10.3f) \n                  && (y>%10.3f) && (y<%10.3f)  \n",
 		 g->GetX()[0],g->GetX()[1],
-		 g->GetY()[0],g->GetY()[1]
-		);
+		 lowy,hiy  );
        }
        //=====================list
        RefreshAll();
-
-     }//11---------LEFT CLICK 
-   }//ELIF -  NOT TGRAPH and    "MARKS on gPad exists"
-   else if(gPad->FindObject("MARKS")==NULL){ // **************************** MIDDLE CLICK STARTUP
-      if ((event==12)&&(
+       
+      }//11---------LEFT CLICK 
+    }//ELIF -  NOT TGRAPH and    "MARKS on gPad exists"
+    else if(gPad->FindObject("MARKS")==NULL){ // NO MARKS ON gPad=======
+      if ((event==12)&&(   // ================= MIDDLE12 and goodOBJECT
         (strcmp(selected->IsA()->GetName(),"TFrame")==0 )||
         (strcmp(selected->IsA()->GetName(),"TH1F")==0 )||
         (strcmp(selected->IsA()->GetName(),"TH1D")==0 )||
         (strcmp(selected->IsA()->GetName(),"TH2F")==0 )
-	 )
-	 ){  // MIDDLE CLICK - 
+			   )
+	  ){  // MIDDLE CLICK - 
 	//	fSELetMarks; 
-
-
-       //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
-      TString *fentry=new TString( fEntrySIG->GetText() );
-      if ( fentry->CompareTo("")!=0 ){ 
-	 if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
-	   defaultsigma=atoi( fentry->Data() );
-	 }// not a number
-       }//fentry  exists---------------possibility to change defaultsigma
-
+	
+	//  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
+	TString *fentry=new TString( fEntrySIG->GetText() ); // to bylo vyse comment jako DEPR.?
+	if ( fentry->CompareTo("")!=0 ){ 
+	  if  (TPRegexp("^[\\d]+$").Match(fentry->Data() )!=0){// match
+	    defaultsigma=atoi( fentry->Data() );
+	  }// not a number
+	}//fentry  exists---------------possibility to change defaultsigma
+	
 
 	double xw[1],yw[1],xwe[1],ywe[1]; 
 	xw[0]=gPad->PadtoX(gPad->AbsPixeltoX(x)); 
 	yw[0]=gPad->PadtoY(gPad->AbsPixeltoY(y));
 	xwe[0]=defaultsigma;  // defined in class, assigned in constructor....
-	  ywe[0]=0.0;
+	ywe[0]=0.0;
         TGraphErrors *m=new TGraphErrors(1,xw,yw,xwe,ywe);m->SetName("MARKS");
 	m->SetMarkerStyle(2); m->SetMarkerSize(4);
 	m->SetMarkerColor(2); m->SetLineStyle(2); m->SetLineColor(2); m->Draw("PL");  
-       RefreshAll();
+	RefreshAll();
       }// MIDDLE CLICK
-   }// ELIF -  NOT TGRAPH and    "MARKS on gPad NOT exist"
-
-   }// more THEN just mouse hover....
-}//  execute event..........
+    }// ELIF -  NOT TGRAPH and    "MARKS on gPad NOT exist"
+    
+  }// more THEN just mouse hover....
+}//  execute event..........  END
 
 
 
@@ -1366,10 +1383,11 @@ void  MyMainFrame::RefreshAll(){
 	   if (outputCol>1){ joingraphsX(grname,res->GetTitle() );}
 	 }// for all columns ------ of mysql output
 	 //	TGraphErrors *r=(TGraphErrors*)gr_engineX(grname,0,1,-1,-1); 
-       //	 return;
+	 //	 return;
       }// contains _mysql_MG
       // gPad->BuildLegend(); === it makes it multiple times....
-      printf("%s", "gPad->BuildLegend();\n");
+      //printf("%s", "gPad->BuildLegend();\n"); // commented out
+      printf("%s","\n");
 	}//it was tmultigraph under tpad
 	
       }//for all subobjects---looking for tmultigraph
@@ -1427,7 +1445,7 @@ void  MyMainFrame::RefreshAll(){
 
 void  MyMainFrame::Movexy(const char *XY, double factor, double mvzm)//XY 0.2 +-1.0
 {
-  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
+  TH1* histo;  int64_t addr[MAXPRIMITIVES]; addr[0]=0;  int count=1;
   //  RecoverTH1fromGPAD( count, addr ,"T");// this was a problem - selecting Tpad
   RecoverTH1fromGPAD( count, addr ,"TH");
   histo=(TH1*)addr[0];
@@ -3044,7 +3062,48 @@ void MyMainFrame::fSELLogz(int id,TString *fentry){
  RefreshAll();
 } 
 
-   
+
+
+
+
+
+void BlinkCanvasMessage( const char* message ){
+  //-------------------SHOW #
+  //	 TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, kGray ,?);
+  //https://root.cern.ch/doc/master/classTColor.html
+  TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, 18  );
+  gPad->GetCanvas()->cd();
+  p->Draw();
+  p->cd();
+  TBox *b1=new TBox(0.05,0.05,0.95,0.95);
+  b1->SetLineColor(1);b1->SetLineWidth(1);b1->SetFillStyle(0);
+  b1->Draw();
+  TBox *b2=new TBox(0.01,0.01,0.99,0.99);
+  b2->SetLineColor(1);b2->SetLineWidth(2);b2->SetFillStyle(0);
+  b2->Draw();
+  TText *t=new TText(0.5,0.5 , message );
+  t->SetTextAlign(22);
+  t->SetTextFont( 20 ); //10* font + precision
+  t->SetTextSize( 0.8/7 ); //10* font + precision
+  t->Draw();
+  p->Modified();p->Update();
+  
+  gSystem->Sleep(1150);
+  
+  b1->Delete();	 b2->Delete();
+  t->Delete();
+  p->Delete();
+  //-------------------SHOW #
+  
+}//-------------- BlinkCanvasMessage
+
+
+
+
+
+
+
+
 // loadcanvas  -   seldivide
 //                   divide is deprecated, loadcanvas remains
 //
@@ -3094,29 +3153,7 @@ void MyMainFrame::fSELDivide(int id,TString *fentry){
 
 	 printf("###### %s ##### AFTER DECIMA \n", filename);
 
-	 //-------------------SHOW #
-	   //	 TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, kGray ,?);
-	 TPad *p=new TPad("SHOW","SHOW", 0.3,0.3,0.7,0.7, kGray  );
-	 gPad->GetCanvas()->cd();
-	 p->Draw();
-	 p->cd();
-	 TBox *b1=new TBox(0.05,0.05,0.95,0.95);
-	 b1->SetLineColor(1);b1->SetLineWidth(1);b1->SetFillStyle(0);
-	 b1->Draw();
-	 TBox *b2=new TBox(0.01,0.01,0.99,0.99);
-	 b2->SetLineColor(1);b2->SetLineWidth(2);b2->SetFillStyle(0);
-	 b2->Draw();
-	 TText *t=new TText(0.5,0.5 , filename );
-	 t->SetTextAlign(22);
-	 t->SetTextFont( 20 ); //10* font + precision
-	 t->SetTextSize( 0.8/7 ); //10* font + precision
-	 t->Draw();
-	 p->Modified();p->Update();
-	 gSystem->Sleep(500);
-	 b1->Delete();	 b2->Delete();
-	 t->Delete();
-	 p->Delete();
-	 //-------------------SHOW #
+	 BlinkCanvasMessage(  filename );
 	 gPad->GetCanvas()->cd(1);
 
 	 printf("###### %s ##### tried to load\n", filename);
@@ -4037,392 +4074,6 @@ which will insure that ACLiC generates the dictionary for your classes no matter
 
 
 
-
-
-
-
-
-
-
-
-//==================================================================MPad
-//==================================================================MPad
-//==================================================================MPad
-//==================================================================MPad
-/***********************************************************************
- *  GetPadByName      returns  pointer to pad   OR  NULL -------general func
- *
- */
-//===================================TPad* GetPadByName(const char* name){
-TPad* MPadGetByName(const char* name){
-   TPad *MyGPad=NULL;
-
-  if (gROOT->GetListOfCanvases()->GetEntries()==0){
-    /*
-    new TCanvas();
-    gPad->SetTitle( name );
-    gPad->SetName( name );
-    MyGPad=gPad;
-    printf("(GetPadByName) %s was defined %d\n" , name, MyGPad  );
-    */
-    printf("(MPadGetByName) %s NOT found \n" , name  );
-    return NULL;
-
-  }else{
-    for (int i=0;i<gROOT->GetListOfCanvases()->GetEntries();i++){
-      TPad *cpad=(TPad*)(gROOT->GetListOfCanvases()->At(i));
-      //      printf("canvas %d/%d\n" , i, gROOT->GetListOfCanvases()->GetEntries() );
-      //1st Just tpad0.....
-
-	  if (strcmp(cpad->GetName(),name)==0){
-	    MyGPad=(TPad*)cpad;
-	    //	    printf("%s was found here in (ROOT): %d\n" , name,  MyGPad  );
-	  }//if name is good
-
-      
-      for (int j=0;j<cpad->GetListOfPrimitives()->GetEntries();j++){
-	if ( strcmp(cpad->GetListOfPrimitives()->At(j)->ClassName(),"TPad")==0){
-	  //	  printf("TPad %s looked j classname  %d/%d\n" ,  cpad->GetListOfPrimitives()->At(j)->GetName() , j, cpad->GetListOfPrimitives()->GetEntries());
-
-	  if (strcmp(cpad->GetListOfPrimitives()->At(j)->GetName(),name)==0){
-	    MyGPad=(TPad*)cpad->GetListOfPrimitives()->At(j);
-	    //	    printf("%s was found here in j==%d: %d\n" , name, j, MyGPad  );
-	  }//if name is good
-
-	}// is TPad
-      }// for j
-    }//for i
-  }//else-there were pads....
-  if (MyGPad==NULL){
-
-    printf("(MPadGetByName) %s NOT found\n" , name  );
-    return NULL;
-    /*     new TCanvas();
-    gPad->SetTitle( name );
-    gPad->SetName( name );
-    MyGPad=(TPad*)gPad;   
-    printf("%s was NOT found anywhere in pads, we define new %d\n" , name, (int)MyGPad  );
-    */
-  }//
-  return MyGPad;
-}// GetPadName ===============================================================
-
-
-
-
-
-
-/****************************************************************
- *             Prints a text into PAD         -------general func
- *
- *
- */
-//==========void PrintInPad(const char* label, const char* value){
-
-void MPadPrintIn(const char* label, const char* value){
-   TPad *orig=NULL;
-   if (gROOT->GetListOfCanvases()->GetEntries()>0){orig=(TPad*)gPad;}
-   TPad *cpad=MPadGetByName( label );
-
- if (cpad!=NULL){
-   cpad->Clear();
-   TText *t1=new TText(0.5 ,0.5,     value );   // position 0.5,0.5; size 0.5
-   t1->SetTextFont(43);  // 42 was helvetica prec 2,   3 is precision 3!!!!pixels!!!
-   int w=cpad->GetWw();
-   //       w=cpad->GetWindowWidth();
-   int h=cpad->GetWh();
-   t1->SetTextAlign(22);//  CENTER === 2*10 +2
-   //   t1->SetY(0.1)
-   // EMPIRICAL FORMULA FOR HELVETICA FONT //   
-   double size=0.4*w/h/strlen(value)*7;
-   // OK    size=0.4*w/strlen(value)/15;//  this is quite reasonable....
-   size=0.4*w/strlen(value)/15;//  this is quite reasonable....
-   if (size>1.26){ size=1.26;} // from empirical test of height (350 pix)
-
-   // HACK 43 PIXELS ======================
-   //   t1->SetTextSize( size ); 
-   if (  w/strlen(value)/1.1 < h/1.2 ){
-     t1->SetTextSize( w/strlen(value)/1.1  ); 
-   }else{
-     t1->SetTextSize( h/1.2  ); 
-   }
-   //   printf("bounding box  %d:%d  :%f\n", w ,h,  size);
-   t1->Draw(); 
-   if (orig!=NULL){orig->cd();}
- }//cpad not NULL
-}//DisplayInPad==================================================================
-
-
-void MPadPrintIn(const char* label, int slot, const char* value){
-  char ch[100];
-  sprintf(ch, "%s_%d", label, slot);
-  MPadPrintIn( ch, value );
-}
-
-
-
-void MPadCreate(const char* LABEL, int columns, int rows){
-
-  /*
-   *  HERE I (CONDITIONALY) CREATE SET OF PADS ..............................
-   */
-  TCanvas *cc;
-  if (MPadGetByName( LABEL )==NULL){
-    cc=new TCanvas( LABEL,LABEL);
-    cc->Divide(columns , rows, 0.002,0.002 );
-    cc->GetCanvas()->SetFillColor(9);cc->GetCanvas()->SetFillStyle(1);
-    cc->Draw();
-  }else{
-    TPad *pp=(TPad*)MPadGetByName( LABEL );cc=pp->GetCanvas();
-  }
-
-for (int j=0;j<columns;j++){
-for (int i=0;i<rows;i++){
-  char aa[15];  sprintf(aa,"%s_%d",LABEL,i+1);
- char bb[15]; 
- sprintf(bb, "kuku %03d", i  );
- // sprintf(bb, "0.%d%d%d bar", i, (int)gRandom->Uniform(9),(int)gRandom->Uniform(9)  );
- MPadPrintIn( aa,bb );
- }
- }//for loop -----------------
-  
-MPadGetByName( LABEL )->Update();
-
-}//MPadCreate(==================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//=====================================================================COUNTERS OBJECTS
-//=====================================================================COUNTERS OBJECTS
-//=====================================================================COUNTERS OBJECTS
-
-
-//-------------------------- class definition ----------------- 1
-class TCounter{
-
- public:
-// protected:
-  // int is limited to  4e6 !
-  int DEBUG;
-  double markVO,  markV; // Value (integer)
-  double markTO, markT;  // time
-  double currT, currV;   // currents , waiting to 
- 
-  TCounter();
-  ~TCounter();
-  void Register(double weight=1.0);
-  double GetRate();
-  double GetTime();
-  void SetDebug(int deb);
-};
-
-
-
-TCounter::TCounter(  )
-{ 
-  printf("...creating counter%s\n","");
-  DEBUG=1;
-  double now=GetTime();
-  markVO=0.0;
-  markTO=now - 1.0;
-  markV=0.0;
-  markT=now;  
-  currT=now;
-  currV=0.;
-}
-
-TCounter::~TCounter() { printf("...destroing counter%s\n","");}
-
-
-
-// This makes it   in   seconds.............good for high rates
-//              large error at low rates
-double TCounter::GetTime(){
-
-  //  TString sla;
-  TDatime *dt=new TDatime();  // kTRUE previously...mess
-  // sla.Append( dt->AsString() );//append date
-  //  sla.Append( " : " );//append fname
-  //  sla.Append( s_p.Data() );//append fname
-  //  sla.Append( " : END" );//append openfile
-  //  printf("%s\n",  sla.Data()  );
-  return   1.0* dt->Get();
-}// GetTime
-
-
-double TCounter::GetRate(){
-  return (markV-markVO)/(markT-markTO);
-}
-
-void TCounter::Register(double weight){
-  double now=GetTime();
-  currV=currV+weight;
-  currT=now;
-  if (currT - markT >= 1.0 ){
-    markVO=markV;
-    markTO=markT;
-    markV=currV;
-    markT=currT;
-  }//if 1 sec
-  if (DEBUG>0){ printf( "%09.3f ... %f/%f\n", GetRate() , currT, currV );}
-  return;
-}
-
-
-void TCounter::SetDebug(int deb){
-  DEBUG=deb;
-}
-
-
-void test(){
-  int i,imax=2;
-  TCounter *c[2];
-  for (i=0;i<imax;i++){
-   c[i]=new TCounter;
-  }
-
-
-  for (i=0;i<imax;i++){
-    delete c[i];
-  }
-
-}
-
-
-
-
-
-//-------------------------- class definition ----------------- 2
-class TCounterMulti{
-
- public:
-// protected:
-  // int is limited to  4e6 !
-  double markTO, markT;  // time
-  double currT, currV;   // currents , waiting to 
-
-  static const int max=10;
-  int N;
-  TCounter *mcounter[max];
-  int i;
-
-
-  TCounterMulti( int counters );
-  ~TCounterMulti();
-  void Register(int counter, double weight=1.0);
-  void GetRate();
-  double GetTime(); // same
-  void Display();
-};
-
-
-
-double TCounterMulti::GetTime(){
-
-  TDatime *dt=new TDatime();  // kTRUE previously...mess
-  return   1.0* dt->Get();
-}// GetTime
-
-
-TCounterMulti::TCounterMulti( int counters  ){ 
-  markT=GetTime();
-  markTO=markT-1;
-  currT=markT;
-
-  N=max;
-  if (N>counters){ N=counters;}
-  printf("...creating multicounter, # of counters is %d\n", N);
-  
-  for (i=0;i<N;i++){
-    printf(" %d)", i );
-    mcounter[i]=new TCounter();
-    //    mcounter[i]->SetDebug(0);
-  }
-  MPadCreate("COUNTERS",1,N);
-}//------------------constructor
-
-
-TCounterMulti::~TCounterMulti() { 
-  printf("...destroing multicounter%s\n","");
-    for (i=0;i<N;i++){
-      delete mcounter[i];
-  }
-}//-------------------------destructor
-
-
-void TCounterMulti::GetRate(){
-    for (i=0;i<N;i++){
-      //   printf("%d/%d - \n", i , N );
-      //     if ((i>=0)&&(i<N) ) {
-       printf("%9.2f ",mcounter[i]->GetRate( ) );
-       //     }   
-    }
-    printf("%s","\n");
-}//---------------------------
-
-void TCounterMulti::Register(int counter, double weight){
-  if ((counter>=0)&&(counter<N) ) {
-    mcounter[counter]->Register( weight );
-  }else{
-    printf(" counter not in the predefined range (0-%d)\n", N );
-  }
-  currT=GetTime();
-  if (currT>=markT+1){  markT=currT;   Display(); }// once per second autodisplay (max.)
-  return;
-}//----------------------------
-
-
-
-void TCounterMulti::Display(){
-  char c[40]; 
-  //---taken from MySql  multipads2-----------
-  TCanvas *cc;
-  if (MPadGetByName( "COUNTERS" )==NULL){
-    cc=new TCanvas( "COUNTERS","COUNTERS" );
-    cc->Divide(1 ,N, 0.002,0.002 );
-    cc->GetCanvas()->SetFillColor(9);cc->GetCanvas()->SetFillStyle(1);
-    cc->Draw();
-  }else{
-    TPad *pp=(TPad*)MPadGetByName( "COUNTERS" );cc=pp->GetCanvas();
-  }
-  //---------------------------------------------
-
-  // ===   IT CAN SEEM STOPPED === NO WAY TO SEE THE notcomming COUNTS ?????==
-  // GetRate();   
-    for (i=0;i<N;i++){
-      //   printf("%d/%d - \n", i , N );
-      //     if ((i>=0)&&(i<N) ) {
-      sprintf(c, "%09.1f",mcounter[i]->GetRate( ) );
-      MPadPrintIn("COUNTERS", i+1,  c );
-       //     }   
-    }
-    printf("%s","\n");
-}//---------------------------
-
-
-
-
-//=====================================================================COUNTERS OBJECTS
-//=====================================================================COUNTERS OBJECTS
-//=====================================================================COUNTERS OBJECTS
 
 
 

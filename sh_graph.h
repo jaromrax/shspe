@@ -16,6 +16,10 @@
 #include "TObjString.h"
 
 #include "TMultiGraph.h"
+
+
+#include "TMath.h"  // ?TMath
+
 //------------------- declare everything here:
 extern   const int MAXPNTS;
 //static const int MAXPNTS=15000; defined in C file
@@ -40,6 +44,9 @@ TGraphErrors* gr_fitpol (TGraphErrors *gg, const char *cpol, Float_t x1, Float_t
 void  gr_stdcalproc(const char *fname);
 
 void joingraphs(const char* myname, const char* g1 , int autocolors );
+
+// --- 
+void joingraphsX(const char* myname, const char* g1 , int autocolors );
 
   
 #endif

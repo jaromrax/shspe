@@ -104,6 +104,8 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
   if (ry>1){title.Append( char(96+ry) ); } // multigraphs from mysql:columns
   printf("%d elements read. title= /%s/\n", i-1, title.Data() );
 
+  //
+  //
   //IF ALREADY THE GRAPH EXISTS============+>
  if (gROOT->GetListOfSpecials()->FindObject(title.Data())!=NULL){
    TGraphErrors *oldg=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject(title.Data());
@@ -155,6 +157,7 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
 
 
 
+
 void shspe_ls(){ 
   
   TString sr=".";
@@ -192,118 +195,118 @@ void  RecoverTH1fromGPAD2(int &count,int64_t addr[]){
  *
  */
 //========================================================================
-void joingraphsX(const char* myname, const char* g1 , int autocolors=1 ){
+// void joingraphsX(const char* myname, const char* g1 , int autocolors=1 ){
 
-TMultiGraph *mg;
- TString myname2=myname;
- myname2.ReplaceAll(".","_"); 
- myname2.ReplaceAll(" ","_"); 
- myname2.ReplaceAll("_mysql_dat","_mysql_MG"); 
- if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
-       ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
-   mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
-   if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
-   printf("JG...TMultiGraph %s found...\n",myname2.Data() );
- }else{
-   printf("JG...TMultiGraph %s created\n",myname2.Data() );
-  mg=new TMultiGraph();
-  mg->SetNameTitle(myname2.Data(),myname2.Data());
-  gROOT->GetListOfSpecials()->Add( mg );
- }
- TGraphErrors *o;
- o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
- if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
-if (o==NULL){
-  printf("JG...graph %ld NOT found...\n", (int64_t)g1 );
- }else{
+// TMultiGraph *mg;
+//  TString myname2=myname;
+//  myname2.ReplaceAll(".","_"); 
+//  myname2.ReplaceAll(" ","_"); 
+//  myname2.ReplaceAll("_mysql_dat","_mysql_MG"); 
+//  if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
+//        ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
+//    mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
+//    if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
+//    printf("JG...TMultiGraph %s found...\n",myname2.Data() );
+//  }else{
+//    printf("JG...TMultiGraph %s created\n",myname2.Data() );
+//   mg=new TMultiGraph();
+//   mg->SetNameTitle(myname2.Data(),myname2.Data());
+//   gROOT->GetListOfSpecials()->Add( mg );
+//  }
+//  TGraphErrors *o;
+//  o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
+//  if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
+// if (o==NULL){
+//   printf("JG...graph %ld NOT found...\n", (int64_t)g1 );
+//  }else{
 
-  int ent=0;
-  if ( mg->GetListOfGraphs()!=NULL){
-    ent=mg->GetListOfGraphs()->GetEntries();
-  }
-  //  ent=1;
-  printf("JG...multigraph entries =%d\n", ent);
+//   int ent=0;
+//   if ( mg->GetListOfGraphs()!=NULL){
+//     ent=mg->GetListOfGraphs()->GetEntries();
+//   }
+//   //  ent=1;
+//   printf("JG...multigraph entries =%d\n", ent);
 
 
-  //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
-  TGraphErrors *grexi=NULL;
-  TList *glog= mg->GetListOfGraphs();
-  if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
+//   //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
+//   TGraphErrors *grexi=NULL;
+//   TList *glog= mg->GetListOfGraphs();
+//   if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
 
-  printf("JG...TEST1 Graph name %s  ---------------\n", 
-	 o->GetName() );
-  if (grexi!=NULL){
-    int col=grexi->GetLineColor();
-    printf("JG...Graph name %s exists, color=%d doing nothing\n", o->GetName() ,  col );
-    printf("%s\n","JG   removing");
-    mg->RecursiveRemove(grexi);
-    printf("%s\n","JG  adding");
-    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
-    o->SetLineColor(col);
-    o->SetMarkerColor(col);
-  }else{
-    //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
-    if (autocolors==1){ // for new
-      //      printf("setting autocolor %d\n",  ent);
-      o->SetLineColor(ent+1);
-      o->SetMarkerColor(ent+1);
-    }else{
-      //      printf("NO autocolor (graphs=%d)\n",  ent);
-    }
-    // char oname[100];
-    // sprintf(oname,"%s",o->GetName());
-    // printf("%s /%s/\n", "JG...  looking for duplicity", oname );
+//   printf("JG...TEST1 Graph name %s  ---------------\n", 
+// 	 o->GetName() );
+//   if (grexi!=NULL){
+//     int col=grexi->GetLineColor();
+//     printf("JG...Graph name %s exists, color=%d doing nothing\n", o->GetName() ,  col );
+//     printf("%s\n","JG   removing");
+//     mg->RecursiveRemove(grexi);
+//     printf("%s\n","JG  adding");
+//     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+//     o->SetLineColor(col);
+//     o->SetMarkerColor(col);
+//   }else{
+//     //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
+//     if (autocolors==1){ // for new
+//       //      printf("setting autocolor %d\n",  ent);
+//       o->SetLineColor(ent+1);
+//       o->SetMarkerColor(ent+1);
+//     }else{
+//       //      printf("NO autocolor (graphs=%d)\n",  ent);
+//     }
+//     // char oname[100];
+//     // sprintf(oname,"%s",o->GetName());
+//     // printf("%s /%s/\n", "JG...  looking for duplicity", oname );
 
-    // TObject *dupl=NULL;
-    // if ( (o!=NULL)&&(mg->GetListOfGraphs()!=NULL)){ dupl=(TObject*)mg->GetListOfGraphs()->FindObject( oname ); }
-    // printf("%s\n", "JG...  looking for duplicity" );
-    // if (dupl!=NULL){
-    //   printf("%s\n", "JG...    duplicite  found" );
-    //   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
-    // 	if (mg->GetListOfGraphs()->At(i)==dupl){
-    // 	  mg->GetListOfGraphs()->RemoveAt(i);
-    // 	  break;
-    // 	}
-    //   }
-    // }
-    printf("%s\n", "JG...  adding the object" );
-    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
-  }//=========else NEW
-  double ttmax=0.,ttmin=0.;
-  for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
-    printf("JG...  %d. %10s,  total=%d\n", i, 
-	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
-    TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
-    int n = ge->GetN();
-    double* x = ge->GetX();
-    int locmin = TMath::LocMin(n,x);
-    double tmin = x[locmin];
-    int locmax = TMath::LocMax(n,x);
-    double tmax = x[locmax];
-    if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
-    //    printf("%f  -  %f\n", tmin, tmax);
-    if (ttmax<tmax){ttmax=tmax;}
-    if (ttmin>tmin){ttmin=tmin;}
-    //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
-  }// for all graphs
+//     // TObject *dupl=NULL;
+//     // if ( (o!=NULL)&&(mg->GetListOfGraphs()!=NULL)){ dupl=(TObject*)mg->GetListOfGraphs()->FindObject( oname ); }
+//     // printf("%s\n", "JG...  looking for duplicity" );
+//     // if (dupl!=NULL){
+//     //   printf("%s\n", "JG...    duplicite  found" );
+//     //   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+//     // 	if (mg->GetListOfGraphs()->At(i)==dupl){
+//     // 	  mg->GetListOfGraphs()->RemoveAt(i);
+//     // 	  break;
+//     // 	}
+//     //   }
+//     // }
+//     printf("%s\n", "JG...  adding the object" );
+//     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+//   }//=========else NEW
+//   double ttmax=0.,ttmin=0.;
+//   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+//     printf("JG...  %d. %10s,  total=%d\n", i, 
+// 	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
+//     TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
+//     int n = ge->GetN();
+//     double* x = ge->GetX();
+//     int locmin = TMath::LocMin(n,x);
+//     double tmin = x[locmin];
+//     int locmax = TMath::LocMax(n,x);
+//     double tmax = x[locmax];
+//     if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
+//     //    printf("%f  -  %f\n", tmin, tmax);
+//     if (ttmax<tmax){ttmax=tmax;}
+//     if (ttmin>tmin){ttmin=tmin;}
+//     //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
+//   }// for all graphs
   
-  if (mg->GetXaxis()!=NULL){ // if not drawn, no possibility to change-refresh!
-    mg->GetXaxis()->SetLimits(  ttmin,ttmax );
-    mg->GetXaxis()->SetTimeDisplay(1);
-    mg->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
-  }
+//   if (mg->GetXaxis()!=NULL){ // if not drawn, no possibility to change-refresh!
+//     mg->GetXaxis()->SetLimits(  ttmin,ttmax );
+//     mg->GetXaxis()->SetTimeDisplay(1);
+//     mg->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+//   }
   
-    //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
-    //  }else{
-    //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
-    //  }
- }//graph found?
+//     //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
+//     //  }else{
+//     //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
+//     //  }
+//  }//graph found?
 
- //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
- //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
+//  //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
+//  //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
 
-}////========== void joingraphsX(const char* myname, const char* g1 ){ ================
-//  special for mysql  "X"
+// }////========== void joingraphsX(const char* myname, const char* g1 ){ ================
+// //  special for mysql  "X"
 
 
 
@@ -544,13 +547,14 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 
 
 	  if (trida.CompareTo("TMultiGraph")==0){
-	    TMultiGraph *h=(TMultiGraph*)obj;
+	    TMultiGraph *h=(TMultiGraph*)obj;   // ADD TO GLiOS ??
 	    //gDirectory->FindObject(title ); 
 	    gPad->Clear();h->Draw("plaw");
 	    //	    printf("   .... TMultiGraph PLAW  (clear gpad before)%s\n","");
 	  }
 	  if (trida.CompareTo("TGraph")==0){
 	    TGraph *h=(TGraph*)obj;
+	    // nothere gROOT->GetListOfSpecials()->Add( h );
 	    //gDirectory->FindObject(title ); 
 	    h->SetTitle( obj->GetName()  ); // We put the title == graph name
 	    h->Draw("plaw");
@@ -558,6 +562,7 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 
 	  if (trida.CompareTo("TGraphErrors")==0){
 	    TGraphErrors *h=(TGraphErrors*)obj;
+	    //nothere gROOT->GetListOfSpecials()->Add( h ); // ADD TO GliOS ??
 	    //gDirectory->FindObject(title ); 
 	    h->SetTitle( obj->GetName()  );
 	    h->Draw("plaw");
@@ -608,16 +613,16 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 
   int id_selected=fListBox2->GetSelected();
   printf("...<open file> pressed... (%s) selected==#%d/%d\n", 
-    fentry->Data(), id_selected ,fListBox2->GetNumberOfEntries());
+	 fentry->Data(), id_selected ,fListBox2->GetNumberOfEntries());
   // handle what is in the gDirectory first
   int filename_present=0;
-  if ( fentry->CompareTo("")!=0 && fentry->CompareTo(" ")!=0  ) filename_present=1;
+  if (fentry->CompareTo("")!=0 && fentry->CompareTo(" ")!=0)filename_present=1;
 
   if ( (filename_present==0)&&(id_selected>1)){// not OpenFile
     // will be obsolete......???????
     printf("display from list2%s\n", "" );
     // this already displays the TH objects ==============
-    fDisplayFromList2( id_selected , fListBox2->GetSelectedEntry()->GetTitle()  );
+    fDisplayFromList2(id_selected , fListBox2->GetSelectedEntry()->GetTitle());
     return;
   }// id selected>0 .......................no openfile ends here
 
@@ -625,7 +630,8 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 
   
   // filename present, proceed with closing an old file
-  if ((gFile!=NULL)&&(filename_present==1)){// this closes file, even when we want to read it?
+  // this closes file, even when we want to read it?
+  if ((gFile!=NULL)&&(filename_present==1)){
     printf("(fOpenFile:) Closing opened file (%s)\n", gFile->GetName() ); 
     //gFile->Close(); // BIG PROBLEMS TO CLOSE
     printf("(fOpenFile:) file Closed (%s)\n", "not really"); 
@@ -647,7 +653,7 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	printf("file seems opened %s\n","");
       } 
     }// is .root file    
-
+    
     /*   //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
     int npoints;
       TString *fentry=new TString( fEntrySIG->GetText() );
@@ -755,44 +761,56 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
   }// if filename was present
 
 
+  
+  
   /**************************************************
    *   clear all entries and start from scratch......
    */
-int max;
-// printf("clear all %d entries at flistbox2 \n", fListBox2->GetNumberOfEntries() );
-//   printf("???flb2  (%d entries). Removing entries from 1 to %d\n", 
-// fListBox2->GetNumberOfEntries(), fListBox2->GetNumberOfEntries() );
-    // fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()-1  ); /// -WHAT???  zkusime -1
-    // if  1,  ge-1  : 2 zustaly ale ne openfile
-    // if  1   ge    : neni ani openfile
-    //fListBox2->RemoveEntries( 1, fListBox2->GetNumberOfEntries()-1  ); /// impossible. 2 remain but not openfile
-    //  fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()-2  ); /// *open* a 2 dalsi
+  int max;
+  // printf("clear all %d entries at flistbox2 \n", fListBox2->GetNumberOfEntries() );
+  //   printf("???flb2  (%d entries). Removing entries from 1 to %d\n", 
+  // fListBox2->GetNumberOfEntries(), fListBox2->GetNumberOfEntries() );
+  // fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()-1  ); /// -WHAT???  zkusime -1
+  // if  1,  ge-1  : 2 zustaly ale ne openfile
+  // if  1   ge    : neni ani openfile
+  //fListBox2->RemoveEntries( 1, fListBox2->GetNumberOfEntries()-1  ); /// impossible. 2 remain but not openfile
+  //  fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()-2  ); /// *open* a 2 dalsi
   fListBox2->RemoveEntries( 2, fListBox2->GetNumberOfEntries()  ); /// *open*  ONLY remains
-//int nfileentr=0;// clear fileentr !! 
-//TString fileentr[3000];
-/***************************************************************************************************
- *   legalize primitives from gpad (htemp)
- *   ???  I assume that all graphs should be at    specials
- */
+  //int nfileentr=0;// clear fileentr !! 
+  //TString fileentr[3000];
+  /***************************************************************************************************
+   *   legalize primitives from gpad (htemp)
+   *   ???  I assume that all graphs should be at    specials
+   */
   TList *prim=gPad->GetListOfPrimitives();
+  //---------------- PRMITIVES------------------
   for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
     // ======================= TH ====================
     if ( sn.Index("TH")==0 ){
-       TH1 *hih=(TH1*)prim->At(ii);TString sn_hih=hih->GetName();
-       TH1 *hih2;
-        if ( (sn_hih.CompareTo( "htemp" )==0) ){
-	  if (gDirectory->FindObject("htemp_shspe") ){delete gDirectory->FindObject("htemp_shspe");}
-	  hih2=(TH1*)hih->Clone("htemp_shspe");  // setname not enough...it clears
-	  hih2->SetName("htemp_shspe");
-	 printf("htemp histo found... adding to the list %s\n","");
-	 printf("adding to gdir 1 %s\n", ""); gSystem->Sleep(200);
-	 gDirectory->Add( hih2 );
-	}//if htemp
+      TH1 *hih=(TH1*)prim->At(ii);TString sn_hih=hih->GetName();
+      TH1 *hih2;
+      if ( (sn_hih.CompareTo( "htemp" )==0) ){
+	if (gDirectory->FindObject("htemp_shspe") ){delete gDirectory->FindObject("htemp_shspe");}
+	hih2=(TH1*)hih->Clone("htemp_shspe");  // setname not enough...it clears
+	hih2->SetName("htemp_shspe");
+	printf("htemp histo found... adding to the list %s\n","");
+	printf("adding to gdir 1 %s\n", ""); gSystem->Sleep(200);
+	gDirectory->Add( hih2 );
+      }//if htemp
     }//TH class
-    //  HERE is  TPad parsing.....
-    /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY ********************
-    // ======================= TGraph ====================
+
+
+    if ( sn.Index("TGraph")==0 ){
+      TGraph *hih=(TGraph*)prim->At(ii);
+      TString sn_hih=hih->GetName();
+      hih->SetName(sn_hih);
+      if ( gROOT->GetListOfSpecials()->FindObject(hih)==NULL ){
+	gROOT->GetListOfSpecials()->Add( hih );
+	printf("%s added to GLiOSpecia\n", hih->GetName());
+      }}
+    /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY *****
+     // ======================= TGraph ====================
     if ( sn.Index("TGraph")==0 ){
        TGraph *hih=(TGraph*)prim->At(ii);
        TString sn_hih=hih->GetName(); 
@@ -804,7 +822,7 @@ int max;
        gDirectory->Add( hih );
        }//no match....
        else{
-	 
+
        }// already _g exists.... we replace
 
     }// TGraph.....+
@@ -816,10 +834,10 @@ int max;
        TMultiGraph *hih=(TMultiGraph*)prim->At(ii);
        TString sn_hih=hih->GetName(); 
        if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
-	  //
-	  //  MUSIM NOVE GRAFY.  ONLY - specials, vzdy ->gethistogram, plaw   a ono to nejak klapne
-	  //  a vzdy s originalem, nikdy kopie.
-	  //
+       //
+       //  MUSIM NOVE GRAFY.  ONLY - specials, vzdy ->gethistogram, plaw   a ono to nejak klapne
+       //  a vzdy s originalem, nikdy kopie.
+       //
        sn_hih.Append("_g");
        hih->SetName(sn_hih);
        //
@@ -827,18 +845,18 @@ int max;
        gDirectory->Add( hih );
        }//no match....
        else{
-	 
+
        }// already _g exists.... we replace
 
     }// TMultiGraph.....+
 
-*/
-    /**********************   RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY - to zabralo
-          A CUTS ********************
+    */
+    /**********  RIKAM SI - VYHAZIM VSECHNY GRAFY A MULTIGRAFY - to zabralo
+		 A CUTS ********************
       AT JE TO VE SPECIALS>... NE?        
 
-    // ======================= TCutG ==================== in fOpen...
-    // nothing happened with TCutG here... why???
+      // ======================= TCutG ==================== in fOpen...
+      // nothing happened with TCutG here... why???
     if ( sn.Index("TCutG")==0 ){
        TCutG *hih=(TCutG*)prim->At(ii);
        TString sn_hih=hih->GetName(); 
@@ -855,16 +873,16 @@ int max;
 
     }// TCutG.....+
     */
-
-  }//ii all primitives
-
-
-  /*********************************************************************************************
+    
+  }//-------------------------------ii all primitives
+  
+  
+  /******************************************************************************
    *            gDirectory->GetListOfKeys()->GetEntries()
    * KEYS
    * a pak 
    * OBJECTS
-   *********************************************************************************************
+   ******************************************************************************
    *
    */
 

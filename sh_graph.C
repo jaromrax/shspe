@@ -657,3 +657,137 @@ if (o==NULL){
 
 
 
+
+
+
+
+/*****************************************************************************
+ *  USEFUL FOR JOINING TGRAPHS INTO MULTIGRAPH........................
+ *
+ */
+//========================================================================
+void joingraphsX(const char* myname, const char* g1 , int autocolors=1 ){
+
+TMultiGraph *mg;
+ TString myname2=myname;
+ myname2.ReplaceAll(".","_"); 
+ myname2.ReplaceAll(" ","_"); 
+ myname2.ReplaceAll("_mysql_dat","_mysql_MG"); 
+ if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
+       ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
+   mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
+   if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
+   printf("JG...TMultiGraph %s found...\n",myname2.Data() );
+ }else{
+   printf("JG...TMultiGraph %s created\n",myname2.Data() );
+  mg=new TMultiGraph();
+  mg->SetNameTitle(myname2.Data(),myname2.Data());
+  gROOT->GetListOfSpecials()->Add( mg );
+ }
+ TGraphErrors *o;
+ o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
+ if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
+if (o==NULL){
+  printf("JG...graph %ld NOT found...\n", (int64_t)g1 );
+ }else{
+
+  int ent=0;
+  if ( mg->GetListOfGraphs()!=NULL){
+    ent=mg->GetListOfGraphs()->GetEntries();
+  }
+  //  ent=1;
+  printf("JG...multigraph entries =%d\n", ent);
+
+
+  //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
+  TGraphErrors *grexi=NULL;
+  TList *glog= mg->GetListOfGraphs();
+  if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
+
+  printf("JG...TEST1 Graph name %s  ---------------\n", 
+	 o->GetName() );
+  if (grexi!=NULL){
+    int col=grexi->GetLineColor();
+    printf("JG...Graph name %s exists, color=%d doing nothing\n", o->GetName() ,  col );
+    printf("%s\n","JG   removing");
+    mg->RecursiveRemove(grexi);
+    printf("%s\n","JG  adding");
+    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+    o->SetLineColor(col);
+    o->SetMarkerColor(col);
+  }else{
+    //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
+    if (autocolors==1){ // for new
+      //      printf("setting autocolor %d\n",  ent);
+      o->SetLineColor(ent+1);
+      o->SetMarkerColor(ent+1);
+    }else{
+      //      printf("NO autocolor (graphs=%d)\n",  ent);
+    }
+    // char oname[100];
+    // sprintf(oname,"%s",o->GetName());
+    // printf("%s /%s/\n", "JG...  looking for duplicity", oname );
+
+    // TObject *dupl=NULL;
+    // if ( (o!=NULL)&&(mg->GetListOfGraphs()!=NULL)){ dupl=(TObject*)mg->GetListOfGraphs()->FindObject( oname ); }
+    // printf("%s\n", "JG...  looking for duplicity" );
+    // if (dupl!=NULL){
+    //   printf("%s\n", "JG...    duplicite  found" );
+    //   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+    // 	if (mg->GetListOfGraphs()->At(i)==dupl){
+    // 	  mg->GetListOfGraphs()->RemoveAt(i);
+    // 	  break;
+    // 	}
+    //   }
+    // }
+    printf("%s\n", "JG...  adding the object" );
+    mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
+  }//=========else NEW
+  double ttmax=0.,ttmin=0.;
+  for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
+    printf("JG...  %d. %10s,  total=%d\n", i, 
+	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
+    TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
+    int n = ge->GetN();
+    double* x = ge->GetX();
+    int locmin = TMath::LocMin(n,x);
+    double tmin = x[locmin];
+    int locmax = TMath::LocMax(n,x);
+    double tmax = x[locmax];
+    if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
+    //    printf("%f  -  %f\n", tmin, tmax);
+    if (ttmax<tmax){ttmax=tmax;}
+    if (ttmin>tmin){ttmin=tmin;}
+    //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
+  }// for all graphs
+  
+  if (mg->GetXaxis()!=NULL){ // if not drawn, no possibility to change-refresh!
+    mg->GetXaxis()->SetLimits(  ttmin,ttmax );
+    mg->GetXaxis()->SetTimeDisplay(1);
+    mg->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
+  }
+  
+    //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
+    //  }else{
+    //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
+    //  }
+ }//graph found?
+
+ //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
+ //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
+
+}////========== void joingraphsX(const char* myname, const char* g1 ){ ================
+//  special for mysql  "X"
+
+
+
+
+
+
+
+
+
+
+
+
+
