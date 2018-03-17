@@ -130,7 +130,8 @@ using namespace std;
  *  mmframe= new MyMainFrame(0,120,180);  // TGWindow==0,  w,   h
  */
 //static const int listbox_vsize=260;  to je ok
-static const int listbox_vsize=260;
+//static const int listbox_vsize=260;
+static const int listbox_vsize=250;
 static const int listbox2_vsize=300;
 /*
  *  size of file-list.....,  was 120.
@@ -172,7 +173,7 @@ int
   SELFBX=10,
   SELUpdate=11,
   SELSaveFit=12,
-  SELFit=13,
+//SELFit=13,
   SELDelFBX=14,
   SELbar3a=15, //----------
   SELClone2Rint=16,
@@ -218,6 +219,7 @@ class MyMainFrame : public TGMainFrame {
   //private:
 public:
   TGTextButton *show11, *show12; //startstop
+  TGTextButton *show13; //refresh
   
   int PAGE;  //  menu is in pages:   1(peaks) 2(grid,div) ?
   int flistbox_selected,flistbox2_selected, 

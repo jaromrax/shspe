@@ -545,7 +545,7 @@ void  MyMainFrame::FillMainMenu(){
    sprintf(tmp, "%i_StartFIT", SELFBX);       fListBox->AddEntry(tmp, SELFBX );
    sprintf(tmp, "%i_UpdateMARKS", SELUpdate);      fListBox->AddEntry(tmp, SELUpdate);
    sprintf(tmp, "%i_SaveFit", SELSaveFit);      fListBox->AddEntry(tmp, SELSaveFit);
-   sprintf(tmp, "%i_", SELFit);            fListBox->AddEntry(tmp, SELFit);
+   //   sprintf(tmp, "%i_", SELFit);            fListBox->AddEntry(tmp, SELFit);
    sprintf(tmp, "%i_HelpFit", SELDelFBX);         fListBox->AddEntry(tmp, SELDelFBX);
    sprintf(tmp, "%i----------",SELbar3a );      fListBox->AddEntry(tmp, SELbar3a);
 
@@ -573,7 +573,7 @@ void  MyMainFrame::FillMainMenu(){
    //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
-   sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
+   //sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
    sprintf(tmp, "----------"  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "Clear    " );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
    sprintf(tmp, "ClearAll " );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
@@ -662,52 +662,38 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    *
    */
 
+  TGHorizontalFrame *hBframe = new TGHorizontalFrame(this);
+  fListBox = new TGListBox(this, 100);// TGWindow, id=89      // ?
+  fSelected = new TList;
 
-
-    TGHorizontalFrame *hBframe = new TGHorizontalFrame(this);
-    //NONO hBframe->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)", "MyMainFrame", this,
-    //NONO               "exec3event(Int_t,Int_t,Int_t,TObject*)");
- 
-
-  fListBox = new TGListBox(this, 100);// TGWindow, id=89
-   fSelected = new TList;
-
-  fListBox2 = new TGListBox(hBframe, 101);// TGWindow, id
-   fSelected2 = new TList;
-
-  fListBoxOF = new TGListBox(hBframe, 122);// TGWindow, id=89
+  fListBox2 = new TGListBox(hBframe, 101);// TGWindow, id      // ?  MENU?
+  fSelected2 = new TList;
+  
+  fListBoxOF = new TGListBox(hBframe, 122);// TGWindow, id=89   // OPENFILE
   //   fSelectedOF = new TList;
 
-   FillMainMenu();
-   //   fListBoxOF->Clear();
-   fListBoxOF->RemoveEntries( 0, fListBoxOF->GetNumberOfEntries() ); // correct way...?
-
+  FillMainMenu();
+  //   fListBoxOF->Clear();
+  fListBoxOF->RemoveEntries( 0, fListBoxOF->GetNumberOfEntries() ); // correct way...?
+  
    ////  (fListBoxOF  nema expandX
-    hBframe->AddFrame(fListBox2 ,  new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-
-    hBframe->AddFrame(fListBoxOF,  new TGLayoutHints(kLHintsRight                 | kLHintsExpandY, 0, 0, 0, 0));
-
-
+  hBframe->AddFrame(fListBox2 ,  new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+  
+  hBframe->AddFrame(fListBoxOF,  new TGLayoutHints(kLHintsRight                 | kLHintsExpandY, 0, 0, 0, 0));
 
 
-   
+
+  
     
-    //    hBframe->AddFrame(fListBox2 ,  new TGLayoutHints(kLHintsLeft | kLHintsExpandX , 0, 0, 0, 0));
-    //    hBframe->AddFrame(fListBoxOF,  new TGLayoutHints(kLHintsRight                 , 0, 0, 0, 0));
-
     // WORKS
     fListBox->Connect("Selected(Int_t, Int_t)", "MyMainFrame", this, "ClickResponse(Int_t, Int_t)");
-    //
     //  copied from exec3event
-
     //  | kFixedHeight   makes it all stiff...
     AddFrame(fListBox, new TGLayoutHints(kLHintsLeft |
 					 kLHintsExpandX, 
                                             5, 5, 5, 5));
     // |  kLHintsExpandY
-
-    
-    // ORIGINAL HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS
+    // NEW -  HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS
    TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);  //textentry
    fEntry = new TGTextEntry( hframe, ""  ); //default text...
    hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
@@ -719,35 +705,17 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    
     
     fListBoxOF->Connect("Selected(Int_t, Int_t)", "MyMainFrame", this, "ClickResponse(Int_t, Int_t)");
-    //   AddFrame(fListBoxOF, new TGLayoutHints(kLHintsTop | kLHintsLeft |
-    //                                        kLHintsExpandX | kLHintsExpandY, 
-    //                                        5, 5, 5, 5));
-
     AddFrame(hBframe, new TGLayoutHints( kLHintsExpandX |  kLHintsExpandY , 5, 5, 0, 5));
-
-    //    hBframe->GetContainer()->Connect("DoubleClicked(TGFrame*, Int_t)", "MyMainFrame",
-    //			   this, "ClickResponseDC(TGFrame*, Int_t)");
-
    //--------------------------------------------------------------dalsi flistbox
-
   /*
    *  listbox2   ....    filey
    *
    */
-
-    //  fListBox2 = new TGListBox(this, 101);// TGWindow, id
-    //   fSelected2 = new TList;
-
-   //  fListBox2->RemoveEntries( 0, fListBox2->GetNumberOfEntries-1 );
-
       fListBox2->AddEntry("***OPEN File***", 1);
       //     for (int  ii=2;ii<=19;ii++){ sprintf(tmp, "%d", ii  ); fListBox2->AddEntry(tmp, ii); }
       nfileentr=0; // zero histos in file
-
       fListBox2->Resize(100 , listbox2_vsize );
-
       fListBoxOF->Resize(1 , listbox2_vsize );  // BY DEFAULT     it is very small
-
       fListBox2->Connect("Selected(Int_t, Int_t)", "MyMainFrame", this, "ClickResponse(Int_t, Int_t)");
 
       fListBox2->Connect("DoubleClicked(Int_t)", "MyMainFrame", this, 
@@ -770,9 +738,21 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
                               
 
       // ORIGINAL HORI FRAME ====================
+
+      
+      //========================================================= #0# refresh ##
+      TGHorizontalFrame *hframeRefresh = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
  
+   //button13
+   show13 = new TGTextButton(hframeRefresh, "&Refresh",13);
+   show13->SetToolTipText("refresh");
+   show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
+   hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
+  
+   AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+
    
-//========== new hframe_a   .... center?
+//========== new hframe_a   .... center? ================================ #!#
    TGHorizontalFrame *hframe_a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
 
    //textentry  SIGMA
@@ -801,10 +781,9 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
   fChk1->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframe_a->AddFrame(fChk1, new TGLayoutHints( kLHintsCenterX, 0,0,0,0));
 
-
-
    
-   //========== new hframe    << >> 
+   
+   //========== new hframe    << >> ====================================== #2#
    // Create a horizontal frame containing button(s)
    TGHorizontalFrame *hframe2 = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
    //button2
@@ -824,38 +803,20 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    hframe2->AddFrame(show4, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
    //button5
   
-   //finalize - adding ASD buttons to   object
+   //finalize - adding ASD buttons to   object ======
 AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
 
 
-
-
-//========== new hframe_zoom_up   .... center?
-/*
-  TGHorizontalFrame *hframe_3a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
-
-      
-   //button      W  up
-   TGTextButton *show9 = new TGTextButton(hframe_3a, "&E(UnzoomY)",5);
-   show9->SetToolTipText("Unzoom Y");
-   show9->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
-   //   hframe_a->AddFrame(show, new TGLayoutHints( kFixedWidth, 5, 5, 3, 4));
-   hframe_3a->AddFrame(show9, new TGLayoutHints( kLHintsCenterX, 0,0,0,0));
-   AddFrame(hframe_3a, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
-   */
-
-//========== new hframe          ZOOM UNZOOM
+//========== new hframe          ZOOM UNZOOM ============================= #3# 
    // Create a horizontal frame containing button(s)
    TGHorizontalFrame *hframe3 = new TGHorizontalFrame(this, 150, 20, kChildFrame|kFixedWidth );
-
 
    //button6
   TGTextButton *show6 = new TGTextButton(hframe3, "&ZoomX",6);
    show6->SetToolTipText("ZOOM");
    show6->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframe3->AddFrame(show6, new TGLayoutHints(kLHintsExpandX , 2,0,2,2));
-
    /*
    //button6
      TGTextButton *show8 = new TGTextButton(hframe3, "ZoomY &C",8);
@@ -872,10 +833,13 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
   //finalize
   AddFrame(hframe3, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
-  //-------------------------------------------------------------------- NEW FRAME SART STOP
-  if (startstop!=0){
+
+
 
   
+  //-----=---------------------------------- NEW FRAME SART STOP ###############
+  if (startstop!=0){
+
    // Create a STARTSTOP horizontal frame containing button(s)
    TGHorizontalFrame *hframeStartStop = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
    //TGHorizontalFrame *hframeStartStop = new TGHorizontalFrame(this, 150, 10, kFixedWidth | kFixedHeight );
@@ -953,6 +917,7 @@ AddFrame(hframe2, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
  TString sr=GPAD->GetName();
  TString sr2="";
  sr2.Append( sr.Data()  );
+ sr2.Append( " shspe-ctrl"  );
  SetWindowName( sr2.Data()   );   // CONTROL PANEL?
  sr.Append("-shspe-canvas");
  GPAD->SetTitle( sr.Data() );
@@ -3822,7 +3787,7 @@ void MyMainFrame::HandleEvents(Int_t id)
   if (flistbox_selected== SELFBX        ){ fSELFBX(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELUpdate     ){ fSELUpdate(flistbox_selected,fentry);  }  
   if (flistbox_selected== SELSaveFit     ){ fSELSaveFit(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELFit        ){ fSELFit(flistbox_selected,fentry);  }       
+  //  if (flistbox_selected== SELFit        ){ fSELFit(flistbox_selected,fentry);  }       
   if (flistbox_selected== SELDelFBX     ){ fSELDelFBX(flistbox_selected,fentry);  }       
   if (flistbox_selected== SELClone2Rint     ){ fSELClone2Rint(flistbox_selected,fentry);  }       
 
@@ -4059,7 +4024,10 @@ void MyMainFrame::HandleEvents(Int_t id)
    if (id==9){ //   NO 9 
      //        Movexy("Y", -0.25, -1.0 );
    }
-   if (id==11){ //   NO 11
+   if (id==13){ //   Refresh
+     RefreshAll();
+   }
+   if (id==11){ //   NO 11  ##==========start/stop button
      //        Movexy("Y", -0.25, -1.0 );
      printf("START\n%s","");
      ULong_t green;
@@ -4088,7 +4056,8 @@ void MyMainFrame::HandleEvents(Int_t id)
        system(cmdls); 
      } // opened 
    } // START = 11
-   if (id==12){ //   NO 12
+   
+   if (id==12){ //   NO 12 //===================================start stop
      //        Movexy("Y", -0.25, -1.0 );
      printf("STOP\n%s","");
      ULong_t red;
@@ -4118,7 +4087,8 @@ void MyMainFrame::HandleEvents(Int_t id)
      } // opened 
 
    }// START = 12 
-  
+
+   
 
    //     printf("exited handle events %s\n","");
 }// HandleEvents = process ======================================================
