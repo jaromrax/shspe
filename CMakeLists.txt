@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 2.6)
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
-  COMMAND git tag
+  COMMAND git tag --points-at HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GITTAG
   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -24,7 +24,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 execute_process(
-  COMMAND date +%Y/%m/%d %H:%M:%S
+  COMMAND date +%Y/%m/%d_%H:%M:%S
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE COMPDATE
   OUTPUT_STRIP_TRAILING_WHITESPACE

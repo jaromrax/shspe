@@ -555,7 +555,7 @@ void  MyMainFrame::FillMainMenu(){
    if (PAGE==2){
    sprintf(tmp, "%i_***Next/Page***", SELNextPage);fListBox->AddEntry(tmp, 1);
    // sprintf(tmp, "%i----------",SELbar3 );       fListBox->AddEntry(tmp,     2);
-   sprintf(tmp, "DateTime,Calib"); fListBox->AddEntry(tmp,   SELDateTime  -SELGrid+2);
+   sprintf(tmp, "DateTime,Calib (o)"); fListBox->AddEntry(tmp,   SELDateTime  -SELGrid+2);
    sprintf(tmp, "Grid");               fListBox->AddEntry(tmp,   SELGrid      -SELGrid+2);
    sprintf(tmp, "Logy");               fListBox->AddEntry(tmp,   SELLogy      -SELGrid+2);
    sprintf(tmp, "Logz");               fListBox->AddEntry(tmp,   SELLogz      -SELGrid+2);
@@ -563,18 +563,18 @@ void  MyMainFrame::FillMainMenu(){
    //   sprintf(tmp, "%i_LoadCanvas", SELDivide);   fListBox->AddEntry(tmp,   SELDivide -SELGrid+2);
    sprintf(tmp, "----------" );     fListBox->AddEntry(tmp,   SELbar4      -SELGrid+2  );
 
-   sprintf(tmp, "LoadCanvas  " );    fListBox->AddEntry(tmp,   SELLoadCanvas    -SELGrid+2  );
-   sprintf(tmp, "SaveCanvas  " );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
+   sprintf(tmp, "LoadCanvas  (o)" );    fListBox->AddEntry(tmp,   SELLoadCanvas    -SELGrid+2  );
+   sprintf(tmp, "SaveCanvas  (o)" );    fListBox->AddEntry(tmp,   SELSaveCanvas -SELGrid+2  );
 
    sprintf(tmp, "SaveAllSpectra  " );   fListBox->AddEntry(tmp,   SELSaveSpectra-SELGrid+2  );
    //MenuItemDivCanvas
-   sprintf(tmp, "DivCanvas");                fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
-   sprintf(tmp, "Unzoom/Rng x1-x2" );   fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
+   sprintf(tmp, "DivCanvas (o)");                fListBox->AddEntry(tmp,   SELDivCanv-SELGrid+2  );
+   sprintf(tmp, "Unzoom/Rng x1-x2 (o)" );   fListBox->AddEntry(tmp,   SELUnzoom    -SELGrid+2  );
    //   sprintf(tmp, "%i----------",SELbar5 );          fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "------Spectrum2Memory" );  fListBox->AddEntry(tmp, SELClone2Rint2-SELGrid+2 );
 
    //sprintf(tmp, "RefreshAll  " );    fListBox->AddEntry(tmp,   SELRefresh   -SELGrid+2  );
-   sprintf(tmp, "----------"  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
+   sprintf(tmp, "___________"  );   fListBox->AddEntry(tmp,   SELbar5      -SELGrid+2  );
    sprintf(tmp, "Clear    " );         fListBox->AddEntry(tmp,   SELClear     -SELGrid+2  );
    sprintf(tmp, "ClearAll " );      fListBox->AddEntry(tmp,   SELClearAll  -SELGrid+2  );
 
@@ -697,7 +697,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);  //textentry
    fEntry = new TGTextEntry( hframe, ""  ); //default text...
    hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
-   fEntry->SetToolTipText("Options for MENU items. Each item (almost) has an option");
+   fEntry->SetToolTipText("Options for MENU items. Each item with (o) has a txt option");
    //---- finalize HFRAME
    AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
@@ -741,15 +741,16 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 
       
       //========================================================= #0# refresh ##
+      ///      doesnt retur sometimes ... ? why?
       TGHorizontalFrame *hframeRefresh = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
  
    //button13
-   show13 = new TGTextButton(hframeRefresh, "&Refresh",13);
-   show13->SetToolTipText("refresh");
-   show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
-   hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 5, 5, 3, 4));
-  
-   AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+      show13 = new TGTextButton(hframeRefresh, "&Refresh",13);
+      show13->SetToolTipText("refresh");
+      show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
+      hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 0,0,0,0));
+      
+      AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
    
 //========== new hframe_a   .... center? ================================ #!#
@@ -3110,7 +3111,8 @@ void BlinkCanvasMessage( const char* message ){
   TText *t=new TText(0.5,0.5 , message );
   t->SetTextAlign(22);
   t->SetTextFont( 20 ); //10* font + precision
-  t->SetTextSize( 0.8/7 ); //10* font + precision
+  double size=0.9/strlen(message);
+  t->SetTextSize( size ); //10* font + precision
   t->Draw();
   p->Modified();p->Update();
   
@@ -4024,7 +4026,7 @@ void MyMainFrame::HandleEvents(Int_t id)
    if (id==9){ //   NO 9 
      //        Movexy("Y", -0.25, -1.0 );
    }
-   if (id==13){ //   Refresh
+   if (id==13){ //   Refresh button13 pressed
      RefreshAll();
    }
    if (id==11){ //   NO 11  ##==========start/stop button
