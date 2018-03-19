@@ -5,7 +5,8 @@
 // This shows an example using the $ variable type
 const char* ver_ver = "${cf_example_VERSION}";
 const char* ver_issue      = "linux      : ${ISSUE}";
-const char* ver_gittag     = "git tag    : ${GITTAG}";
+//--list --points-at HEAD
+const char* ver_gittag     = "git tag   : ${GITTAG}";
 const char* ver_root       = "root ver   : ${ROOTVER}";
 const char* ver_compdate   = "compiled at: ${COMPDATE}";
 

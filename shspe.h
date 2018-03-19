@@ -14,6 +14,9 @@
 #ifndef ROOT_TGButton
 #include "TGButton.h"
 #endif
+#ifndef ROOT_TGLabel
+#include "TGLabel.h"
+#endif
 #ifndef ROOT_TGTextView
 #include "TGTextView.h"
 #endif

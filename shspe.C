@@ -697,8 +697,13 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 
 
 
-    // NEW -  HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS ==========
-   TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);  //textentry
+    // NEW -  HORI FRAME =================== I PUT [inputtextbox] IN BETWEEN 2 LISTS ==========
+    
+    TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);   // label
+   TGLabel *labelo = new TGLabel(hframe, "(o):");
+   hframe->AddFrame(labelo, new TGLayoutHints(kLHintsLeft | kLHintsCenterY));
+   //-------------------------------------------
+;  //textentry
    fEntry = new TGTextEntry( hframe, ""  ); //default text...
    hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
    fEntry->SetToolTipText("Options for MENU items. Each item with (o) has a txt option");
@@ -716,9 +721,9 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 0,0,0,0));
    AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
-   ULong_t greenx;
-   gClient->GetColorByName("lightblue", greenx);
-   show13->ChangeBackground(greenx);
+   ULong_t colreafresh;
+   gClient->GetColorByName("lightblue", colreafresh);
+   show13->ChangeBackground( colreafresh );
    
    
     
@@ -762,7 +767,12 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 //========== new hframe_a   .... center? ================================ #!#
    TGHorizontalFrame *hframe_a = new TGHorizontalFrame(this, 150, 20, kFixedWidth);
 
+   
    //textentry  SIGMA
+   TGLabel *label = new TGLabel(hframe_a, "sigma");
+   hframe_a->AddFrame(label, new TGLayoutHints(kLHintsLeft | kLHintsCenterY));
+
+   //-------------------------
    defaultsigma=5.0; ///   ???   FIRST GUESS TO SIGMA   Tbroomfit uses this 
    char defaultsigmachar[10];
    sprintf(defaultsigmachar,"%f",defaultsigma );
@@ -772,7 +782,9 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    fEntrySIG->SetToolTipText("sigma for gaussian fits");
    fEntrySIG->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframe_a->AddFrame(fEntrySIG,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
- 
+
+
+     
    //button      W  up
    TGTextButton *show = new TGTextButton(hframe_a, "&W(up)",1);
    show->SetToolTipText("movement UP");
@@ -787,6 +799,10 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
   fChk1->SetToolTipText("common moves");
   fChk1->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
    hframe_a->AddFrame(fChk1, new TGLayoutHints( kLHintsCenterX, 0,0,0,0));
+   //color 
+   ULong_t colcheckb;
+   gClient->GetColorByName("pink", colcheckb);
+   fChk1->ChangeBackground(colcheckb);
 
    
    
