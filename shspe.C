@@ -693,7 +693,11 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
 					 kLHintsExpandX, 
                                             5, 5, 5, 5));
     // |  kLHintsExpandY
-    // NEW -  HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS
+
+
+
+
+    // NEW -  HORI FRAME ==================== I PUT [inputtextbox] IN BETWEEN 2 LISTS ==========
    TGHorizontalFrame *hframe = new TGHorizontalFrame(this, 150, 20, kFixedWidth);  //textentry
    fEntry = new TGTextEntry( hframe, ""  ); //default text...
    hframe->AddFrame(fEntry,  new TGLayoutHints(kLHintsExpandX, 5, 5, 3, 4));
@@ -702,6 +706,20 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
    AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
 
 
+
+   //========================================================= #0# refresh ##
+   ///      doesnt retur sometimes ... ? why?
+   TGHorizontalFrame *hframeRefresh = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
+   //button13  -------------- refresh button
+   show13 = new TGTextButton(hframeRefresh, "&Refresh",13);
+   show13->SetToolTipText("refresh");
+   show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
+   hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 0,0,0,0));
+   AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+   ULong_t greenx;
+   gClient->GetColorByName("lightblue", greenx);
+   show13->ChangeBackground(greenx);
+   
    
     
     fListBoxOF->Connect("Selected(Int_t, Int_t)", "MyMainFrame", this, "ClickResponse(Int_t, Int_t)");
@@ -738,19 +756,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h, int page, int st
                               
 
       // ORIGINAL HORI FRAME ====================
-
-      
-      //========================================================= #0# refresh ##
-      ///      doesnt retur sometimes ... ? why?
-      TGHorizontalFrame *hframeRefresh = new TGHorizontalFrame(this, 150, 20, kFixedWidth | kFixedHeight);
- 
-   //button13
-      show13 = new TGTextButton(hframeRefresh, "&Refresh",13);
-      show13->SetToolTipText("refresh");
-      show13->Connect("Pressed()", "MyMainFrame", this, "ClickResponse()");
-      hframeRefresh->AddFrame(show13, new TGLayoutHints(kLHintsExpandX , 0,0,0,0));
-      
-      AddFrame(hframeRefresh, new TGLayoutHints(kLHintsExpandX, 2, 2, 5, 1));
+     
 
    
 //========== new hframe_a   .... center? ================================ #!#
