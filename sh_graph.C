@@ -179,7 +179,7 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
      //     title=oneline( oneline.Length(),oneline.Length()-1  );
   }else{// DATA HERE
       TObjArray *tar; 
-     if (oneline.Length()>1){
+      if (oneline.Length()>0){ // 1digit also exist...
        if (oneline.Index("#")>0){oneline.Remove(oneline.Index("#") );}// #
        if (oneline.Index("@")>0){oneline.Remove(oneline.Index("@") );}// #
        if (oneline.Index("END")>0){oneline.Remove(oneline.Index("END") );}// #
@@ -304,7 +304,7 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
      //     title=oneline( oneline.Length(),oneline.Length()-1  );
   }else{// DATA HERE
       TObjArray *tar; 
-     if (oneline.Length()>1){
+      if (oneline.Length()>0){ // THAT WAS A HECK - 1digit!
        if (oneline.Index("#")>0){oneline.Remove(oneline.Index("#") );}// #
        if (oneline.Index("@")>0){oneline.Remove(oneline.Index("@") );}// #
        if (oneline.Index("END")>0){oneline.Remove(oneline.Index("END") );}// #
@@ -321,7 +321,7 @@ int64_t gr_engineX (const char* name, int rx, int ry, int rdx, int rdy)
       while( (j<=rx && rx>=0) || (j<=ry && ry>=0) || (j<=rdy && rdy>=0)|| (j<=rdx && rdx>=0)){  
 	if (j<tar->GetEntries()){
          token= ((TObjString*)(tar->At(j)))->GetString();
-	 //	 printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
+	 //printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
 	 bu= token.Atof(); 
 	 //	 if (i<5){ 	 printf("  token <%s> = %f\n", token.Data(), bu ); }
          if (rx==j)  { x[i] =bu;}

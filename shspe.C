@@ -3899,6 +3899,9 @@ void MyMainFrame::HandleEvents(Int_t id)
 	     sprintf(totname,"%s",  pent->d_name ); 
 	     //HERE IS WHAT TO ADD TO LIST2 ????????
 	     //  the funcion fopenfile opens the files
+	     if (TPRegexp("\\.asc$").Match(s.Data())!=0){
+	       fListBoxOF->AddEntry( totname, next++ );
+	     }
 	     if (TPRegexp("\\.asc1$").Match(s.Data())!=0){
 	       fListBoxOF->AddEntry( totname, next++ );
 	     }

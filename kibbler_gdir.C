@@ -601,25 +601,54 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	 //printf("fileSQLite seems opened CMD:/%s/\n", commandrm);
     }// is .sqlite file
 
-    if (fentry->Index(".asc1")>0){
+    
+    //if (fentry->Index(".asc1$")>0){
+    if (TPRegexp("\\.asc1$").Match(fentry->Data())!=0){
       printf(".... asc1 ... entering \n");
 	char commandrm[200];
 	char grname[200];
 	TGraphErrors *onecol=(TGraphErrors*)gr_engineX( fentry->Data(), -1,0,-1,-1);
+	//onecol->Print();
 	printf("TGraph onecol\n");
 	TH1F *h3=new TH1F(fentry->Data(),"Graph from ASC1",8196,0,8196);
+	printf("new h3\n");
+	for (int i=0; i<onecol->GetN(); i++){
+	  h3->SetBinContent(i,onecol->GetY()[i]);
+	  //printf("%d    %f\n",i,onecol->GetY()[i]);
+	}
+	gROOT->GetListOfSpecials()->Remove( onecol);
+	//#delete onecol;
+	//onecol->delete();
+	//onecol->Delete();
+	//	gDirectory->Add( onecol );
+	gDirectory->Add( h3 );
+	printf("ASC1 seems opened CMD:/%s/\n", "ok" );
+    }// is .asc1 file
+
+    
+
+    if (TPRegexp("\\.asc$").Match(fentry->Data())!=0){
+      //if (fentry->Index(".asc$")>0){
+      printf(".... asc ... entering \n");
+	char commandrm[200];
+	char grname[200];
+	TGraphErrors *onecol=(TGraphErrors*)gr_engineX( fentry->Data(), 0,1,-1,-1);
+	printf("TGraph twocol\n");
+	TH1F *h3=new TH1F(fentry->Data(),"Graph from ASC",8196,0,8196);
 	printf("new h3\n");
 	for (int i=0; i<onecol->GetN(); i++){  h3->SetBinContent(i,onecol->GetY()[i]);}
 	gROOT->GetListOfSpecials()->Remove( onecol);
 	//#delete onecol;
 	//onecol->delete();
 	//onecol->Delete();
-
 	//	gDirectory->Add( onecol );
 	gDirectory->Add( h3 );
-	printf("ASC1 seems opened CMD:/%s/\n", "ok" );
-    }// is .asc1 file
+	printf("ASC seems opened CMD:/%s/\n", "ok" );
+    }// is .asc file
 
+
+
+    
     
     filename_present=0;
   }// if filename was present
