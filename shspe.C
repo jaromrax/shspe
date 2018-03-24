@@ -1156,6 +1156,8 @@ MyMainFrame*  shspe(const char* name, const char* histo, int page=1){
  *
  *  20120620: exclude type - e.g. TGraph will exclude all graphs
  *    //default args are in .h
+ *
+ * 201803 - i try to add THStack -NONONO,not useful
  */
 void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[], 
 				      const char* onlyclass, int restrict, 
@@ -1217,8 +1219,8 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
  
     //ALLOWED CLASSES !!!!!!!!!!
     if ( (sn.Index("TH1")==0)||(sn.Index("TH1F")==0)||(sn.Index("TH1D")==0)||(sn.Index("TH2F")==0)
-       ||(sn.Index("TMultiGraph")==0)||(sn.Index("TGraph")==0)||(sn.Index("TGraphErrors")==0
-       ||(sn.Index("TPad")==0)) ){  // there is TPad :< there 
+	 ||(sn.Index("TMultiGraph")==0)||(sn.Index("TGraph")==0)||(sn.Index("TGraphErrors")==0)
+	 ||(sn.Index("TPad")==0) ){  // there is TPad :< there 
       TH1 *tp=((TH1*)primbar->At(ii));
 
       if ( (sn.Index("TMultiGraph")==0)&&(sn.Index(exclude)!=0) ) {
@@ -1436,19 +1438,15 @@ void  MyMainFrame::Movexy(const char *XY, double factor, double mvzm)//XY 0.2 +-
   TH1* histo;  int64_t addr[MAXPRIMITIVES]; addr[0]=0;  int count=1;
   //  RecoverTH1fromGPAD( count, addr ,"T");// this was a problem - selecting Tpad
   RecoverTH1fromGPAD( count, addr ,"TH");
-  histo=(TH1*)addr[0];
-  //  printf("from tpad %d recovered %ld histo addresses\n", count, addr[0] );
-
-
+  TObject* o=(TObject*)addr[0];
+    histo=(TH1*)addr[0];
   if (histo!=NULL){  
     for (int ii=0;ii<count;ii++){
-      //      printf("movexying (%d) :  %d/%d\n" ,addr[ii], ii,count);
+      //printf("movexying (%d) :  %d/%d\n" ,addr[ii], ii,count);
       Movexy( (TH1*)addr[ii], XY, factor, mvzm); 
     }
   }
-  //gPad->Modified();
-  //  gPad->Update();
-  // V MOVEXY JE TO  
+  
  RefreshAll();
 }// movexy
 
@@ -1536,7 +1534,6 @@ void  MyMainFrame::Movexy(TH1 *h, const char *XY, double factor, double mvzm)//X
 	r->GetN();
 	 return;
       }//(sn.Index("_sqlite_dat")>0
-
 
 
 

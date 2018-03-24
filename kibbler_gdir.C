@@ -1,5 +1,5 @@
 #include "TSystem.h"
-
+#include "THStack.h"
 //#include "sh_graph.C" // I have this in main... SO :
 // 
 
@@ -35,129 +35,6 @@ void  RecoverTH1fromGPAD2(int &count,int64_t addr[]){
 }//RECOVER TH from gPad
 
 
-
-
-
-
-
-
-/*****************************************************************************
- *  USEFUL FOR JOINING TGRAPHS INTO MULTIGRAPH........................
- *
- */
-//========================================================================
-// void joingraphsX(const char* myname, const char* g1 , int autocolors=1 ){
-
-// TMultiGraph *mg;
-//  TString myname2=myname;
-//  myname2.ReplaceAll(".","_"); 
-//  myname2.ReplaceAll(" ","_"); 
-//  myname2.ReplaceAll("_mysql_dat","_mysql_MG"); 
-//  if (  ( gROOT->GetListOfSpecials()->FindObject(myname2.Data()) )  ||
-//        ((gPad!=NULL)&&(gPad->FindObject(myname2.Data()) ))  ){
-//    mg=(TMultiGraph*)gROOT->GetListOfSpecials()->FindObject( myname2.Data() );
-//    if (mg==NULL){mg=(TMultiGraph*)gPad->FindObject( myname2.Data() );}
-//    printf("JG...TMultiGraph %s found...\n",myname2.Data() );
-//  }else{
-//    printf("JG...TMultiGraph %s created\n",myname2.Data() );
-//   mg=new TMultiGraph();
-//   mg->SetNameTitle(myname2.Data(),myname2.Data());
-//   gROOT->GetListOfSpecials()->Add( mg );
-//  }
-//  TGraphErrors *o;
-//  o=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject( g1 );
-//  if (o==NULL){ o=(TGraphErrors*)gDirectory->FindObject( g1 ); }
-// if (o==NULL){
-//   printf("JG...graph %ld NOT found...\n", (int64_t)g1 );
-//  }else{
-
-//   int ent=0;
-//   if ( mg->GetListOfGraphs()!=NULL){
-//     ent=mg->GetListOfGraphs()->GetEntries();
-//   }
-//   //  ent=1;
-//   printf("JG...multigraph entries =%d\n", ent);
-
-
-//   //  if (mg->GetListOfGraphs()->FindObject(o->GetTitle())==NULL){
-//   TGraphErrors *grexi=NULL;
-//   TList *glog= mg->GetListOfGraphs();
-//   if (glog!=NULL){grexi=(TGraphErrors*)glog->FindObject(o->GetName()) ;}
-
-//   printf("JG...TEST1 Graph name %s  ---------------\n", 
-// 	 o->GetName() );
-//   if (grexi!=NULL){
-//     int col=grexi->GetLineColor();
-//     printf("JG...Graph name %s exists, color=%d doing nothing\n", o->GetName() ,  col );
-//     printf("%s\n","JG   removing");
-//     mg->RecursiveRemove(grexi);
-//     printf("%s\n","JG  adding");
-//     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
-//     o->SetLineColor(col);
-//     o->SetMarkerColor(col);
-//   }else{
-//     //    printf("TEST2 Graph name %s not yet in MG\n",o->GetName()  );
-//     if (autocolors==1){ // for new
-//       //      printf("setting autocolor %d\n",  ent);
-//       o->SetLineColor(ent+1);
-//       o->SetMarkerColor(ent+1);
-//     }else{
-//       //      printf("NO autocolor (graphs=%d)\n",  ent);
-//     }
-//     // char oname[100];
-//     // sprintf(oname,"%s",o->GetName());
-//     // printf("%s /%s/\n", "JG...  looking for duplicity", oname );
-
-//     // TObject *dupl=NULL;
-//     // if ( (o!=NULL)&&(mg->GetListOfGraphs()!=NULL)){ dupl=(TObject*)mg->GetListOfGraphs()->FindObject( oname ); }
-//     // printf("%s\n", "JG...  looking for duplicity" );
-//     // if (dupl!=NULL){
-//     //   printf("%s\n", "JG...    duplicite  found" );
-//     //   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
-//     // 	if (mg->GetListOfGraphs()->At(i)==dupl){
-//     // 	  mg->GetListOfGraphs()->RemoveAt(i);
-//     // 	  break;
-//     // 	}
-//     //   }
-//     // }
-//     printf("%s\n", "JG...  adding the object" );
-//     mg->Add(  (TGraphErrors*)o  , "PL"  )  ;
-//   }//=========else NEW
-//   double ttmax=0.,ttmin=0.;
-//   for (int i=0;i<mg->GetListOfGraphs()->GetEntries();i++){
-//     printf("JG...  %d. %10s,  total=%d\n", i, 
-// 	   mg->GetListOfGraphs()->At(i)->GetName(),mg->GetListOfGraphs()->GetEntries() );
-//     TGraphErrors *ge=(TGraphErrors*)mg->GetListOfGraphs()->At(i);
-//     int n = ge->GetN();
-//     double* x = ge->GetX();
-//     int locmin = TMath::LocMin(n,x);
-//     double tmin = x[locmin];
-//     int locmax = TMath::LocMax(n,x);
-//     double tmax = x[locmax];
-//     if (ttmin==ttmax){ttmax=tmax;ttmin=tmin;}
-//     //    printf("%f  -  %f\n", tmin, tmax);
-//     if (ttmax<tmax){ttmax=tmax;}
-//     if (ttmin>tmin){ttmin=tmin;}
-//     //    printf("%d. %s\n", i, mg->GetListOfGraphs()->At(i)->GetTitle() );
-//   }// for all graphs
-  
-//   if (mg->GetXaxis()!=NULL){ // if not drawn, no possibility to change-refresh!
-//     mg->GetXaxis()->SetLimits(  ttmin,ttmax );
-//     mg->GetXaxis()->SetTimeDisplay(1);
-//     mg->GetXaxis()->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
-//   }
-  
-//     //    printf("Graph title %s added, exists=%d\n", o->GetTitle(), grexi );
-//     //  }else{
-//     //   mg->RecursiveRemove(  (TGraphErrors*)o  )  ;
-//     //  }
-//  }//graph found?
-
-//  //  gROOT->GetListOfSpecials()->Add(  gROOT->GetListOfSpecials()->FindObject( g1 )   );
-//  //// for (int i=0;i<imax;i++){  mg->Add( gg[i],"lp");  }
-
-// }////========== void joingraphsX(const char* myname, const char* g1 ){ ================
-// //  special for mysql  "X"
 
 
 
@@ -228,6 +105,12 @@ TH1F* extract_next(TH1F* h){
 
 
 
+
+
+
+
+
+
 //
 // used by displ from list2
 void ro_getnext(TH1F* h){
@@ -278,6 +161,17 @@ void ro_getnext(TH1F* h){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 //==============================================================
 //  Display From List2 =====   Click and Display HISTO
 //
@@ -295,9 +189,11 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
     if (obj==NULL){ printf("object not found%s\n",""); }else{
       TString  trida=obj->ClassName();
       //      printf("  the class is == %s\n", trida.Data() );
-         if ( strstr(trida.Data(),"TH")!=0){
+      if (  (strstr(trida.Data(),"TH1")!=0)
+	    ||(strstr(trida.Data(),"TH2")!=0)
+	      ){
 	      TH1 *h=(TH1*)gDirectory->FindObject(title );
-	      printf("========== %s =====\n",  title  );
+	      printf("========== %s =====stat:\n",  title  );
 	      printf("entries  = %9.1f\n",  h->GetEntries()  );
 	      printf("mean     = %9.1f\n",  h->GetMean()   );
 	      printf("RMS      = %9.1f\n",  h->GetRMS()   );
@@ -314,11 +210,16 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	  if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
 	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
 	    if (fchk1state!=0){
-	    ro_getnext(h);
+	      ro_getnext(h);
 	    }else{
 	      h->Draw();
 	    }
 	  }
+
+	  // --- THStack appeared not good for movexy....
+	  if (trida.CompareTo("THStack")==0){THStack *h=(THStack*)gROOT->GetListOfSpecials()->FindObject(title ); h->Draw("nostack");
+	  }
+	  
 	  if (trida.CompareTo("TH1D")==0){TH1D *h=(TH1D*)gDirectory->FindObject(title ); h->Draw();}
 	  if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
 
@@ -610,7 +511,9 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	TGraphErrors *onecol=(TGraphErrors*)gr_engineX( fentry->Data(), -1,0,-1,-1);
 	//onecol->Print();
 	printf("TGraph onecol\n");
-	TH1F *h3=new TH1F(fentry->Data(),"Graph from ASC1",8196,0,8196);
+	//	TH1F *h3=new TH1F(fentry->Data(),"Graph from ASC1", onecol->GetN(),0,onecol->GetN() );
+	// I hate names with "." : i try to use this MOD
+	TH1F *h3=new TH1F( onecol->GetName(),"Graph from ASC1", onecol->GetN(),0,onecol->GetN() );
 	printf("new h3\n");
 	for (int i=0; i<onecol->GetN(); i++){
 	  h3->SetBinContent(i,onecol->GetY()[i]);
@@ -618,10 +521,19 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	}
 	gROOT->GetListOfSpecials()->Remove( onecol);
 	//#delete onecol;
+	delete onecol;
 	//onecol->delete();
 	//onecol->Delete();
 	//	gDirectory->Add( onecol );
-	gDirectory->Add( h3 );
+	// if (gDirectory->Get( fentry->Data() ) !=NULL){
+	//   printf("ALREADY EXISTS h3\n%s","");
+	//   //this would delete it 
+	//   //delete gDirectory->Get( fentry->Data() );
+
+	// }else{
+	//   printf("NOT EXISTS h3\n%s","");
+	//   gDirectory->Add( h3 );
+	// }
 	printf("ASC1 seems opened CMD:/%s/\n", "ok" );
     }// is .asc1 file
 
@@ -829,6 +741,12 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
 	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
 	gDirectory->Add( (TH1F*)o ); 
       }
+      // if ((sa2.Index("THStack")==0)&&(gDirectory->FindObject(o)==NULL)) {
+      // 	printf("adding explicitely %s THStack\n", sa1.Data()  );
+      // 	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
+      // 	gDirectory->Add( (THStack*)o ); 
+      // }
+      
       // this loaded TCutG into the list2
       if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
 	printf("adding explicitely %s\n", sa1.Data()  );
@@ -909,8 +827,11 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
     
     
     // printf("  %03d/  object: %s/%s\n",  iii, sa1.Data(), sa2.Data()   );
-    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
-	  || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
+    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0)
+	  //	  || (sa2.Index("THStack")==0)
+	  || (sa2.Index("TGraph")==0)
+	  || (sa2.Index("TGraphErrors")==0)
+	  || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
       
       
       if (fListBox2->FindEntry( sa1.Data()) ==NULL ) {
@@ -945,7 +866,9 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
     //  printf("CLASSNAME === %s\n", sa2.Data()  );
     
     // Now I have a class
-    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0) || (sa2.Index("TGraph")==0)
+    if (  (sa2.Index("TH1")==0) || (sa2.Index("TH2")==0)
+	  //	  || (sa2.Index("THStack")==0)
+	  || (sa2.Index("TGraph")==0)
 	  || (sa2.Index("TGraphErrors")==0) || (sa2.Index("TMultiGraph")==0) || (sa2.Index("TCutG")==0) ){	 //
       
       
