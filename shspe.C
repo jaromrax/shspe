@@ -354,11 +354,11 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
       //  printf("left click (show energy)%s\n", "");
     }// event 11
 
+    
     // When you click on a TGraphError MARKS point:
     if (ss.CompareTo("TGraphErrors")==0){//======ONLY ON TGraphErrors ===
       TGraphErrors *g=(TGraphErrors*)selected;//  g->Print();
       if (strcmp(g->GetName(),"MARKS")==0){//=====ONLY MARKS =====
-
 	// 2: sum peak
 	// 4: fit background around peak
 	if ((event==11)&&( (g->GetN()==2) || (g->GetN()==4) )  ){  // if LEFTCLICK - SUM DATA = TODO
@@ -399,8 +399,23 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	  if (g->GetN()>1){ 
 	    g->RemovePoint( closest ); 
 	    g->Sort(); // WE MUST SORT HERE but not when 2D!!
-	  }else{ 
-	    g->Delete();
+	  }else{
+	    //--------- new delete -----
+	    printf("!...  deleting MARKS by middle-click\n%s","");
+
+	    if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
+	      TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
+	      gROOT->GetListOfSpecials()->Remove( gro ); // delete MARKS from gROOT
+	      //}
+	      delete gro;
+	      //printf("!... not deleting MARKS\n%s","");
+	      //g->Delete(); 
+	    }//-- if MARKS !=NULL
+	    //if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL){
+	    //}
+	    //delete g;
+	    //g->Delete();
+	    //printf("!... not deleting MARKS");
 	  }
 	  RefreshAll();
 	}//12----------MIDDLECLICK
@@ -424,7 +439,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	  ){  // LEFT CLICK - SUM DATA
 	TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
 	if (  gROOT->GetListOfSpecials()->FindObject("MARKS")==NULL){
-	  gROOT->GetListOfSpecials()->Add( g);
+	  gROOT->GetListOfSpecials()->Add(g);
 	}// find MARKS==NULL in GetLiOSpecial  => get it to GlisOSpecial
 	printf("ADDING TO MARKS, GetN() will == %d \n", g->GetN()+1 );
        //       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
@@ -1805,13 +1820,15 @@ void MyMainFrame::fSELSetMarks(int id,TString *fentry){
 
    TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
    if (g!=NULL){
-     if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
-       TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
-       gROOT->GetListOfSpecials()->Remove( gro ); // delete MARKS from gROOT
-     }
-     g->Delete(); 
+     //if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
+       //TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
+       //gROOT->GetListOfSpecials()->Remove( gro ); // delete MARKS from gROOT
+       //}
+     //delete g;
+     printf("!... not deleting MARKS\n%s","");
+     //g->Delete(); 
    }
-   //DELMARKS....
+   //DELMARKS....menu
  double px1=0.1; double py1=0.4; double px2=0.9;double py2=0.6;  int pnts=2; // 01
  double x[5],y[5],xe[5],ye[5], dx, dy;
  //  ---   difference between  canvas ==GPAD  and a Pad
@@ -1936,10 +1953,20 @@ void MyMainFrame::fSELGetMarks(int id,TString *fentry){  // SortMarks/GCut
 }//SELGetMarks
 
 void MyMainFrame::fSELDelMarks(int id,TString *fentry){
-   TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-   if (g!=NULL){ g->Delete(); }
+  printf("!... deleting marks in menu\n%s", "");
+  if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
+    TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
+    gROOT->GetListOfSpecials()->Remove( gro ); // delete MARKS from gROOT
+      //}
+    delete gro;
+    //printf("!... not deleting MARKS\n%s","");
+     //g->Delete(); 
+  }//-- if MARKS !=NULL
+
+  //TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+  //if (g!=NULL){ g->Delete(); }
   if (id==999)printf("  unused id, fentry %d %s\n", id, fentry->Data()  );
-   RefreshAll();
+  RefreshAll();
 }//delmarks
 
 
