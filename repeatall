@@ -112,6 +112,7 @@ if [ "$TARGET" = "link" ]; then
 	    echo "      .. no"
 	fi
     done
+    notify-send "compilation finished"
     exit
 fi 
 

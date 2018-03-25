@@ -2,10 +2,8 @@
 #include "THStack.h"
 //#include "sh_graph.C" // I have this in main... SO :
 // 
-
-
-
-
+// to have the functions, include C in MAIN,  h here
+#include "sh_tnamed.h"  // tnamed_draw() .... ==multiDraw
 
 
 
@@ -78,157 +76,6 @@ void fSAVEFromList2(int id, const char* title, const char *savename){
 
 
 
-/*
-======================================================================
-ON MULTI in shspe this will be checked and displayed in one win
-   -  THStack("nostack") replacement
-  : I looked in the title....  but more convenient would be to look
-            inside GetListOfFunctions  TNamed
-      TNamed *n=new TNamed("next","b0w00a2")
-      b0w00_A1->GetListOfFunctions()->Add( new TNamed("next","b0w00_a2") )
-
-
- */
-TH1F* extract_next(TH1F* h){
-  char s[100];
-  if (h==NULL)return NULL;
-  TNamed *n=(TNamed*)h->GetListOfFunctions()->FindObject("next");
-  if (n!=NULL){ // BEST way
-    sprintf( s, "%s", n->GetTitle() );
-    printf("i... TNamed 'next'==/%s/\n",s);
-  }else{ // depreciated way...
-    sprintf( s, "%s", h->GetTitle() );
-    char* ss;
-    ss=(char*)strstr( s, " next:" );
-    if ( ss==NULL) {printf("...end\n%s","");return NULL;}
-    char sss[100];
-    strcpy( s, &ss[6]   ); //  _next:  has 6 chars
-    //    printf("sss =%s\n", sss );
-  }
-  TH1F* nexth=(TH1F*)gDirectory->Get( s );
-  if ( nexth!=NULL ){
-    printf("nexth=%s\n", nexth->GetName() );
-    //      printf("nexth=%s\n", nexth->GetTitle() );
-    return (TH1F*)nexth;
-  }
-  return NULL;
-}
-
-
-
-
-
-void* extract_display_with(TH1F* h, int &count,int64_t addr[]){
-  //int64_t addr[];
-  count=0; addr[0]=0; // as in RecoverTH1
-  char sn[100];
-  char st[100];
-  //TH1F *hs[20];
-  printf("---- display with ----%s\n","");
-  if (h==NULL)return NULL; 
-  TList  *l=(TList*)h->GetListOfFunctions();
-  int j=0;
-  for (int i=0;i<l->GetEntries();i++){ 
-    sprintf( sn, "%s", l->At(i)->GetName() );
-    sprintf( st, "%s", l->At(i)->GetTitle() );
-    printf("%d  %s %s\n",i, sn, st);
-    if (strstr(sn,"display_with") ){
-      printf("    ... %s... ",st);
-      TH1F* nexth=(TH1F*)gDirectory->Get( st );
-      if ( nexth!=NULL ){
-	printf("  DISPLAY_WITH =%s\n", nexth->GetName() );
-	//hs[j]=(TH1F*)nexth;
-	addr[count++]= (int64_t)nexth;
-	j=j+1;
-      }
-    }
-  }
-  return NULL;
-}//------exctract with
-
-
-
-//
-// used by displ from list2 :  replacement of   ->Draw()
-// - i think - if multi, this is called to display TH1F.....
-//          main point is extract_next
-//
-// NEWLY - i want to remove recursive dependence
-// and get multiple "display_with"
-//
-void* ro_getnext(TH1F* h){
-  int mx,mn;
-  int mx1=h->GetMaximum();
-  int mn1=h->GetMinimum();
-  //TH1F *hs[20];
-  TH1* histo;
-  int count=MAXPRIMITIVES;  int64_t addr[MAXPRIMITIVES];
-  addr[0]=0;
-  extract_display_with( h,count,addr ); // gives the paralel histos
-  printf("D...return with count==%d\n", count );
-  h->SetLineColor(1);
-  h->SetLineWidth(2);
-  h->Draw();
-  double max=h->GetMaximum();
-  for (int i=0;i<count;i++){
-    histo=(TH1*)addr[i];
-    if (histo!=NULL){
-      printf("... display_with name/title %s %s\n",
-	     histo->GetName(),histo->GetTitle() );
-      histo->SetLineColor(i+2);
-      histo->SetLineWidth(1);
-      histo->Draw("same");
-      if (histo->GetMaximum()>max){
-	max=histo->GetMaximum();
-      }
-    }//not NULL
-  }//for
-  h->GetYaxis()->SetRangeUser(0., max );
-  return NULL;
-  // TH1F* h2,*h3,*h4, *h5, *h6;
-  // h2=extract_next( h ); // gives the followin  histo
-  // h->SetLineColor(1);h->SetLineWidth(1);
-  // h->Draw();
-  // if (h2!=NULL){
-  //   h2->SetLineColor(2);h2->SetLineWidth(1);
-    
-  //   int mx2=h2->GetMaximum();
-  //   int mn2=h2->GetMinimum();
-  //   if (mn2>mn1){ mn=mn1;}else{mn=mn2;}
-  //   if (mx2>mx1){ mx=mx2;}else{mx=mx1;}
-  //   h->GetYaxis()->SetRangeUser(mn1, mx*1.1);
-  //   h2->GetYaxis()->SetRangeUser(mn1, mx*1.1);
-
-  //   h2->Draw("same");
-  //     h3=extract_next( h2 );
-  //     if (h3!=NULL){
-  // 	h3->SetLineColor(3);h3->SetLineWidth(1);
-  // 	h3->Draw("same");
-  // 	h4=extract_next( h3 );
-  // 	if (h4!=NULL){
-  // 	  h4->SetLineColor(4);h4->SetLineWidth(1);
-  // 	  h4->Draw("same");
-  // 	  h5=extract_next( h4 );
-  // 	  if (h5!=NULL){
-  // 	    h5->SetLineColor(5);h5->SetLineWidth(1);
-  // 	    h5->Draw("same");
-  // 	    h6=extract_next( h5 );
-  // 	    if (h6!=NULL){
-  // 	      h6->SetLineColor(6);h6->SetLineWidth(1);
-  // 	      h6->Draw("same");
-  // 	    }
-  // 	  }
-  // 	}
-  //     }
-  // }//h2 NULL
-  
-}
-
-
-
-
-
-
 
 
 
@@ -241,11 +88,9 @@ void* ro_getnext(TH1F* h){
 //==============================================================
 //  Display From List2 =====   Click and Display HISTO
 //
-//  GetTitle... vybiram podle title???
+//  GetTitle... vybiram podle title???  NOT ANYMORE (201803) TNamed now.
 //
 //  fchk1state  == Multi:checkbox
-//
-//   Nechapu 2015/11/13 proc gettitle uplne staci...aha.. title je vrealite name!
 //
 void fDisplayFromList2(int id, const char* title, int fchk1state=0){
   //  printf("...displaying from list2 #%d:<%s>\n", id, title );
@@ -264,31 +109,23 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
 	      printf("mean     = %9.1f\n",  h->GetMean()   );
 	      printf("RMS      = %9.1f\n",  h->GetRMS()   );
 	      printf("integral = %9.1f\n",  h->Integral()   );
-	      int nmax=h->GetListOfFunctions()->GetEntries();
-	      for (int i=0;i<nmax;i++){
-		TString trida2=h->GetListOfFunctions()->At(i)->ClassName();
-		if (  strstr(trida2.Data(),"TNamed")!=0 ){
-		  printf( "%10s : %s\n",h->GetListOfFunctions()->At(i)->GetName(),
-			    h->GetListOfFunctions()->At(i)->GetTitle()    );
-		}//it is TNamed
-	      }// for all functions
-          }
-	  if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
-	  if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
-	    if (fchk1state!=0){ // if multi is checked
-	      ro_getnext(h);
-	    }else{
-	      h->Draw();
-	    }
-	  }
-
-	  // --- THStack appeared not good for movexy....
-	  if (trida.CompareTo("THStack")==0){THStack *h=(THStack*)gROOT->GetListOfSpecials()->FindObject(title ); h->Draw("nostack");
-	  }
-	  
-	  if (trida.CompareTo("TH1D")==0){TH1D *h=(TH1D*)gDirectory->FindObject(title ); h->Draw();}
-	  if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
-
+	      tnamed_printall( h );
+      }//-------- PRINT ALL INFO
+      if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
+      if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
+	if (fchk1state!=0){ // if multi is checked
+	  tnamed_draw(h);//ro_getnext(h); // DRAW SE SEVERAL TH1F  as THSTACK
+	}else{
+	  h->Draw();
+	}
+      }
+      
+      // --- THStack appeared not good for movexy....
+      if (trida.CompareTo("THStack")==0){THStack *h=(THStack*)gROOT->GetListOfSpecials()->FindObject(title ); h->Draw("nostack");
+      }
+      if (trida.CompareTo("TH1D")==0){TH1D *h=(TH1D*)gDirectory->FindObject(title ); h->Draw();}
+      if (trida.CompareTo("TH2D")==0){TH2D *h=(TH2D*)gDirectory->FindObject(title ); h->Draw("col");}
+      
 
 	  
 	  if (trida.CompareTo("TCutG")==0){
@@ -778,11 +615,9 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
   
   /******************************************************************************
    *            gDirectory->GetListOfKeys()->GetEntries()
-   * KEYS
-   * a pak 
-   * OBJECTS
+   * KEYS  ... 
+   *    sa2  class    sa1  name
    ******************************************************************************
-   *
    */
   
   TObject *o;
@@ -790,21 +625,19 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
   // KEYS: if KEYS ==> what happens if I copy to memory?
   max=0;
   if (gDirectory->GetListOfKeys()){
-    max=gDirectory->GetList()->GetEntries();
-    printf(" items in gDirectory = %d  ..........  \n", max);
+    //max=gDirectory->GetList()->GetEntries();
+    //printf(" items in gDirectory = %d  ..........  \n", max);
     max=gDirectory->GetListOfKeys()->GetEntries();
     printf(" KEYS in gDirectory = %d  ..........  \n", max);
     for (int iii=0 ; iii<max ; iii++ ){
       TString sa1=gDirectory->GetListOfKeys()->At(iii)->GetName();
-      gDirectory->GetObject( sa1.Data() , o );
+      gDirectory->GetObject( sa1.Data() , o ); // OBJECT
       TString sa2=o->ClassName();
-      //	  printf( "KEY: name-class:    %15s %15s(object)\n" ,  sa1.Data(),  sa2.Data()   );
-      /*     Get  da cokoli,  GetKey..only key, find object...only object
-       *
+      // printf( "KEY: name-class:    %15s %15s(object)\n" ,  sa1.Data(),  sa2.Data()   );
+      /*   Get  da cokoli,  GetKey..only key, find object...only object
        */
-      if ((sa2.Index("TH1F")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	printf("adding explicitely %s\n", sa1.Data()  );
-	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
+      if ((sa2.Index("TH1F")==0)&&(gDirectory->FindObject(o)==NULL)) { //add to gdir
+	printf("adding explicitely %s to gdir\n", sa1.Data()  ); gSystem->Sleep(200);
 	gDirectory->Add( (TH1F*)o ); 
       }
       // if ((sa2.Index("THStack")==0)&&(gDirectory->FindObject(o)==NULL)) {
@@ -814,57 +647,47 @@ void fOpenFile(TString *fentry, TGListBox *fListBox2, int npoints){
       // }
       
       // this loaded TCutG into the list2
-      if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	printf("adding explicitely %s\n", sa1.Data()  );
-	printf("adding to gdir 3 %s\n", ""); gSystem->Sleep(200);
+      if ((sa2.Index("TCutG")==0)&&(gDirectory->FindObject(o)==NULL)) { //add to gdir
+	printf("adding explicitely %s to gdir\n", sa1.Data()  ); gSystem->Sleep(200);
 	gDirectory->Add( (TCutG*)o ); 
       }
-      // this should load TGraph into the list2
-      if ((sa2.Index("TGraph")==0)&&(gDirectory->FindObject(o)==NULL)) {
-	/*TString sn_hih=o->GetName();
-	  if  (TPRegexp("_g$$").Match(sn_hih)==0){// no match
-	  sn_hih.Append("_g");TGraph *ggo=(TGraph*)o;
-	  ggo->SetName(sn_hih);
-	  }*/
+      
+      if ((sa2.Index("TGraph")==0)&&(gDirectory->FindObject(o)==NULL)) { //add to gdir
 	// add to gdir later - what if they erase in joingraphs NONO
-	printf("adding to gDirectory %s\n", ""); gSystem->Sleep(20);
+	printf("adding explicitely to gDirectory %s\n", ""); gSystem->Sleep(20);
 	gDirectory->Add( (TGraph*)o );
+	
 	TGraph *ggo=(TGraph*)o;
 	ggo->SetMarkerStyle(6);  // dot  7=biger dot
-	printf("adding explicitely %s -----------to GetListOfSpecials\n",
-	       sa1.Data()  );
+	printf("adding explicitely %s -------to GetListOfSpecials\n",sa1.Data()  );
 	if ( gROOT->GetListOfSpecials()->FindObject(ggo)==NULL ){
 	  gROOT->GetListOfSpecials()->Add( ggo );
 	  printf("%s added to GLiOSpecia\n", ggo->GetName());
 	}else{printf("%s NOT added\n", ggo->GetName());}
+
 	
-	// GET LIS OF FUNCTIONS ?????????????
+
+	// this is a game of MySQL  and TNamed graphs... REWORK!!!!201803
 	//ggo->GetListOfFunctions()->ls();
 	printf("D... look for function with TNamed...%s\n","");
 	if ( (ggo->GetListOfFunctions()->GetEntries()>0)&& (strstr(ggo->GetListOfFunctions()->At(0)->ClassName(),"TNamed")!=NULL)  ){
 	  TNamed *n=(TNamed*)ggo->GetListOfFunctions()->At(0);
-	  printf("i... Class was TNamed, checking 1st element:  /%s/\n",n->GetTitle() );
-	  joingraphsX( n->GetTitle(), ggo->GetName() ); // JOINGRAPHS  (X for mysql version; char *g1 !!)
-	}
+	  printf("i... TGraph+TNamed, checking 1st element:  name=/%s/ title=/%s/\n",
+		 n->GetName(), n->GetTitle() );
+	  joingraphsX( n->GetTitle(), ggo->GetName() ); //mysql game
+	  // JOINGRAPHS  (X for mysql version; char *g1 !!)
+	}// tnamed detected in functions....
 	
-      }// IF  is TGraph.......
-      
-      
+      }// IF  the sa2 is TGraph  and o is NULL ---------------
 
-      //===================}// TGraph.....+
-
-      //  gDirectory->Add( (TCanvas*)o ); // problematic
-      //	  o=gDirectory->FindKey( hinu.Data() );
-      //gDirectory->Get(  sa1.Data() );
-      //	  TString ntit=o->GetTitle();
-      //	  ntit.Append( "_{   " );ntit.Append( fentry->Data() );ntit.Append( "}" );
-      //	  o->SetTitle( ntit.Data() );
-    }//iii < max
+      
+    }//iii < max =================== FOR ALL KEYS IN DIR ==========
   } else{     //if list of KEYS
     printf(" NO KEYS in gDirectory  %d   ..........  \n", 0);
-  }
+  }//------------- KEYS IN DIRECTORY SECTION---------------
   
 
+  
 
 
 

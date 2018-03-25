@@ -380,10 +380,12 @@ public:
 
   void fSELFBX(int id,TString *fentry);    // MAKES FIT
   void fSELUpdate(int id,TString *fentry); // PUTS back to MARKS
-  void  fSELSaveFit(int id,TString *fentry); // SAVE FIT & CANVAS
+  void fSELSaveFit(int id,TString *fentry); // SAVE FIT & CANVAS
   void fSELDelFBX(int id,TString *fentry);//  HELP
 
-  void  fSELDateTime(int id,TString *fentry); // 
+  void  fMenuItemDateTimeCalib(int id,TString *fentry); // 
+  void  fDateTime(int id,TString *fentry); // 
+  void  fCalib(int id,TString *fentry); // 
 
   void fSELClone2Rint(int id,TString *fentry); // 
 

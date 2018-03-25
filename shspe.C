@@ -5,20 +5,24 @@
 //--    logy
 //      gcut - crashes...
 //
+#include "kibbler_fit.C" // things from here are in shspe.h
+//             which is unhealthly....
+#include "shspe.h"  // I put in front to be available to all incl
+
 
 //-------- new rewrite - with sh_....
 #include "sh_ver.h"    // version number header created by cmake 
 #include "sh_menu.h"
 #include "sh_cuts.C"
-#include "sh_saveobj.C"   // also savecanvas
+#include "sh_saveobj.C" // also savecanvas
 #include "sh_graph.C"   //graphs, also joingraph
+#include "sh_tnamed.C"  // TH1 GetListOfFunctions()
+
 
 //------------- all previous ......
 #include "TMapFile.h"
 
-#include "kibbler_fit.C"
-
-#include "shspe.h"
+// shspe.h .... formely here ....
 #include "kibbler_gdir.C"
 
 //#include "cuts_manip.h"
@@ -2447,170 +2451,210 @@ TObject*o=gDirectory->FindObject( fListBox2->GetSelectedEntry()->GetTitle() );
 
 
 
+
+
+
+
+
+
+
+
   
+//=================  SEPARATE FUNCTION FOR SUB OPTION
+void MyMainFrame::fDateTime(int id,TString *fentry){
+  printf("subitem %2d:%s....DateTime  \n",id,fentry->Data());  
+    printf("i... datetime\n%s","");
+    TString dtform[10];
+    dtform[3]="#splitline{%d.%m}{%H:%M}";
+    TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
+    //  RecoverTH1fromGPAD( count, addr ,"" ,1);// crash in graph
+    //  RecoverTH1fromGPAD( count, addr ,"" ,0); // I want also TGraph->Histo CRASHING MULTI
+    
+    RecoverTH1fromGPAD( count, addr ,"TH" ,0); // I want also TGraph->Histo
+    
+    for (int icount=0;icount<count;icount++){
+      histo=(TH1*)addr[icount];
+      //  printf("from tpad %d recovered histo addresses (%ld,...) [DATE]\n", count,  (int64_t)addr[0] );
+      if (histo!=NULL){  
+	
+	// already declared......     TString dtform[10];
+	//       dtform[0]="";
+	dtform[0]="#splitline{%d.%m}{%H:%M}";
+	//       dtform[1]="%d.%m";
+	//       dtform[1]="%d.%m.%Y";
+	//       dtform[2]="%d.%m.%Y/%H:%M";
+	//       dtform[3]="#splitline{%d.%m}{%H:%M}";
+	//       dtform[3]="#splitline{%d.%m.%Y}{%H:%M:%S}";
+	//  dtform[4]="%d.%m/%H:%M:%S";
+	//   dtform[5]="%d/%H:%M:%S";
+	dtform[1]="%H:%M:%S";
+	dtform[2]="%M:%S";
+	//      dtform[0]="%d.%m";
+	//       dtform[1]="%d.%m.%Y";
+	//       dtform[2]="%d.%m.%Y/%H:%M";
+	//       dtform[3]="#splitline{%d.%m}{%H:%M}";
+	//       dtform[3]="#splitline{%d.%m.%Y}{%H:%M:%S}";
+	dtform[3]="";
+	dtform[4]="";
+	dtform[5]="";
+	dtform[6]="";
+	dtform[7]="";
+	dtform[8]="";
+	dtform[9]="";
+	
+	int SW=0;
+	if ( histo->GetXaxis()->GetTimeDisplay()==0)  {SW=1;} 
+	TString saq=histo->GetXaxis()->GetTimeFormat();
+	TString ssq;
+	int ioi;
+	for (ioi=0;ioi<=1;ioi++){ // one less then the maximum possibilities...
+	  ssq=saq(0,dtform[ioi].Length()+2);
+	  if ( ssq.CompareTo( dtform[ioi]+"%F" )==0 ) {SW=ioi+2;}
+	}
+	printf("SW detected==%d\n", SW );
+	if ( SW == 0 ){ //reset  >>>>
+	  histo->GetXaxis()->SetTimeFormat("");
+	  histo->GetXaxis()->SetTimeDisplay(0);
+	  histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );
+	}else
+	  if (SW == 1 ){ //
+	    histo->GetXaxis()->SetTimeFormat( dtform[0] );  
+	    histo->GetXaxis()->SetTimeDisplay(1);  
+	    histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );
+	    printf( " SW=%d, histo = %s\n" , SW,   histo->GetName()  );
+	  }else{
+	    printf( " SW=%d, histo = %s - format SW-1\n" , SW,   histo->GetName()  );
+	    histo->GetXaxis()->SetTimeFormat(dtform[SW-1] );
+	    histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );	 
+	  }//else 1
+	
+	if (SW == 9 ){ //Exit to SW 0
+	  histo->GetXaxis()->SetTimeFormat("");histo->GetXaxis()->SetTimeDisplay(0);
+	}//9  
+      }//histo !=NULL // TIME FORMAT histo not  NULL
+    }// for icount=0 icnout<count
+}//------------------------------ datetime-------------------
+
+
+
+
+
+
+
+
+
+//=================  SEPARATE FUNCTION FOR SUB OPTION
+void MyMainFrame::fCalib(int id,TString *fentry){
+  printf("subitem %2d: DATA==%s....Calib  \n",id,fentry->Data());
+  TString sr=fentry->Data(); // will contain calibration
+  TH1* histo;   int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
+  RecoverTH1fromGPAD( count, addr ,"TH1" ,0 );//
+  histo=(TH1*)addr[0];
+    
+     // 1) - I can put MARKS and calibrate 2 peaks
+    // 2) - I can get directly two numbers from the txtfield
+    // 3) - I can read two coefficients from TNamed of GetListOfF of TH
+    // THERE IS A TEST in the start! - if calibrated - go here
+    
+    printf("i... Calibrating:\n%s","");
+    TString acoef=sr(0,sr.Index(","));
+    TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
+    double ac=acoef.Atof(),bc=bcoef.Atof();
+    printf("i... coefficients extracted: %f %f\n", ac, bc );
+    
+    TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
+    if (g!=NULL){
+      printf("i... MARKS present\n%s","");
+      if ((g->GetN()==2)&&((ac-bc)<0.0)){
+	printf("i... Two markers present. I will use %f and %f as calibration energies.\n",ac,bc);
+	double nac=(ac-bc)/(g->GetX()[0]-g->GetX()[1]);
+	double nbc=ac-nac*g->GetX()[0];
+	ac=nac;
+	bc=nbc;
+      }}
+    
+    printf("calibrating with %s = %lf %lf\n", sr.Data() , ac, bc );
+    //  printf("from tpad %d recovered %ld histo addresses\n", count,  (int64_t)addr[0] );
+    if (histo!=NULL){  
+      int nbins=histo->GetNbinsX();
+      histo->SetBins( nbins, bc, ac*nbins+bc  );
+      if ( (ac==1.0)&&(bc==0.0)){
+	histo->GetXaxis()->SetTitle("k");
+      }else{
+	histo->GetXaxis()->SetTitle("E");
+      }
+      
+    }
+    fEntry->SetText(""); 
+}//-----------------------------calibrate-----------------------
+
+
+
+
+
+
 
 /*
  *  THIS IS Date Time    and   Calibration (if the text field
- *
- *
- *
  */
-void MyMainFrame::fSELDateTime(int id,TString *fentry){ 
-  printf("item %2d:%s\n",id,fentry->Data());
+//=================  MENU ITEM
+//void MyMainFrame::fSELDateTime(int id,TString *fentry){ 
+void MyMainFrame::fMenuItemDateTimeCalib(int id,TString *fentry){ 
+  printf("item %2d:%s.... fMenuItemDateTimeCalib \n",id,fentry->Data());  
   TString sr=fEntry->GetText(); // will contain calibration
   // DECIDE IF CALIBRATE OR DATE?TIME................
-
-  
   int  calibrateme=0;
   // i suggest a test:============
   TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
   RecoverTH1fromGPAD( count, addr ,"TH1" ,0 );// I added TH, there was a problem with pads; 0 instd 1 and it works...
   histo=(TH1*)addr[0];
   if (histo!=NULL){
-  // calibrate with default TNamed values: if no override calib
+    // NOW  - complicated decision - first several checks over calibration
+    //        AND  eventual decalibrations:     calibrateme == 0/1
+    // calibrate with default TNamed values: if no override calib
     if ((sr.CompareTo("")==0)&&(histo->GetListOfFunctions()->FindObject("calib0")!=NULL)){
-    printf("!... calib0 coef. found: calibrating%s\n","");
-    calibrateme=1;
-    sr="";
-    sr.Append(histo->GetListOfFunctions()->FindObject("calib1")->GetTitle());
-    sr.Append(",");
-    sr.Append(histo->GetListOfFunctions()->FindObject("calib0")->GetTitle());
-    histo->GetXaxis()->SetTitle("E");
-  }
-  //-- decalibrate 3x
-  if (histo->GetXaxis()->GetXmin()!=0){ // BUT WHAT ABOUT time?
-    printf("!... not from zero=already calibrated : decalibrate\n%s","");
-    calibrateme=1;
-    sr="1.0,0.0";
-    histo->GetXaxis()->SetTitle("k");
-  }
-  if (histo->GetXaxis()->GetXmin()!=0){
-    printf("!... already calibrated : decalibrate\n%s","");
-    calibrateme=1;
-    sr="1.0,0.0";
-    histo->GetXaxis()->SetTitle("k");
-  }
-  if (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()!=histo->GetNbinsX()){
-    printf("!... bins/dX coefficient != 1.0 : decalibrate\n%s","");
-    calibrateme=1;
-    sr="1.0,0.0";
-    histo->GetXaxis()->SetTitle("k");
-  }
+      calibrateme=1;
+      sr.Append( tnamed_get_calibline(histo)->Data()  ); // extractof TNamed MOVED to sh_tnamed
+      histo->GetXaxis()->SetTitle("E");
+    }
+    //-- decalibrate 3x
+    if (histo->GetXaxis()->GetXmin()!=0){ // BUT WHAT ABOUT time?
+      printf("!... not from zero=already calibrated : decalibrate\n%s","");
+      calibrateme=1;
+      sr="1.0,0.0";
+      histo->GetXaxis()->SetTitle("k");
+    }
+    if (histo->GetXaxis()->GetXmin()!=0){
+      printf("!... already calibrated : decalibrate\n%s","");
+      calibrateme=1;
+      sr="1.0,0.0";
+      histo->GetXaxis()->SetTitle("k");
+    }
+    if (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()!=histo->GetNbinsX()){
+      printf("!... bins/dX coefficient != 1.0 : decalibrate\n%s","");
+      calibrateme=1;
+      sr="1.0,0.0";
+      histo->GetXaxis()->SetTitle("k");
+    }
   }//histo!=NULL maybe TGraph from MySQL
   else{sr="";} // always date if no HISTO ====== end of initial test
-  
-  //============================================ DATETIME
+
+
+  // MAIN DECISION =====================================
   if  ( (calibrateme==0)&&(sr.CompareTo("")==0) ) {// DATETIME.......
-	 printf("i... datetime\n%s","");
-       TString dtform[10];
-       dtform[3]="#splitline{%d.%m}{%H:%M}";
-  TH1* histo;  int64_t addr[MAXPRIMITIVES];  int count=1;addr[0]=0;
-  //  RecoverTH1fromGPAD( count, addr ,"" ,1);// crash in graph
-  //  RecoverTH1fromGPAD( count, addr ,"" ,0); // I want also TGraph->Histo CRASHING MULTI
-
-  RecoverTH1fromGPAD( count, addr ,"TH" ,0); // I want also TGraph->Histo
-
-  for (int icount=0;icount<count;icount++){
-  histo=(TH1*)addr[icount];
-  //  printf("from tpad %d recovered histo addresses (%ld,...) [DATE]\n", count,  (int64_t)addr[0] );
-  if (histo!=NULL){  
+    fDateTime(id,fentry);
+  }else{  // CALIBRATION ..........................
     
-    // already declared......     TString dtform[10];
-       //       dtform[0]="";
-       dtform[0]="#splitline{%d.%m}{%H:%M}";
-       //       dtform[1]="%d.%m";
-       //       dtform[1]="%d.%m.%Y";
-       //       dtform[2]="%d.%m.%Y/%H:%M";
-       //       dtform[3]="#splitline{%d.%m}{%H:%M}";
-       //       dtform[3]="#splitline{%d.%m.%Y}{%H:%M:%S}";
-       //  dtform[4]="%d.%m/%H:%M:%S";
-       //   dtform[5]="%d/%H:%M:%S";
-       dtform[1]="%H:%M:%S";
-       dtform[2]="%M:%S";
-       //      dtform[0]="%d.%m";
-       //       dtform[1]="%d.%m.%Y";
-       //       dtform[2]="%d.%m.%Y/%H:%M";
-       //       dtform[3]="#splitline{%d.%m}{%H:%M}";
-       //       dtform[3]="#splitline{%d.%m.%Y}{%H:%M:%S}";
-       dtform[3]="";
-       dtform[4]="";
-       dtform[5]="";
-       dtform[6]="";
-       dtform[7]="";
-       dtform[8]="";
-       dtform[9]="";
-	 
-       int SW=0;
-       if ( histo->GetXaxis()->GetTimeDisplay()==0)  {SW=1;} 
-       TString saq=histo->GetXaxis()->GetTimeFormat();
-       TString ssq;
-       int ioi;
-       for (ioi=0;ioi<=1;ioi++){ // one less then the maximum possibilities...
-        ssq=saq(0,dtform[ioi].Length()+2);
-        if ( ssq.CompareTo( dtform[ioi]+"%F" )==0 ) {SW=ioi+2;}
-       }
-       printf("SW detected==%d\n", SW );
-       if ( SW == 0 ){ //reset  >>>>
-           histo->GetXaxis()->SetTimeFormat("");
-	   histo->GetXaxis()->SetTimeDisplay(0);
-	   histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );
-       }else
-       if (SW == 1 ){ //
-       histo->GetXaxis()->SetTimeFormat( dtform[0] );  
-       histo->GetXaxis()->SetTimeDisplay(1);  
-       histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );
-       printf( " SW=%d, histo = %s\n" , SW,   histo->GetName()  );
-       }else{
-       printf( " SW=%d, histo = %s - format SW-1\n" , SW,   histo->GetName()  );
-       histo->GetXaxis()->SetTimeFormat(dtform[SW-1] );
-       histo->GetXaxis()->SetTimeOffset( da.Convert(kTRUE) );	 
-       }//else 1
+    fCalib(id, new TString( sr.Data() ) ); //I already prepared LINE
+   }
 
-       if (SW == 9 ){ //Exit to SW 0
-       histo->GetXaxis()->SetTimeFormat("");histo->GetXaxis()->SetTimeDisplay(0);
-       }//9  
-  }//histo !=NULL // TIME FORMAT histo not  NULL
-  }// for icount=0 icnout<count
-  //============================================================  CALIBRATE :
-       }else{//  calibrating, not doing datetime.......................
-	 // 1) - I can put MARKS and calibrate 2 peaks
-	 // 2) - I can get directly two numbers from the txtfield
-	 // 3) - I can read two coefficients from TNamed of GetListOfF of TH
-	 // THERE IS A TEST in the start! - if calibrated - go here
-	 
-	 printf("i... Calibrating:\n%s","");
-	 TString acoef=sr(0,sr.Index(","));
-	 TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
-	 double ac=acoef.Atof(),bc=bcoef.Atof();
-	 printf("i... coefficients extracted: %f %f\n", ac, bc );
-	   
-	   TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
-	   if (g!=NULL){
-	     printf("i... MARKS present\n%s","");
-	   if ((g->GetN()==2)&&((ac-bc)<0.0)){
-	     printf("i... Two markers present. I will use %f and %f as calibration energies.\n",ac,bc);
-	     double nac=(ac-bc)/(g->GetX()[0]-g->GetX()[1]);
-	     double nbc=ac-nac*g->GetX()[0];
-	     ac=nac;
-	     bc=nbc;
-	   }}
-	   
-	   printf("calibrating with %s = %lf %lf\n", sr.Data() , ac, bc );
-  //  printf("from tpad %d recovered %ld histo addresses\n", count,  (int64_t)addr[0] );
-  if (histo!=NULL){  
-	   int nbins=histo->GetNbinsX();
-	   histo->SetBins( nbins, bc, ac*nbins+bc  );
-	   if ( (ac==1.0)&&(bc==0.0)){
-	     histo->GetXaxis()->SetTitle("k");
-	   }else{
-	     histo->GetXaxis()->SetTitle("E");
-	   }
+ 
+  
+  RefreshAll();
+}//SELDateTime ==============MENU ITEM
 
-  }
-	   fEntry->SetText("");
-       }
-       RefreshAll();
-}//SELDateTime
+
+
 
 
 
@@ -3841,7 +3885,7 @@ void MyMainFrame::HandleEvents(Int_t id)
 
 
   if (flistbox_selected== SELGrid       ){ fSELGrid(flistbox_selected,fentry);  }
-  if (flistbox_selected== SELDateTime   ){ fSELDateTime(flistbox_selected,fentry);  }  
+  if (flistbox_selected== SELDateTime   ){ fMenuItemDateTimeCalib(flistbox_selected,fentry);  }  
   if (flistbox_selected== SELLogy       ){ fSELLogy(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELLogz       ){ fSELLogz(flistbox_selected,fentry);  } 
   if (flistbox_selected== SELLoadCanvas ){ fMenuItemLoadcanvas(flistbox_selected,fentry);  }
