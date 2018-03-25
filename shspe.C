@@ -2556,7 +2556,7 @@ void MyMainFrame::fCalib(int id,TString *fentry){
     // 3) - I can read two coefficients from TNamed of GetListOfF of TH
     // THERE IS A TEST in the start! - if calibrated - go here
     
-    printf("i... Calibrating:\n%s","");
+  //    printf("i... Calibrating:\n%s","");
     TString acoef=sr(0,sr.Index(","));
     TString bcoef=sr(sr.Index(",")+1, sr.Length()-sr.Index(",")-1);
     double ac=acoef.Atof(),bc=bcoef.Atof();
@@ -2585,7 +2585,11 @@ void MyMainFrame::fCalib(int id,TString *fentry){
       }
       
     }
-    fEntry->SetText(""); 
+    fEntry->SetText("");
+    printf("      ...    calib possibilities:%s\n","");
+    printf("      ...    1/ input a,b:\n","");
+    printf("      ...    2/ tnamed_set('calib0')  and %scalib1\n","");
+    printf("      ...    3/ set MARKS and energies%s\n","");
 }//-----------------------------calibrate-----------------------
 
 
