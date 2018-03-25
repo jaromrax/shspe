@@ -1311,21 +1311,21 @@ void  MyMainFrame::RefreshAll(){
 	
 	
 	gROOT->cd();
-     TH1F *hc=(TH1F*)gDirectory->Get( name.Data()  );
-     if ( hc==NULL){
-       //printf("new histo\n%s","");
-       gDirectory->Add( h );
-     }else{ // ---- hc==NULL
-       //printf("replay old\n%s","");
-       int entries=h->GetEntries();
-       for (int i=0;i<h->GetXaxis()->GetNbins(); i++){
-	 hc->SetBinContent(i,h->GetBinContent(i) );
-       }// --- for
-       hc->SetEntries(entries);
-       delete h;
-     }//------- else ---- hc NULL
+	TH1F *hc=(TH1F*)gDirectory->Get( name.Data()  );
+	if ( hc==NULL){
+	  //printf("new histo\n%s","");
+	  gDirectory->Add( h );
+	}else{ // ---- hc==NULL
+	  //printf("replay old\n%s","");
+	  int entries=h->GetEntries();
+	  for (int i=0;i<h->GetXaxis()->GetNbins(); i++){
+	    hc->SetBinContent(i,h->GetBinContent(i) );
+	  }// --- for
+	  hc->SetEntries(entries);
+	  delete h;
+	}//------- else ---- hc NULL
       }//======if ( strcmp(classn.Data(),"TH1F")==0){
-   mr   = mr->GetNext();
+      mr   = mr->GetNext();
     }// ------- while (mfile->OrgAddress(mr)) {
     
     delete mr;
@@ -1335,11 +1335,11 @@ void  MyMainFrame::RefreshAll(){
   
 
   
-    TList *prim=GPAD->GetListOfPrimitives();
- for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
+  TList *prim=GPAD->GetListOfPrimitives();
+  for (int ii=0; ii<=prim->LastIndex() ;ii++ ){
     TString sn=prim->At(ii)->ClassName();
     //   printf( "refr:%2d  %s\n", ii,  sn.Data()  );
-
+    
     if ( sn.Index("TPad")==0 ){  // there is TPad :< there 
       TPad *tpod=(TPad*)prim->At(ii);
       //printf(" Refresh-found active gPad that is inside the GPAD %s\n" , "");
