@@ -2587,7 +2587,7 @@ void MyMainFrame::fCalib(int id,TString *fentry){
     }
     fEntry->SetText("");
     printf("      ...    calib possibilities:%s\n","");
-    printf("      ...    1/ input a,b:\n","");
+    printf("      ...    1/ input a,b:\n%s","");
     printf("      ...    2/ tnamed_set('calib0')  and %scalib1\n","");
     printf("      ...    3/ set MARKS and energies%s\n","");
 }//-----------------------------calibrate-----------------------
