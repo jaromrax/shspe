@@ -1290,7 +1290,9 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
 
 
 
-
+void MyMainFrame::refresh(){
+  RefreshAll();
+}
 
 void  MyMainFrame::RefreshAll(){ 
   GPAD->Modified();GPAD->Update();  

@@ -328,6 +328,7 @@ public:
   void SpiderAllTPADs(int &count, int64_t addr[] );
   void SpiderAllTH1s(int &count, int64_t addr[] );
   void RefreshAll();
+  void refresh();
 
 
 
