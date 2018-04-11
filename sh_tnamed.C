@@ -66,12 +66,12 @@ void* extract_display_with(TH1F* h, int &count,int64_t addr[]){
   for (int i=0;i<l->GetEntries();i++){ 
     sprintf( sn, "%s", l->At(i)->GetName() );
     sprintf( st, "%s", l->At(i)->GetTitle() );
-    printf("%d  %s %s\n",i, sn, st);
+    printf("%d  %s  %s\n",i, sn, st);
     if (strstr(sn,"display_with") ){
-      printf("    ... %s... ",st);
+      //printf("    ... %s... ",st);
       TH1F* nexth=(TH1F*)gDirectory->Get( st );
       if ( nexth!=NULL ){
-	printf("  DISPLAY_WITH =%s\n", nexth->GetName() );
+	//printf("  DISPLAY_WITH =%s\n", nexth->GetName() );
 	//hs[j]=(TH1F*)nexth;
 	addr[count++]= (int64_t)nexth;
 	j=j+1;
@@ -93,33 +93,37 @@ void* extract_display_with(TH1F* h, int &count,int64_t addr[]){
 //
 //void* ro_getnext(TH1F* h){
 void* tnamed_draw(TH1F* h){
-  int mx,mn;
-  int mx1=h->GetMaximum();
-  int mn1=h->GetMinimum();
-  //TH1F *hs[20];
   TH1* histo;
   int count=MAXPRIMITIVES;  int64_t addr[MAXPRIMITIVES];
   addr[0]=0;
   extract_display_with( h,count,addr ); // gives the paralel histos
-  printf("D...return with count==%d\n", count );
-  h->SetLineColor(1);
+  // printf("D...return with count==%d\n", count );
+  h->SetLineColor(1); // BLACK IS THE FIRST
   h->SetLineWidth(2);
   h->Draw();
-  double max=h->GetMaximum();
+  double max=h->GetBinContent( h->GetMaximumBin() );
+  double min=h->GetBinContent( h->GetMinimumBin() );
+  printf("D... min max %f  %f   %s\n", min, max, h->GetName() );
   for (int i=0;i<count;i++){
     histo=(TH1*)addr[i];
     if (histo!=NULL){
+      printf("D... min max %f  %f   %s\n", min, max, histo->GetName() );
       printf("... display_with name/title %s %s\n",
 	     histo->GetName(),histo->GetTitle() );
       histo->SetLineColor(i+2);
       histo->SetLineWidth(1);
       histo->Draw("same");
-      if (histo->GetMaximum()>max){
-	max=histo->GetMaximum();
+      if (histo->GetBinContent( histo->GetMaximumBin() )>max){
+	max=histo->GetBinContent(histo->GetMaximumBin());
+      }
+      if (histo->GetBinContent(histo->GetMinimumBin())<min){
+	min=histo->GetBinContent(histo->GetMinimumBin());
       }
     }//not NULL
   }//for
-  h->GetYaxis()->SetRangeUser(0., max*1.1 );
+  if (min<0.){ min=min*1.1;}else{min=min*0.9;}
+  printf("D... min max %f  %f\n", min, max);
+  h->GetYaxis()->SetRangeUser( min, max*1.1 );
   return NULL;
   // TH1F* h2,*h3,*h4, *h5, *h6;
   // h2=extract_next( h ); // gives the followin  histo

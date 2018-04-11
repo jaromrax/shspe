@@ -1291,6 +1291,10 @@ void  MyMainFrame::RecoverTH1fromGPAD(int &count,int64_t addr[],
 
 
 void MyMainFrame::refresh(){
+  printf("%s\n", " m=shspe()");
+  printf("%s\n", " m->refresh();");
+  printf("%s\n", "for (int i=0;i<40;i++){m->refresh();usleep(300000);} ");
+  printf("%s\n", "");
   RefreshAll();
 }
 
