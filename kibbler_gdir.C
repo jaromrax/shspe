@@ -114,7 +114,7 @@ void fDisplayFromList2(int id, const char* title, int fchk1state=0){
       if (trida.CompareTo("TH2F")==0){TH2F *h=(TH2F*)gDirectory->FindObject(title ); h->Draw("col");}
       if (trida.CompareTo("TH1F")==0){TH1F *h=(TH1F*)gDirectory->FindObject(title );
 	if (fchk1state!=0){ // if multi is checked
-	  tnamed_draw(h);//ro_getnext(h); // DRAW SE SEVERAL TH1F  as THSTACK
+	  tnamed_draw(h);//before:ro_getnext(h); // DRAW SE SEVERAL TH1F  as THSTACK
 	}else{
 	  h->Draw();
 	}
