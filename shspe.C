@@ -366,13 +366,18 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	// 2: sum peak
 	// 4: fit background around peak
 	if ((event==11)&&( (g->GetN()==2) || (g->GetN()==4) )  ){  // if LEFTCLICK - SUM DATA = TODO
-	  printf("SUMMING THE REGION OF MARKS \n");
+	  //printf("SUMMING THE REGION OF MARKS \n");
 	  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
-	  RecoverTH1fromGPAD( count, addr ,"TH");
+	  //RecoverTH1fromGPAD( count, addr ,"TH");
+	  RecoverTH1fromGPAD( count, addr , "TH" ,0 , "TGraph" ); // I SEARCH TH2 or ????
+
 	  histo=(TH1*)addr[0];
+	  //printf("D... recovered histo name= %s class=\n",
+	  //	 histo->GetName() ,histo->ClassName() );
 	  TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
 	  if ((g!=NULL)&&(g->GetN()>=2)){ //======== fit BG ==== TODO
-	    printf(" bg fit around a peak.....%s" , "\n" );
+	    //printf(" bg fit around a peak.....%s" , "\n" );
+	    //  polynomial fit of BG to do:
 	  }
 	  if ((g!=NULL)&&(g->GetN()==2)){ //======== say bg and histo SUM
 	    double xlow=g->GetX()[0]; double xhi=g->GetX()[1];
@@ -381,8 +386,8 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	    double bg=(xhi-xlow)*(ylow+yhi)/2.0;
 	    double inte=histo->Integral( xlow, xhi );
 	    double net=inte-bg;
-	    printf("  %s(%.3f, %.3f)  SUM==%10.3f   BG==%10.3f   NET==%10.3f\n",
-		   histo->GetName(),xlow,xhi,inte , bg, net);
+	    printf("  histo== %s  (%.3f, %.3f)\n  SUM==%10.3f   BG==%10.3f   NET==%10.3f\n",
+		   histo->GetName(),xlow,xhi,  inte , bg, net);
 	  }
 	  //g->Print();
 	}//11---------LEFT CLICK 
@@ -405,7 +410,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	    g->Sort(); // WE MUST SORT HERE but not when 2D!!
 	  }else{
 	    //--------- new delete -----
-	    printf("!...  deleting MARKS by middle-click\n%s","");
+	    //printf("!...  deleting MARKS by middle-click\n%s","");
 
 	    if (gROOT->GetListOfSpecials()->FindObject("MARKS")!=NULL ){
 	      TGraphErrors *gro=(TGraphErrors*)gROOT->GetListOfSpecials()->FindObject("MARKS") ;
@@ -420,7 +425,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	    //delete g;
 	    //g->Delete();
 	    //printf("!... not deleting MARKS");
-	  }
+	  } // GetN >1
 	  RefreshAll();
 	}//12----------MIDDLECLICK
 
@@ -441,11 +446,15 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 			(strcmp(selected->IsA()->GetName(),"TH2F")==0 )
 			  )
 	  ){  // LEFT CLICK - SUM DATA
+	//printf("D... MIDCLICK = Insert?\n","");
 	TGraphErrors *g=(TGraphErrors*)gPad->FindObject("MARKS");
 	if (  gROOT->GetListOfSpecials()->FindObject("MARKS")==NULL){
 	  gROOT->GetListOfSpecials()->Add(g);
 	}// find MARKS==NULL in GetLiOSpecial  => get it to GlisOSpecial
-	printf("ADDING TO MARKS, GetN() will == %d \n", g->GetN()+1 );
+	//printf("ADDING TO MARKS, GetN() will == %d \n", g->GetN()+1 );
+	if (g->GetN()==1){
+	  printf("i... LEFT CLICK will count integral and bg\n%s","");
+	}
        //       Double_t xp  = gPad->PadtoX(gPad->AbsPixeltoX(x));
        //       Double_t yp  = gPad->PadtoY(gPad->AbsPixeltoY(y));
        //  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma
@@ -465,8 +474,23 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 	}//fentry  exists---------------possibility to change defaultsigma
 	
 	//g->Print();
-	g->InsertPoint();
+	//
+	//--------------------- v6.12.6 crashes when InsertPoint()
+	//
+	//printf("D... inserting point \n","");
+	//g->InsertPoint(  );
+	//printf("D... inserting point ok \n","");
 	//g->Print();
+
+
+
+	double xw[1],yw[1],xwe[1],ywe[1]; 
+	xw[0]=gPad->PadtoX(gPad->AbsPixeltoX(x)); 
+	yw[0]=gPad->PadtoY(gPad->AbsPixeltoY(y));
+	xwe[0]=defaultsigma;  
+	ywe[0]=0.0;
+	g->SetPoint(  g->GetN(), xw[0], yw[0]);
+	//---------------- earlier code.........
 	g->GetEX()[ g->GetN()-1 ] = defaultsigma;
 	g->GetEY()[ g->GetN()-1 ] = 0.0;
 	g->Draw("PL");
@@ -504,7 +528,7 @@ void MyMainFrame::exec3event(Int_t event, Int_t x, Int_t y, TObject *selected)
 			   )
 	  ){  // MIDDLE CLICK - 
 	//	fSELetMarks; 
-	
+	//printf("D... middleclick - the first click?\n","");
 	//  CHCI POUZE POKUD JE TO CISLO ...... == apriori sigma 
 	TString *fentry=new TString( fEntrySIG->GetText() ); // to bylo vyse comment jako DEPR.?
 	if ( fentry->CompareTo("")!=0 ){ 

@@ -76,6 +76,9 @@ v6.09.02 laptop   | user | real |
 | corei5 dell ntb 4cores| 200m   |   57m  | 
 | --------------------  | ---------| -----|
 |  aaron 4c xeon v 6.12.6/ deb9    |   |   |
+| --------------------  | ---------| -----|
+|  i5 4core v6.12.6/ ubu1604    | 6h:6m  | 1:41m  |
+
 
  `source bin/thisroot.sh` - it could/may be included in .zshrc .bashrc
 
