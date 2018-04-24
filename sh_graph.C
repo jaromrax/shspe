@@ -20,9 +20,13 @@ void grhelp ()
 {
  cout<<"====================================================GRHELP\n";
  cout<<"---call:"<<endl;
- cout<<"     .L loadgraph.C;"<<endl;
+ cout<<"   ========== HELP FOR calibration - GraphErrors =============="<<endl;
  // cout<<" o) x  y "<<endl;
- cout<<" o) x  y      TGraph *ccc=(TGraph*) gr2(\"filename\")"<<endl;
+ cout<<" o) TGraphErrors *grxx = (TGraphErrors*)gr_engine(\"graph.dat\",0,2,1,3)"<<endl;
+ cout<<"        format :  ch dch E dE"<<endl;
+ cout<<" o) TGraphErrors *grxfit =(TGraphErrors*)gr_fitpol(grxx,\"pol1\") "<<endl;
+ cout<<"        ... traslates dx -> dy;   grxfit contains  E_exp - Efit  "<<endl;
+ cout<<"   ========== HELP FOR calibration - GraphErrors =============="<<endl;
  cout<<" o) x  y dy   TGraphErrors *cr = (TGraphErrors*)gr3(\"fname\")"<<endl;
  cout<<" o) x dx y dx TGraphErrors *gr4 = (TGraphErrors*)gr4(\"fname\")"<<endl;
  cout<<" o) TGraphErrors *gr4 = (TGraphErrors*)gr_engine(\"fn\",0,2,1,3)"<<endl;
