@@ -21,12 +21,22 @@ void grhelp ()
  cout<<"====================================================GRHELP\n";
  cout<<"---call:"<<endl;
  cout<<"   ========== HELP FOR calibration - GraphErrors =============="<<endl;
- // cout<<" o) x  y "<<endl;
+ // cout<<"                  must be  calibration-like points (monotone) "<<endl;
  cout<<" o) TGraphErrors *grxx = (TGraphErrors*)gr_engine(\"graph.dat\",0,2,1,3)"<<endl;
- cout<<"        format :  ch dch E dE"<<endl;
+ cout<<"        (ch_col, E_col, dch_col,  dE_col)  "<<endl;
+ cout<<"        format :  ch dch E  dE             ... (0,2,1,3)"<<endl;
+ cout<<"        format :  ch E  dch dE             ... (0,1,2,3)"<<endl;
+ cout<<"        creates: graph_dat  in gROOT->GetListOfSpecials()"<<endl;
  cout<<" o) TGraphErrors *grxfit =(TGraphErrors*)gr_fitpol(grxx,\"pol1\") "<<endl;
  cout<<"        ... traslates dx -> dy;   grxfit contains  E_exp - Efit  "<<endl;
+ cout<<"        ...   "<<endl;
+ cout<<" try:  gr_help_more();        "<<endl;
+}
+void gr_help_more ()
+{
  cout<<"   ========== HELP FOR calibration - GraphErrors =============="<<endl;
+ cout<<"   ========== HELP FOR calibration - GraphErrors =============="<<endl;
+ cout<<" o) x  y    TGraphErrors *cr = (TGraphErrors*)gr2(\"fname\")"<<endl;
  cout<<" o) x  y dy   TGraphErrors *cr = (TGraphErrors*)gr3(\"fname\")"<<endl;
  cout<<" o) x dx y dx TGraphErrors *gr4 = (TGraphErrors*)gr4(\"fname\")"<<endl;
  cout<<" o) TGraphErrors *gr4 = (TGraphErrors*)gr_engine(\"fn\",0,2,1,3)"<<endl;
@@ -143,7 +153,7 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
  // char mystring[1500];// one line
  TString oneline, title=name, token;
 
-  printf("gr_engine: going to open filename=%s\n", name );
+  printf("i... gr_engine: going to open filename=%s\n", name );
 
   pFile=fopen( name ,"r" ); 
   if (pFile==NULL) {
@@ -202,7 +212,7 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
          token= ((TObjString*)(tar->At(j)))->GetString();
 	 //	 printf(" %3d %3d  token <%s>\n", i,j,  token.Data() );
 	 bu= token.Atof(); 
-	 if (i<5){ 	 printf("  token <%s> = %f\n", token.Data(), bu ); }
+	 if (i<5){ 	 printf("%3d.  token <%s> = %f\n", i, token.Data(), bu ); }
          if (rx==j)  { x[i] =bu;}
          if (ry==j)  { y[i] =bu;}
          if (rdx==j) { dx[i] =bu;}
@@ -215,7 +225,7 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
       i++;// skip to a next datum if point
      }// if oneline  lenght>1 go thru all
      //back the loop
-   }//DATA HERE end
+   }//DATAH ERE end
     //     printf("%s","data line ended\n");
 
 
@@ -230,14 +240,20 @@ int64_t gr_engine (const char* name, int rx, int ry, int rdx, int rdy)
   //  title=name; DONE earlier
   title.ReplaceAll(".","_"); 
   title.ReplaceAll(" ","_"); 
-  printf("%d elements read. title= /%s/\n", i-1, title.Data() );
+  printf("i... %d elements read. title= /%s/\n", i-1, title.Data() );
  TGraphErrors *g=new TGraphErrors(i,x,y,dx,dy);
  g->SetMarkerStyle(22);
  g->SetTitle( title.Data()  );
-  g->SetName( title.Data()  );
+ g->SetName( title.Data()  );
 // g->Print();// DONT PRINT TABLES
 
  //========================ADDED 2013: AUTO!push to getlistofspecials (4multigraph)
+  // if the name already exists:
+ TObject *o=gROOT->GetListOfSpecials()->FindObject( g->GetName() );
+ if (o!=NULL){
+   printf("x... removing existing object named: /%s/\n", g->GetName() );
+   gROOT->GetListOfSpecials()->Remove( o );
+ }
  gROOT->GetListOfSpecials()->Add( g );
  printf("added to GetListOfSpecials:   %s \n",  g->GetName()  );
  //=========================
@@ -634,42 +650,56 @@ TGraphErrors* gr_fitpol (TGraphErrors *gg, const char *cpol, Float_t x1, Float_t
  char txt[1000],val[50],txta[1000];
 
 //  gg->Fit(cpol,"","",x1,x2);
-// BEFORE 070910  gg->Fit(cpol,"","",x1,x2); 
+// BEFORE 070910  gg->Fit(cpol,"","",x1,x2);
+ printf("i... 1st [estimation] fit: Minuit + do not plot    [F0] \n%s","");
+ // W  would be  weights == 1
 // after 070910 use minuit for poly "F"
 // 0 dont plot
   gg->Fit(cpol,"F0","",x1,x2);
- TF1 *fit=(TF1*)gg->GetFunction(cpol);
-double p1=fit->GetParameter(1); // take 1st degree coef. 
- printf("par1=%f\n", p1 );
+  TF1 *fit=(TF1*)gg->GetFunction(cpol);
+  double p1=fit->GetParameter(1); // take 1st degree coef. 
+  printf("r... slope == %f\n", p1 );
+  printf("i... recalculationg  X-errors to Y-axis\n%s","" );
  //--------------------- graph: and NEW GRAPH ---->>> transform errors from x to y
  Double_t x[MAXPNTS],y[MAXPNTS],dx[MAXPNTS],dy[MAXPNTS];
  imax=gg->GetN();
  for (i=0;i<imax;i++){
-    x[i]= gg->GetX()[i];
-//    dx[i]=gg->GetEX()[i];
-    dx[i]=0;
-//-----------------------  get difference----
-    //NE TED!!potom  y[i]= gg->GetY()[i] - fit->Eval( gg->GetX()[i] );
-  y[i]= gg->GetY()[i] ;
-//-------------------------- JUST TO SEE MAGNIFICATION _ DONT PUT ERRORS FIT+dY TOGETHER
-//-------------------------- PUT TOGETHER dX and dY via linear coef
-  double qa= pow(gg->GetEY()[i],2.0);
-  double qb=pow(p1*gg->GetEX()[i],2.0);
-    dy[i]=sqrt( qa+qb );
+   x[i]= gg->GetX()[i];
+   //    dx[i]=gg->GetEX()[i];
+   dx[i]=0;  //... SET dX=0
+   //---  get difference----
+   //---but NOT NOW !!later....  y[i]= gg->GetY()[i] - fit->Eval( gg->GetX()[i] );
+   y[i]= gg->GetY()[i] ;
+   //-------------------------- JUST TO SEE MAGNIFICATION _ DONT PUT ERRORS FIT+dY TOGETHER
+   //-------------------------- PUT TOGETHER dX and dY via linear coef
+   double qa=pow(gg->GetEY()[i],    2.0);
+   double qb=pow(p1*gg->GetEX()[i], 2.0);
+   dy[i]=sqrt( qa+qb );
  }
- cout<<"  new graph with "<<imax<<" values made"<<endl;
-
+ cout<<"i...  new graph with "<<imax<<" values and improved errors is made"<<endl;
  TGraphErrors *gn=new TGraphErrors(imax,x,y,dx,dy);
  //#######  NOW the real, valid fit! ####
-  gn->Fit(cpol,"F0","",x1,x2);
+ cout<<"i... FINAL FIT with DX and DY accounted;  minuit+no plot [F0]"<<endl;
+ // S ... access to fit results   https://root.cern.ch/doc/master/classTGraph.html
 
 
-
-
-  // TF1 *fit=(TF1*)gn->GetFunction(cpol);
+ // //  // TF1 *fit=(TF1*)gn->GetFunction(cpol);
+ gn->Fit(cpol,"F0V","",x1,x2);  
  fit=(TF1*)gn->GetFunction(cpol);
- Double_t chi=fit->GetChisquare();
- printf("Chi2 == %f\n", chi);
+ Double_t chi2=fit->GetChisquare();
+ /*
+ TFitResultPtr r =  gn->Fit(cpol,"S","",x1,x2);   // h->Fit(myFunc,"S");
+ TMatrixDSym cov = r->GetCovarianceMatrix();  //  to access the covariance matrix
+ Double_t chi2   = r->Chi2(); // to retrieve the fit chi2
+ Double_t par0   = r->Parameter(0); // retrieve the value for the parameter 0
+ Double_t err0   = r->ParError(0); // retrieve the error for the parameter 0
+ r->Print("V");     // print full information of fit including covariance matrix
+ r->Write();        // store the result in a file
+ */
+ cout<<"....  ======================================= begin of txt"<<endl;
+ printf("\nR... Chi2 == == FCN == %f\n\n", chi2);
+ if (1==0){
+ cout<<"....  ======================================= begin of txt"<<endl;
  //------------get parameters --- not needed...
  strcpy(txt,"Double_t         (Double_t x){ double r;\n  if (x>");
  strcpy(txta,"Double_t         (Double_t *x,Double_t *p) { double r;\n if (x[0]>");
@@ -683,7 +713,6 @@ double p1=fit->GetParameter(1); // take 1st degree coef.
  strcat(txta,val);
  strcat(txt,") \n  r=");
  strcat(txta,") \n  r=");
-
 
  Double_t p[9];
  //Double_t p[9] ;
@@ -710,11 +739,15 @@ double p1=fit->GetParameter(1); // take 1st degree coef.
   sprintf(txt,"->SetBins(16384,%e, %e+(%e)*16384)",p[0],p[0],p[1]);
   cout<<" for rebin with 16384 bins ( ->GetNbinsX() )... \n   "<<txt<<endl;
  }
-
+ printf(" gPad->Clear();\n  gg3->SetMarkerStyle(22);    gg3->Draw(\"pawl\")  \n%d\n" , 1 );
+ cout<<"....  =========================================end of txt"<<endl;
+ }
+ cout<<"....  =========================================end of txt"<<endl;
 
  //--------------------- graph: and NEW GRAPH
  // Double_t x[MAXPNTS],y[MAXPNTS],dx[MAXPNTS],dy[MAXPNTS];
  imax=gn->GetN();
+ cout<<"I...  SUBSTRACTING:  Y_new =  E_exp - E_fitted_polynom "<<endl;
  for (i=0;i<imax;i++){
    //OK    x[i]= gn->GetX()[i];
    //     //    dx[i]=gn->GetEX()[i];
@@ -728,10 +761,24 @@ double p1=fit->GetParameter(1); // take 1st degree coef.
 //    dy[i]=sqrt( (gn->GetEY()[i])**2+(fit->Derivative( x[i] )*gn->GetEX()[i])**2  );
 //already done earlier...     dy[i]=sqrt( (gn->GetEY()[i])**2+(gg->GetEX()[i])**2  );
  }
- cout<<"  new graph with "<<imax<<" values made"<<endl;
+ cout<<"i...  improved errors and DIFFERECES OF E were made"<<endl;
+ TString title=gg->GetName();
+ title.Append("_dif"); 
+ gn->SetTitle( title.Data()  );
+ gn->SetName( title.Data()  );
+ gn->SetMarkerStyle(23);
+
+ // if the name already exists:
+ TObject *o=gROOT->GetListOfSpecials()->FindObject( gn->GetName() );
+ if (o!=NULL){
+   printf("x... removing existing object named: /%s/\n", gn->GetName() );
+   gROOT->GetListOfSpecials()->Remove( o );
+ }
+ gROOT->GetListOfSpecials()->Add( gn );
+ printf("i... added to GetListOfSpecials:   %s \n",  gn->GetName()  );
+ //=========================
  // again - new?
  // TGraphErrors *gn=new TGraphErrors(imax,x,y,dx,dy);
- printf(" gPad->Clear();\n  gg3->SetMarkerStyle(22);    gg3->Draw(\"pawl\")  \n%d\n" , 1 );
  return gn;
 }
 

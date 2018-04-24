@@ -19,7 +19,10 @@
 
 
 #include "TMath.h"  // ?TMath
-
+//=========== stndalone .L C+
+#include "TH1F.h"
+#include "TAxis.h"
+#include "TPad.h"
 //------------------- declare everything here:
 extern   const int MAXPNTS;
 //static const int MAXPNTS=15000; defined in C file
