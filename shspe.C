@@ -3706,6 +3706,27 @@ void  MyMainFrame::ClickResponse(Int_t w, Int_t i)   // THIS IS CONNECTED TO TLI
 
 
 
+/*******************************************************
+GREGORY PATH
+ */
+char* DataPath;
+char* BinPath;
+
+void init_gregory_paths(){
+  BinPath = getenv ("GREGORY");
+  if (BinPath==NULL){
+    BinPath=new char[2]; strcpy(BinPath, "./");
+  }
+  DataPath = getenv ("GREGORY_DATA");
+  if (DataPath==NULL){
+    DataPath=new char[2]; strcpy(DataPath, "./");
+  }
+  printf("%s\n","");
+  printf( "i... binary path: %s\n",BinPath );
+  printf( "i... data   path: %s\n",DataPath );
+}
+
+
 
 
 
@@ -4158,7 +4179,23 @@ void MyMainFrame::HandleEvents(Int_t id)
    }
    if (id==11){ //   NO 11  ##==========start/stop button
      //        Movexy("Y", -0.25, -1.0 );
-     printf("START\n%s","");
+
+     
+     //========== GREGORY ATTEMPTS..........
+     init_gregory_paths();
+     char mmapfnamepath[200];
+     int mmapfd;        //  =-1           file handle for mmap
+     char* mmap_file;    //input  .mmap.1.vme
+
+     sprintf( mmapfnamepath, "%s/%s", BinPath, ".mmap.1.vme" );
+     printf("%s\n", mmapfnamepath);
+     if ((mmapfd = open(mmapfnamepath, O_RDWR, 0)) == -1) err(1, "open mmap.1 uo");
+     mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
+     if (mmap_file == MAP_FAILED) errx(1, "either mmap");
+
+     
+  //------------ok
+     printf("START ......  searches RT2.PID ...but-->> %s\n", BinPath);
      ULong_t green;
      gClient->GetColorByName("green", green);
      show11->ChangeBackground(green);
