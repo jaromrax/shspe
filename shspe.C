@@ -2939,7 +2939,7 @@ void MyMainFrame::fDivCanvas(int id,TString *fentry){
       case 42:
 	divide_mod_flag=16; break;
       case 81:
-	divide_mod_flag=17; break;
+	divide_mod_flag=17; break; 
 	
       case 9:
 	divide_mod_flag=18; break;
@@ -3452,22 +3452,7 @@ void MyMainFrame::fMenuItemSavecanvas(int id,TString *fentry){
 
 
 
-
-
-
-
-void MyMainFrame::fSELClear(int id,TString *fentry){ 
-   printf("item %2d:%s clear (one)\n",id,fentry->Data());  
-  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
-  // i use exclude tgraph;  restrict davam:0= muze to byt tgraph->Histo?
-  //ABY MI fungovalo clear     (x) multi, musim tohle zmenit........
-  RecoverTH1fromGPAD( count, addr ,"TH" ,0 , "TGraph");  // was 1+crash; either ,"TH" ,0   OR  "",1
-  for (int icount=0;icount<count;icount++){
-      histo=(TH1*)addr[icount];
-      printf("Clearing histogram /%s/\n",  histo->GetName()  );
-      if (histo!=NULL){       histo->Reset();  } 
-  }//for loop
-
+void SendToGregory(const char* command){   //"clear\0\0\0"
     // THE ONLY COMMAND TO mmap.file ================================ start
   //=============== here is a part with mmap
   char *BinPath;
@@ -3492,11 +3477,28 @@ void MyMainFrame::fSELClear(int id,TString *fentry){
     if ((mmapfd = open( mmapinfile, O_RDWR, 0)) == -1) err(1, "open");
     mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
     if (mmap_file == MAP_FAILED) errx(1, "either mmap");
-    strcpy(mmap_file,  "clear\0\0\0"  ); // "acq_setup.xml\nrun=1\n";
+    //strcpy(mmap_file,  "clear\0\0\0"  ); // "acq_setup.xml\nrun=1\n";
+    strcpy(mmap_file,  command  ); // "acq_setup.xml\nrun=1\n";
     //====================================== MMAP ====== communication
-    
     now->cd();
-  }// pFile existed ==========================================END
+  }//=pfile existed================== FANTASTIC - IT WAS ALREADY HERE ============
+}
+
+
+  
+
+void MyMainFrame::fSELClear(int id,TString *fentry){ 
+   printf("item %2d:%s clear (one)\n",id,fentry->Data());  
+  TH1* histo;  int64_t addr[MAXPRIMITIVES];addr[0]=0;  int count=1;
+  // i use exclude tgraph;  restrict davam:0= muze to byt tgraph->Histo?
+  //ABY MI fungovalo clear     (x) multi, musim tohle zmenit........
+  RecoverTH1fromGPAD( count, addr ,"TH" ,0 , "TGraph");  // was 1+crash; either ,"TH" ,0   OR  "",1
+  for (int icount=0;icount<count;icount++){
+      histo=(TH1*)addr[icount];
+      printf("Clearing histogram /%s/\n",  histo->GetName()  );
+      if (histo!=NULL){       histo->Reset();  } 
+  }//for loop
+  SendToGregory(  "clear\0\0\0" );
   
   RefreshAll();
 }   
@@ -3519,35 +3521,7 @@ void  MyMainFrame::fSELClearAll(int id,TString *fentry){
   //  gPad->Modified();gPad->Update();
   
 
-  // THE ONLY COMMAND TO mmap.file ================================ start
-  //=============== here is a part with mmap
-  char *BinPath;
-  BinPath = getenv ("GREGORY");
-  if (BinPath==NULL){
-    BinPath=new char[4]; strcpy(BinPath, "../\0");
-  }
-  char mmapinfile[300];
-  sprintf( mmapinfile, "%s/%s" , BinPath, ".mmap.1.vme");
-  FILE * pFile;
-  // i presume to be in ./data/
-  //printf("test %s\n",  mmapinfile );
-  pFile=fopen( mmapinfile  ,"r" ); 
-  if (pFile!=NULL) {
-    TDirectory *now=gDirectory;
-    printf("+... %s file found \n", mmapinfile );
-    
-    //====================================== MMAP ====== communication 
-    //system("dd if=/dev/zero of=mmap.in  bs=4096  count=1 2> /dev/null");
-    int mmapfd;        //  =-1           file handle for mmap
-    char* mmap_file ;  // pointer to     mmap
-    if ((mmapfd = open( mmapinfile, O_RDWR, 0)) == -1) err(1, "open");
-    mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
-    if (mmap_file == MAP_FAILED) errx(1, "either mmap");
-    strcpy(mmap_file,  "clear\0\0\0"  ); // "acq_setup.xml\nrun=1\n";
-    //====================================== MMAP ====== communication
-    
-    now->cd();
-  }// pFile existed ==========================================END
+  SendToGregory(  "clear\0\0\0" );
   
   RefreshAll();
 }//  ClearAll END ======================
@@ -4175,26 +4149,19 @@ void MyMainFrame::HandleEvents(Int_t id)
      //        Movexy("Y", -0.25, -1.0 );
    }
    if (id==13){ //   Refresh button13 pressed
+     //SendToGregory(  "init\0\0\0" );
+     //SendToGregory(  "start\0\0\0" );
      RefreshAll();
    }
-   if (id==11){ //   NO 11  ##==========start/stop button
-     //        Movexy("Y", -0.25, -1.0 );
-
-     
+   
+   if (id==11){ //   NO 11  ##==========start/stop button: gregory+rt2
      //========== GREGORY ATTEMPTS..........
-     init_gregory_paths();
-     char mmapfnamepath[200];
-     int mmapfd;        //  =-1           file handle for mmap
-     char* mmap_file;    //input  .mmap.1.vme
+     printf("%s","sending init and sleeping a bit\n");
+     SendToGregory(  "init\0\0\0" );
+     gSystem->Sleep(1750); //sleep a bit
 
-     sprintf( mmapfnamepath, "%s/%s", BinPath, ".mmap.1.vme" );
-     printf("%s\n", mmapfnamepath);
-     if ((mmapfd = open(mmapfnamepath, O_RDWR, 0)) == -1) err(1, "open mmap.1 uo");
-     mmap_file=(char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, mmapfd, 0);
-     if (mmap_file == MAP_FAILED) errx(1, "either mmap");
-
-     
-  //------------ok
+     printf("%s","sending start\n");
+     SendToGregory(  "start\0\0\0" );
      printf("START ......  searches RT2.PID ...but-->> %s\n", BinPath);
      ULong_t green;
      gClient->GetColorByName("green", green);
@@ -4222,10 +4189,15 @@ void MyMainFrame::HandleEvents(Int_t id)
        system(cmdls); 
      } // opened 
    } // START = 11
+
+
+
+
    
-   if (id==12){ //   NO 12 //===================================start stop
-     //        Movexy("Y", -0.25, -1.0 );
+   if (id==12){ //   NO 12 //===================================stop:gregory + rt2
      printf("STOP\n%s","");
+     SendToGregory(  "STOP\0\0\0" );
+
      ULong_t red;
      gClient->GetColorByName("red", red);
      show12->ChangeBackground(red);
